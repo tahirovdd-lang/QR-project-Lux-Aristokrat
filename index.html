@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+      width: 100%;
+      border: 0;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 18px;
+      cursor: pointer;
+      background: #2ea6ff;
+      color: #fff;
+      font-weight: 700;
+    }
+    .result {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      white-space: pre-line;
+      min-height: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Сканирование QR</h1>
+      <p>Нажмите кнопку ниже, затем наведите камеру на QR-код.</p>
+      <button id="scanBtn">Сканировать QR</button>
+      <div class="result" id="result"></div>
+    </div>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    const resultEl = document.getElementById('result');
+    const scanBtn = document.getElementById('scanBtn');
+
+    async function sendQrToServer(qrText) {
+      const response = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          qr_text: qrText,
+          init_data: tg.initData
+        })
+      });
+      return await response.json();
+    }
+
+    function setResult(text) {
+      resultEl.textContent = text;
+    }
+
+    function startScan() {
+      if (!tg.showScanQrPopup) {
+        setResult('Ваш Telegram-клиент не поддерживает QR-сканер Mini App.');
+        return;
+      }
+
+      tg.showScanQrPopup({
+        text: 'Наведите камеру на QR-код'
+      }, async function(qrText) {
+        setResult('Проверяем код...');
+        try {
+          const data = await sendQrToServer(qrText);
+          if (data.ok) {
+            setResult(`✅ Баллы начислены\nКод: ${data.code}\nНачислено: +${data.added_points}\nБаланс: ${data.total_points}`);
+          } else {
+            setResult(`❌ ${data.message}`);
+          }
+        } catch (e) {
+          setResult('Ошибка связи с сервером');
+        }
+        return true;
+      });
+    }
+
+    scanBtn.addEventListener('click', startScan);
+  </script>
+</body>
+</html>
