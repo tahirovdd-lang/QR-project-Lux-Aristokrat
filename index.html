@@ -12,17 +12,21 @@
 
   <style>
     :root{
-      --bg: #f5f7fb;
-      --card: #ffffff;
-      --text: #17212b;
-      --muted: #6b7a90;
-      --line: #e7ebf2;
-      --primary: #2a8cff;
-      --primary-dark: #1877f2;
-      --success: #1fa971;
-      --danger: #e34f4f;
-      --shadow: 0 10px 30px rgba(19, 33, 68, .08);
-      --radius: 18px;
+      --bg: #0b0b0c;
+      --bg-2: #121214;
+      --card: rgba(20,20,22,.96);
+      --card-2: rgba(27,27,30,.98);
+      --text: #f4ead2;
+      --muted: #bba982;
+      --line: rgba(212,175,55,.18);
+      --gold: #d4af37;
+      --gold-soft: #f1d98a;
+      --gold-dark: #9b7a19;
+      --accent: #e2be57;
+      --danger: #ff6b6b;
+      --success: #52d39a;
+      --shadow: 0 16px 40px rgba(0,0,0,.42);
+      --radius: 20px;
     }
 
     *{
@@ -33,10 +37,13 @@
     html, body{
       margin: 0;
       padding: 0;
-      background: var(--bg);
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(212,175,55,.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(212,175,55,.08), transparent 24%),
+        linear-gradient(180deg, #0a0a0b 0%, #111114 100%);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      height: 100%;
     }
 
     body{
@@ -44,10 +51,10 @@
     }
 
     .app{
-      max-width: 640px;
+      max-width: 700px;
       margin: 0 auto;
       min-height: 100vh;
-      padding: 14px 14px 24px;
+      padding: 14px 14px 26px;
       position: relative;
     }
 
@@ -62,29 +69,33 @@
     .profile-card{
       flex: 1;
       min-width: 0;
-      background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+        linear-gradient(135deg, rgba(212,175,55,.12), rgba(212,175,55,.03));
       border: 1px solid var(--line);
-      border-radius: 20px;
+      border-radius: 24px;
       box-shadow: var(--shadow);
       padding: 14px;
       display: flex;
       align-items: center;
       gap: 12px;
+      backdrop-filter: blur(10px);
     }
 
     .avatar{
-      width: 52px;
-      height: 52px;
+      width: 54px;
+      height: 54px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #2a8cff, #63b3ff);
-      color: #fff;
+      background: radial-gradient(circle at 30% 30%, var(--gold-soft), var(--gold-dark));
+      color: #201706;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 18px;
-      flex: 0 0 52px;
-      box-shadow: 0 8px 18px rgba(42, 140, 255, .24);
+      font-weight: 900;
+      font-size: 19px;
+      flex: 0 0 54px;
+      box-shadow: 0 10px 24px rgba(212,175,55,.24);
+      border: 1px solid rgba(255,255,255,.12);
     }
 
     .profile-text{
@@ -93,15 +104,18 @@
     }
 
     .brand{
-      font-size: 14px;
+      font-size: 13px;
       color: var(--muted);
       margin-bottom: 4px;
+      letter-spacing: .5px;
+      text-transform: uppercase;
     }
 
     .name{
       font-size: 18px;
-      font-weight: 700;
+      font-weight: 800;
       line-height: 1.2;
+      color: #fff3d6;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -117,17 +131,20 @@
     }
 
     .burger-btn{
-      width: 52px;
-      height: 52px;
+      width: 54px;
+      height: 54px;
       border: 1px solid var(--line);
-      border-radius: 16px;
-      background: #fff;
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+        linear-gradient(180deg, #1a1a1d, #121214);
       box-shadow: var(--shadow);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      flex: 0 0 52px;
+      flex: 0 0 54px;
+      color: var(--gold-soft);
     }
 
     .burger-icon{
@@ -141,9 +158,8 @@
       left: 0;
       right: 0;
       height: 2.5px;
-      background: var(--text);
+      background: linear-gradient(90deg, var(--gold-soft), var(--gold));
       border-radius: 99px;
-      transition: .2s ease;
     }
 
     .burger-icon span:nth-child(1){ top: 0; }
@@ -151,32 +167,33 @@
     .burger-icon span:nth-child(3){ bottom: 0; }
 
     .card{
-      background: var(--card);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)),
+        linear-gradient(180deg, rgba(24,24,26,.98), rgba(16,16,18,.98));
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-    }
-
-    .scanner-card{
       overflow: hidden;
     }
 
     .scanner-head{
       padding: 16px 16px 12px;
       border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(212,175,55,.07), rgba(212,175,55,0));
     }
 
     .scanner-title{
-      font-size: 20px;
-      font-weight: 800;
+      font-size: 21px;
+      font-weight: 900;
       margin: 0 0 6px;
+      color: #fff1c8;
     }
 
     .scanner-subtitle{
       margin: 0;
       color: var(--muted);
       font-size: 14px;
-      line-height: 1.45;
+      line-height: 1.5;
     }
 
     .camera-wrap{
@@ -205,37 +222,67 @@
     }
 
     .scan-frame{
-      width: min(72vw, 280px);
-      height: min(72vw, 280px);
-      border: 3px solid rgba(255,255,255,.95);
-      border-radius: 24px;
+      width: min(72vw, 285px);
+      height: min(72vw, 285px);
+      border: 2.5px solid rgba(241,217,138,.96);
+      border-radius: 28px;
       position: relative;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,.26);
+      box-shadow:
+        0 0 0 9999px rgba(0,0,0,.30),
+        0 0 24px rgba(212,175,55,.18);
+      overflow: hidden;
+    }
+
+    .scan-frame::before,
+    .scan-frame::after{
+      content: "";
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border: 4px solid var(--gold-soft);
+      opacity: .95;
+    }
+
+    .scan-frame::before{
+      top: -2px;
+      left: -2px;
+      border-right: 0;
+      border-bottom: 0;
+      border-top-left-radius: 22px;
+    }
+
+    .scan-frame::after{
+      right: -2px;
+      bottom: -2px;
+      border-left: 0;
+      border-top: 0;
+      border-bottom-right-radius: 22px;
     }
 
     .scan-line{
       position: absolute;
-      left: 12px;
-      right: 12px;
+      left: 14px;
+      right: 14px;
       top: 18px;
       height: 3px;
       border-radius: 99px;
-      background: linear-gradient(90deg, transparent, #4de3a3, transparent);
+      background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
       animation: scan 2s linear infinite;
-      box-shadow: 0 0 14px rgba(77, 227, 163, .8);
+      box-shadow: 0 0 18px rgba(241,217,138,.9);
     }
 
     @keyframes scan{
-      0%{ top: 18px; opacity: .9; }
-      50%{ opacity: 1; }
-      100%{ top: calc(100% - 22px); opacity: .9; }
+      0%{ top: 18px; opacity: .95; }
+      100%{ top: calc(100% - 21px); opacity: .95; }
     }
 
     .status{
       margin-top: 14px;
       padding: 14px 16px;
       font-size: 14px;
-      line-height: 1.45;
+      line-height: 1.5;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.01);
     }
 
     .status.info{
@@ -244,60 +291,64 @@
 
     .status.success{
       color: var(--success);
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .status.error{
       color: var(--danger);
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .actions{
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      padding: 0 0 14px;
+      padding: 0 14px 14px;
       margin-top: 10px;
     }
 
     .btn{
       border: none;
-      border-radius: 14px;
+      border-radius: 16px;
       height: 48px;
       font-size: 15px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
       transition: .15s ease;
     }
 
     .btn:active{
-      transform: scale(.98);
+      transform: scale(.985);
     }
 
     .btn-primary{
-      background: var(--primary);
-      color: #fff;
-      box-shadow: 0 8px 18px rgba(42, 140, 255, .25);
-    }
-
-    .btn-primary:hover{
-      background: var(--primary-dark);
+      color: #2a1d00;
+      background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+      box-shadow: 0 10px 20px rgba(212,175,55,.22);
     }
 
     .btn-secondary{
-      background: #eef4ff;
-      color: var(--primary-dark);
+      color: var(--gold-soft);
+      background: linear-gradient(180deg, #1d1d20, #161619);
+      border: 1px solid var(--line);
     }
 
     .manual-card{
       margin-top: 14px;
       padding: 14px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.01)),
+        linear-gradient(180deg, rgba(24,24,26,.98), rgba(16,16,18,.98));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
     .manual-title{
       font-size: 16px;
-      font-weight: 800;
+      font-weight: 900;
       margin: 0 0 10px;
+      color: #fff1c8;
     }
 
     .manual-row{
@@ -311,21 +362,26 @@
       height: 46px;
       border-radius: 14px;
       border: 1px solid var(--line);
-      background: #fff;
+      background: rgba(255,255,255,.03);
+      color: var(--text);
       padding: 0 14px;
       font-size: 15px;
       outline: none;
     }
 
+    .manual-input::placeholder{
+      color: #9f8f6f;
+    }
+
     .manual-input:focus{
-      border-color: #9cc6ff;
-      box-shadow: 0 0 0 3px rgba(42, 140, 255, .1);
+      border-color: rgba(241,217,138,.46);
+      box-shadow: 0 0 0 3px rgba(212,175,55,.12);
     }
 
     .drawer-backdrop{
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.26);
+      background: rgba(0,0,0,.46);
       opacity: 0;
       pointer-events: none;
       transition: .2s ease;
@@ -342,9 +398,11 @@
       top: 0;
       right: 0;
       bottom: 0;
-      width: min(86vw, 360px);
-      background: #fff;
-      box-shadow: -10px 0 30px rgba(19, 33, 68, .15);
+      width: min(88vw, 360px);
+      background:
+        linear-gradient(180deg, rgba(24,24,26,.98), rgba(11,11,12,.98));
+      border-left: 1px solid var(--line);
+      box-shadow: -18px 0 40px rgba(0,0,0,.38);
       transform: translateX(100%);
       transition: .25s ease;
       z-index: 60;
@@ -363,12 +421,14 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
+      background: linear-gradient(180deg, rgba(212,175,55,.08), rgba(212,175,55,0));
     }
 
     .drawer-title{
       font-size: 18px;
-      font-weight: 800;
+      font-weight: 900;
       margin: 0;
+      color: #fff1c8;
     }
 
     .drawer-close{
@@ -376,7 +436,8 @@
       height: 38px;
       border-radius: 12px;
       border: 1px solid var(--line);
-      background: #fff;
+      background: rgba(255,255,255,.02);
+      color: var(--gold-soft);
       cursor: pointer;
       font-size: 18px;
       line-height: 1;
@@ -394,23 +455,26 @@
       gap: 12px;
       text-decoration: none;
       color: var(--text);
-      background: #fff;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)),
+        linear-gradient(180deg, #1a1a1d, #141416);
       border: 1px solid var(--line);
       border-radius: 16px;
       padding: 14px;
-      box-shadow: 0 8px 22px rgba(19, 33, 68, .05);
+      box-shadow: 0 10px 20px rgba(0,0,0,.18);
     }
 
     .menu-emoji{
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       border-radius: 14px;
-      background: #f4f7fc;
+      background: linear-gradient(180deg, rgba(212,175,55,.16), rgba(212,175,55,.06));
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 20px;
-      flex: 0 0 42px;
+      flex: 0 0 44px;
+      border: 1px solid rgba(212,175,55,.16);
     }
 
     .menu-text{
@@ -420,8 +484,9 @@
 
     .menu-title{
       font-size: 15px;
-      font-weight: 800;
+      font-weight: 900;
       margin-bottom: 3px;
+      color: #fff1c8;
     }
 
     .menu-sub{
@@ -433,7 +498,7 @@
 
     .footer-note{
       text-align: center;
-      color: var(--muted);
+      color: #9f8f6f;
       font-size: 12px;
       margin-top: 14px;
       padding-bottom: 8px;
@@ -462,7 +527,7 @@
         <div class="profile-text">
           <div class="brand">Lux Aristokrat</div>
           <div class="name" id="userName">Гость</div>
-          <div class="sub" id="userSub">QR бонусная система</div>
+          <div class="sub" id="userSub">Premium QR bonus system</div>
         </div>
       </div>
 
@@ -497,13 +562,13 @@
         Инициализация камеры...
       </div>
 
-      <div class="actions" style="padding: 0 14px 14px;">
+      <div class="actions">
         <button class="btn btn-primary" id="restartBtn" type="button">Перезапустить камеру</button>
         <button class="btn btn-secondary" id="closeBtn" type="button">Закрыть</button>
       </div>
     </div>
 
-    <div class="card manual-card">
+    <div class="manual-card">
       <h2 class="manual-title">Ручной ввод кода</h2>
       <div class="manual-row">
         <input
@@ -522,7 +587,7 @@
     </div>
 
     <div class="footer-note">
-      Lux Aristokrat • QR Scanner WebApp
+      Lux Aristokrat • Premium QR Scanner
     </div>
   </div>
 
@@ -598,7 +663,7 @@
         ? [user.first_name, user.last_name].filter(Boolean).join(" ").trim()
         : "Гость";
 
-      const username = user?.username ? "@" + user.username : "QR бонусная система";
+      const username = user?.username ? "@" + user.username : "Premium QR bonus system";
 
       userNameEl.textContent = fullName || "Гость";
       userSubEl.textContent = username;
@@ -627,9 +692,7 @@
     drawerBackdrop.addEventListener("click", closeDrawer);
 
     function normalizeCode(raw) {
-      return String(raw || "")
-        .trim()
-        .toUpperCase();
+      return String(raw || "").trim().toUpperCase();
     }
 
     function sendCodeToBot(code) {
