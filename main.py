@@ -1,4 +1,4 @@
-print("=== LUX ARISTOKRAT MULTILANG ADMIN VERSION FINAL ===")
+print("=== LUX FINAL BUILD 2026-04-04 BACK BUTTON + DB LOCK FIX ===")
 
 import asyncio
 import csv
@@ -61,7 +61,7 @@ if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN not found")
 
 BOT_USERNAME = os.getenv("BOT_USERNAME", "QR_Lux_Aristokrat_bot").replace("@", "").strip()
-WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/QR-project-Lux-Aristokrat/").strip()
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/QR-project-Lux-Aristokrat/?v=1").strip()
 DB_PATH = os.getenv("DB_PATH", "lux_aristokrat.db")
 DATA_DIR = os.getenv("DATA_DIR", "/app/data")
 
@@ -92,6 +92,7 @@ bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
 admin_states: dict[int, dict] = {}
+db_lock = asyncio.Lock()
 
 LANG_BUTTONS = {
     "🇷🇺 RU": "ru",
@@ -409,8 +410,11 @@ def build_qr_link(code: str) -> str:
 
 
 def get_conn() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(DB_FILE, timeout=30, check_same_thread=False)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA synchronous=NORMAL;")
+    conn.execute("PRAGMA busy_timeout = 30000;")
     return conn
 
 
@@ -433,68 +437,69 @@ def add_column_if_missing(conn: sqlite3.Connection, table_name: str, column_name
         conn.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_sql}")
 
 
-def init_db():
-    conn = get_conn()
-    cur = conn.cursor()
+async def init_db():
+    async with db_lock:
+        conn = get_conn()
+        cur = conn.cursor()
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            user_id INTEGER PRIMARY KEY,
-            username TEXT,
-            full_name TEXT,
-            phone TEXT,
-            points INTEGER NOT NULL DEFAULT 0,
-            language TEXT DEFAULT 'ru',
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
-        )
-    """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                user_id INTEGER PRIMARY KEY,
+                username TEXT,
+                full_name TEXT,
+                phone TEXT,
+                points INTEGER NOT NULL DEFAULT 0,
+                language TEXT DEFAULT 'ru',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        """)
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS qr_codes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            code TEXT NOT NULL UNIQUE,
-            title TEXT NOT NULL,
-            points INTEGER NOT NULL,
-            is_active INTEGER NOT NULL DEFAULT 1,
-            created_by INTEGER,
-            created_at TEXT NOT NULL
-        )
-    """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS qr_codes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT NOT NULL UNIQUE,
+                title TEXT NOT NULL,
+                points INTEGER NOT NULL,
+                is_active INTEGER NOT NULL DEFAULT 1,
+                created_by INTEGER,
+                created_at TEXT NOT NULL
+            )
+        """)
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS scans (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            qr_code_id INTEGER NOT NULL,
-            scanned_at TEXT NOT NULL,
-            UNIQUE(user_id, qr_code_id)
-        )
-    """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS scans (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                qr_code_id INTEGER NOT NULL,
+                scanned_at TEXT NOT NULL,
+                UNIQUE(user_id, qr_code_id)
+            )
+        """)
 
-    add_column_if_missing(conn, "users", "username", "TEXT")
-    add_column_if_missing(conn, "users", "full_name", "TEXT")
-    add_column_if_missing(conn, "users", "phone", "TEXT")
-    add_column_if_missing(conn, "users", "points", "INTEGER NOT NULL DEFAULT 0")
-    add_column_if_missing(conn, "users", "language", "TEXT DEFAULT 'ru'")
-    add_column_if_missing(conn, "users", "created_at", "TEXT NOT NULL DEFAULT ''")
-    add_column_if_missing(conn, "users", "updated_at", "TEXT NOT NULL DEFAULT ''")
+        add_column_if_missing(conn, "users", "username", "TEXT")
+        add_column_if_missing(conn, "users", "full_name", "TEXT")
+        add_column_if_missing(conn, "users", "phone", "TEXT")
+        add_column_if_missing(conn, "users", "points", "INTEGER NOT NULL DEFAULT 0")
+        add_column_if_missing(conn, "users", "language", "TEXT DEFAULT 'ru'")
+        add_column_if_missing(conn, "users", "created_at", "TEXT NOT NULL DEFAULT ''")
+        add_column_if_missing(conn, "users", "updated_at", "TEXT NOT NULL DEFAULT ''")
 
-    add_column_if_missing(conn, "qr_codes", "is_active", "INTEGER NOT NULL DEFAULT 1")
-    add_column_if_missing(conn, "qr_codes", "created_by", "INTEGER")
-    add_column_if_missing(conn, "qr_codes", "created_at", "TEXT NOT NULL DEFAULT ''")
+        add_column_if_missing(conn, "qr_codes", "is_active", "INTEGER NOT NULL DEFAULT 1")
+        add_column_if_missing(conn, "qr_codes", "created_by", "INTEGER")
+        add_column_if_missing(conn, "qr_codes", "created_at", "TEXT NOT NULL DEFAULT ''")
 
-    ts = now_str()
-    cur.execute("UPDATE users SET language = 'ru' WHERE language IS NULL OR TRIM(language) = ''")
-    cur.execute("UPDATE users SET points = 0 WHERE points IS NULL")
-    cur.execute("UPDATE users SET created_at = ? WHERE created_at IS NULL OR TRIM(created_at) = ''", (ts,))
-    cur.execute("UPDATE users SET updated_at = ? WHERE updated_at IS NULL OR TRIM(updated_at) = ''", (ts,))
-    cur.execute("UPDATE qr_codes SET is_active = 1 WHERE is_active IS NULL")
-    cur.execute("UPDATE qr_codes SET created_at = ? WHERE created_at IS NULL OR TRIM(created_at) = ''", (ts,))
-    cur.execute("UPDATE scans SET scanned_at = ? WHERE scanned_at IS NULL OR TRIM(scanned_at) = ''", (ts,))
+        ts = now_str()
+        cur.execute("UPDATE users SET language = 'ru' WHERE language IS NULL OR TRIM(language) = ''")
+        cur.execute("UPDATE users SET points = 0 WHERE points IS NULL")
+        cur.execute("UPDATE users SET created_at = ? WHERE created_at IS NULL OR TRIM(created_at) = ''", (ts,))
+        cur.execute("UPDATE users SET updated_at = ? WHERE updated_at IS NULL OR TRIM(updated_at) = ''", (ts,))
+        cur.execute("UPDATE qr_codes SET is_active = 1 WHERE is_active IS NULL")
+        cur.execute("UPDATE qr_codes SET created_at = ? WHERE created_at IS NULL OR TRIM(created_at) = ''", (ts,))
+        cur.execute("UPDATE scans SET scanned_at = ? WHERE scanned_at IS NULL OR TRIM(scanned_at) = ''", (ts,))
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
 
 
 def get_level(points: int) -> str:
@@ -505,29 +510,30 @@ def get_level(points: int) -> str:
     return "Silver"
 
 
-def ensure_user_in_db(user):
-    conn = get_conn()
-    cur = conn.cursor()
-    ts = now_str()
-    cur.execute("SELECT user_id FROM users WHERE user_id = ?", (user.id,))
-    row = cur.fetchone()
-    username = user.username or ""
-    full_name = user.full_name or ""
+async def ensure_user_in_db(user):
+    async with db_lock:
+        conn = get_conn()
+        cur = conn.cursor()
+        ts = now_str()
+        cur.execute("SELECT user_id FROM users WHERE user_id = ?", (user.id,))
+        row = cur.fetchone()
+        username = user.username or ""
+        full_name = user.full_name or ""
 
-    if row:
-        cur.execute("""
-            UPDATE users
-            SET username = ?, full_name = ?, updated_at = ?
-            WHERE user_id = ?
-        """, (username, full_name, ts, user.id))
-    else:
-        cur.execute("""
-            INSERT INTO users (user_id, username, full_name, phone, points, language, created_at, updated_at)
-            VALUES (?, ?, ?, ?, 0, 'ru', ?, ?)
-        """, (user.id, username, full_name, "", ts, ts))
+        if row:
+            cur.execute("""
+                UPDATE users
+                SET username = ?, full_name = ?, updated_at = ?
+                WHERE user_id = ?
+            """, (username, full_name, ts, user.id))
+        else:
+            cur.execute("""
+                INSERT INTO users (user_id, username, full_name, phone, points, language, created_at, updated_at)
+                VALUES (?, ?, ?, ?, 0, 'ru', ?, ?)
+            """, (user.id, username, full_name, "", ts, ts))
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
 
 
 def get_user_by_id(user_id: int):
@@ -552,18 +558,20 @@ def get_lang(user_id: int) -> str:
     return "ru"
 
 
-def set_lang(user_id: int, language: str):
+async def set_lang(user_id: int, language: str):
     if language not in ("ru", "uz", "tj", "en"):
         language = "ru"
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        UPDATE users
-        SET language = ?, updated_at = ?
-        WHERE user_id = ?
-    """, (language, now_str(), user_id))
-    conn.commit()
-    conn.close()
+
+    async with db_lock:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE users
+            SET language = ?, updated_at = ?
+            WHERE user_id = ?
+        """, (language, now_str(), user_id))
+        conn.commit()
+        conn.close()
 
 
 def t(user_id: int, key: str, **kwargs) -> str:
@@ -577,20 +585,21 @@ def get_user_points(user_id: int) -> int:
     return int(row["points"]) if row else 0
 
 
-def change_user_points(user_id: int, delta: int):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        UPDATE users
-        SET points = CASE
-            WHEN points + ? < 0 THEN 0
-            ELSE points + ?
-        END,
-        updated_at = ?
-        WHERE user_id = ?
-    """, (delta, delta, now_str(), user_id))
-    conn.commit()
-    conn.close()
+async def change_user_points(user_id: int, delta: int):
+    async with db_lock:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE users
+            SET points = CASE
+                WHEN points + ? < 0 THEN 0
+                ELSE points + ?
+            END,
+            updated_at = ?
+            WHERE user_id = ?
+        """, (delta, delta, now_str(), user_id))
+        conn.commit()
+        conn.close()
 
 
 def get_user_history(user_id: int, limit: int = 20):
@@ -609,21 +618,23 @@ def get_user_history(user_id: int, limit: int = 20):
     return rows
 
 
-def create_qr(title: str, points: int, created_by: int, custom_code: str | None = None) -> str:
+async def create_qr(title: str, points: int, created_by: int, custom_code: str | None = None) -> str:
     code = normalize_code(custom_code) if custom_code else f"LUX{secrets.token_hex(4).upper()}"
     if not code:
         raise ValueError("Некорректный код")
     if points <= 0:
         raise ValueError("Баллы должны быть больше 0")
 
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO qr_codes (code, title, points, is_active, created_by, created_at)
-        VALUES (?, ?, ?, 1, ?, ?)
-    """, (code, title.strip(), points, created_by, now_str()))
-    conn.commit()
-    conn.close()
+    async with db_lock:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO qr_codes (code, title, points, is_active, created_by, created_at)
+            VALUES (?, ?, ?, 1, ?, ?)
+        """, (code, title.strip(), points, created_by, now_str()))
+        conn.commit()
+        conn.close()
+
     return code
 
 
@@ -654,21 +665,23 @@ def list_qr(limit: int = 50):
     return rows
 
 
-def set_qr_active(qr_id: int, active: bool):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("UPDATE qr_codes SET is_active = ? WHERE id = ?", (1 if active else 0, qr_id))
-    conn.commit()
-    conn.close()
+async def set_qr_active(qr_id: int, active: bool):
+    async with db_lock:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("UPDATE qr_codes SET is_active = ? WHERE id = ?", (1 if active else 0, qr_id))
+        conn.commit()
+        conn.close()
 
 
-def delete_qr(qr_id: int):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM scans WHERE qr_code_id = ?", (qr_id,))
-    cur.execute("DELETE FROM qr_codes WHERE id = ?", (qr_id,))
-    conn.commit()
-    conn.close()
+async def delete_qr(qr_id: int):
+    async with db_lock:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM scans WHERE qr_code_id = ?", (qr_id,))
+        cur.execute("DELETE FROM qr_codes WHERE id = ?", (qr_id,))
+        conn.commit()
+        conn.close()
 
 
 def has_scan(user_id: int, qr_code_id: int) -> bool:
@@ -680,15 +693,16 @@ def has_scan(user_id: int, qr_code_id: int) -> bool:
     return row is not None
 
 
-def register_scan(user_id: int, qr_code_id: int):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO scans (user_id, qr_code_id, scanned_at) VALUES (?, ?, ?)",
-        (user_id, qr_code_id, now_str())
-    )
-    conn.commit()
-    conn.close()
+async def register_scan(user_id: int, qr_code_id: int):
+    async with db_lock:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO scans (user_id, qr_code_id, scanned_at) VALUES (?, ?, ?)",
+            (user_id, qr_code_id, now_str())
+        )
+        conn.commit()
+        conn.close()
 
 
 def save_qr_png(code: str) -> str:
@@ -799,6 +813,7 @@ def in_admin_mode(user_id: int) -> bool:
 
 def menu_kb(user_id: int) -> ReplyKeyboardMarkup:
     lang = get_lang(user_id)
+
     rows = [[KeyboardButton(text=SCAN_TEXT[lang], web_app=WebAppInfo(url=WEBAPP_URL))]]
 
     if is_admin(user_id):
@@ -845,7 +860,7 @@ async def setup_menu_button():
 
 @dp.message(CommandStart())
 async def start_handler(message: Message, command: CommandStart):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
 
     try:
         await bot.set_chat_menu_button(
@@ -869,9 +884,9 @@ async def start_handler(message: Message, command: CommandStart):
 
 @dp.message(F.text.in_(list(LANG_BUTTONS.keys())))
 async def choose_language_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     language = LANG_BUTTONS[message.text]
-    set_lang(message.from_user.id, language)
+    await set_lang(message.from_user.id, language)
     admin_note = UI[language]["admin_note"] if is_admin(message.from_user.id) else ""
     welcome = UI[language]["welcome"].format(name=esc(message.from_user.full_name), admin=admin_note)
     await message.answer(UI[language]["lang_saved"])
@@ -880,13 +895,13 @@ async def choose_language_handler(message: Message):
 
 @dp.message(F.text == "🌐 Language")
 async def language_change_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     await message.answer(t(message.from_user.id, "choose_lang"), reply_markup=lang_kb())
 
 
 @dp.message(Command("myid"))
 async def myid_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     await message.answer(
         t(
             message.from_user.id,
@@ -902,7 +917,7 @@ async def myid_handler(message: Message):
 
 @dp.message(F.web_app_data)
 async def webapp_data_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     raw = message.web_app_data.data
     logging.info("WEB_APP_DATA RAW: %s", raw)
 
@@ -925,7 +940,7 @@ async def webapp_data_handler(message: Message):
 
 
 async def process_qr_scan(message: Message, code: str):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     qr_row = get_qr_by_code(code)
 
     if not qr_row:
@@ -953,8 +968,8 @@ async def process_qr_scan(message: Message, code: str):
         )
         return
 
-    register_scan(message.from_user.id, qr_row["id"])
-    change_user_points(message.from_user.id, int(qr_row["points"]))
+    await register_scan(message.from_user.id, qr_row["id"])
+    await change_user_points(message.from_user.id, int(qr_row["points"]))
     new_points = get_user_points(message.from_user.id)
     level = get_level(new_points)
 
@@ -974,7 +989,7 @@ async def process_qr_scan(message: Message, code: str):
 
 @dp.message(F.text.in_(set(POINTS_TEXT.values())))
 async def my_points_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     points = get_user_points(message.from_user.id)
     await message.answer(
         t(message.from_user.id, "my_points", points=points, level=get_level(points)),
@@ -984,7 +999,7 @@ async def my_points_handler(message: Message):
 
 @dp.message(F.text.in_(set(LEVEL_TEXT.values())))
 async def my_level_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     points = get_user_points(message.from_user.id)
     await message.answer(
         t(message.from_user.id, "my_level", points=points, level=get_level(points)),
@@ -994,7 +1009,7 @@ async def my_level_handler(message: Message):
 
 @dp.message(F.text.in_(set(HISTORY_TEXT.values())))
 async def history_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     rows = get_user_history(message.from_user.id, 20)
 
     if not rows:
@@ -1014,14 +1029,14 @@ async def history_handler(message: Message):
 
 @dp.message(F.text.in_(set(HOW_TEXT.values())))
 async def how_to_get_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     await message.answer(t(message.from_user.id, "how"), reply_markup=menu_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(ADD_QR_TEXT.values())))
 @dp.message(Command("add_qr"))
 async def add_qr_enter(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "add_qr"}
@@ -1031,7 +1046,7 @@ async def add_qr_enter(message: Message):
 @dp.message(F.text.in_(set(BULK_QR_TEXT.values())))
 @dp.message(Command("bulk_qr"))
 async def bulk_qr_enter(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "bulk_qr"}
@@ -1041,7 +1056,7 @@ async def bulk_qr_enter(message: Message):
 @dp.message(F.text.in_(set(LIST_QR_TEXT.values())))
 @dp.message(Command("list_qr"))
 async def list_qr_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
 
@@ -1064,7 +1079,7 @@ async def list_qr_handler(message: Message):
 
 @dp.message(F.text.in_(set(DISABLE_QR_TEXT.values())))
 async def disable_qr_enter(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "disable_qr"}
@@ -1073,7 +1088,7 @@ async def disable_qr_enter(message: Message):
 
 @dp.message(F.text.in_(set(ENABLE_QR_TEXT.values())))
 async def enable_qr_enter(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "enable_qr"}
@@ -1082,7 +1097,7 @@ async def enable_qr_enter(message: Message):
 
 @dp.message(F.text.in_(set(DELETE_QR_TEXT.values())))
 async def delete_qr_enter(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "delete_qr"}
@@ -1091,7 +1106,7 @@ async def delete_qr_enter(message: Message):
 
 @dp.message(F.text.in_(set(PNG_QR_TEXT.values())))
 async def png_qr_enter(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "make_png"}
@@ -1100,7 +1115,7 @@ async def png_qr_enter(message: Message):
 
 @dp.message(F.text.in_(set(ADD_POINTS_TEXT.values())))
 async def add_points_enter(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "add_points"}
@@ -1109,7 +1124,7 @@ async def add_points_enter(message: Message):
 
 @dp.message(F.text.in_(set(REMOVE_POINTS_TEXT.values())))
 async def remove_points_enter(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "remove_points"}
@@ -1118,7 +1133,7 @@ async def remove_points_enter(message: Message):
 
 @dp.message(F.text.in_(set(FIND_USER_TEXT.values())))
 async def find_user_enter(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "find_user"}
@@ -1127,7 +1142,7 @@ async def find_user_enter(message: Message):
 
 @dp.message(F.text.in_(set(STATS_TEXT.values())))
 async def stats_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
 
@@ -1149,7 +1164,7 @@ async def stats_handler(message: Message):
 
 @dp.message(F.text.in_(set(EXPORT_USERS_TEXT.values())))
 async def export_users_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     path = export_users_csv()
@@ -1158,7 +1173,7 @@ async def export_users_handler(message: Message):
 
 @dp.message(F.text.in_(set(EXPORT_SCANS_TEXT.values())))
 async def export_scans_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     path = export_scans_csv()
@@ -1167,7 +1182,7 @@ async def export_scans_handler(message: Message):
 
 @dp.message(F.text.in_(set(TOP_TEXT.values())))
 async def top_users_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
 
@@ -1191,28 +1206,28 @@ async def top_users_handler(message: Message):
 
 @dp.message(Command("cancel"))
 async def cancel_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     admin_states.pop(message.from_user.id, None)
     await message.answer(t(message.from_user.id, "cancelled"), reply_markup=menu_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(BACK_TEXT.values())))
 async def back_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     admin_states.pop(message.from_user.id, None)
     await message.answer(t(message.from_user.id, "backed"), reply_markup=menu_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(CANCEL_TEXT.values())))
 async def cancel_button_handler(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
     admin_states.pop(message.from_user.id, None)
     await message.answer(t(message.from_user.id, "cancelled"), reply_markup=menu_kb(message.from_user.id))
 
 
 @dp.message(F.text)
 async def text_router(message: Message):
-    ensure_user_in_db(message.from_user)
+    await ensure_user_in_db(message.from_user)
 
     if not is_admin(message.from_user.id):
         await message.answer(t(message.from_user.id, "unknown_menu"), reply_markup=menu_kb(message.from_user.id))
@@ -1257,7 +1272,7 @@ async def text_router(message: Message):
                     skipped.append(f"{idx}. {esc(line)}")
                     continue
 
-                create_qr(title=title, points=points, created_by=message.from_user.id, custom_code=code)
+                await create_qr(title=title, points=points, created_by=message.from_user.id, custom_code=code)
                 created.append((code, title, points))
             except Exception:
                 skipped.append(f"{idx}. {esc(line)}")
@@ -1291,10 +1306,10 @@ async def text_router(message: Message):
         try:
             if len(parts) == 2:
                 title, points_str = parts
-                code = create_qr(title=title, points=int(points_str), created_by=message.from_user.id)
+                code = await create_qr(title=title, points=int(points_str), created_by=message.from_user.id)
             elif len(parts) == 3:
                 custom_code, title, points_str = parts
-                code = create_qr(title=title, points=int(points_str), created_by=message.from_user.id, custom_code=custom_code)
+                code = await create_qr(title=title, points=int(points_str), created_by=message.from_user.id, custom_code=custom_code)
             else:
                 await message.answer(t(message.from_user.id, "wrong_format"), reply_markup=menu_kb(message.from_user.id))
                 return
@@ -1332,7 +1347,7 @@ async def text_router(message: Message):
         if not row:
             await message.answer(t(message.from_user.id, "qr_missing"), reply_markup=menu_kb(message.from_user.id))
             return
-        set_qr_active(int(text), False)
+        await set_qr_active(int(text), False)
         admin_states.pop(message.from_user.id, None)
         await message.answer(t(message.from_user.id, "qr_disabled_ok", title=esc(row["title"])), reply_markup=menu_kb(message.from_user.id))
         return
@@ -1345,7 +1360,7 @@ async def text_router(message: Message):
         if not row:
             await message.answer(t(message.from_user.id, "qr_missing"), reply_markup=menu_kb(message.from_user.id))
             return
-        set_qr_active(int(text), True)
+        await set_qr_active(int(text), True)
         admin_states.pop(message.from_user.id, None)
         await message.answer(t(message.from_user.id, "qr_enabled_ok", title=esc(row["title"])), reply_markup=menu_kb(message.from_user.id))
         return
@@ -1358,7 +1373,7 @@ async def text_router(message: Message):
         if not row:
             await message.answer(t(message.from_user.id, "qr_missing"), reply_markup=menu_kb(message.from_user.id))
             return
-        delete_qr(int(text))
+        await delete_qr(int(text))
         admin_states.pop(message.from_user.id, None)
         await message.answer(t(message.from_user.id, "qr_deleted_ok", title=esc(row["title"])), reply_markup=menu_kb(message.from_user.id))
         return
@@ -1409,7 +1424,7 @@ async def text_router(message: Message):
                 await message.answer(t(message.from_user.id, "user_not_found"), reply_markup=menu_kb(message.from_user.id))
                 return
 
-            change_user_points(user_id, points)
+            await change_user_points(user_id, points)
             new_points = get_user_points(user_id)
             admin_states.pop(message.from_user.id, None)
 
@@ -1448,7 +1463,7 @@ async def text_router(message: Message):
                 await message.answer(t(message.from_user.id, "user_not_found"), reply_markup=menu_kb(message.from_user.id))
                 return
 
-            change_user_points(user_id, -points)
+            await change_user_points(user_id, -points)
             new_points = get_user_points(user_id)
             admin_states.pop(message.from_user.id, None)
 
@@ -1508,7 +1523,7 @@ async def text_router(message: Message):
 
 
 async def main():
-    init_db()
+    await init_db()
     await setup_menu_button()
     logging.info("Bot started successfully")
     await bot.delete_webhook(drop_pending_updates=True)
