@@ -1,4 +1,4 @@
-print("=== LUX FINAL BUILD 2026-04-04 FULL FIX DATAMATRIX ===")
+print("=== LUX FINAL BUILD 2026-04-04 FULL FIX DATAMATRIX ASYNC ===")
 
 import asyncio
 import csv
@@ -730,11 +730,6 @@ async def delete_qr(qr_id: int):
         db_run_write(_delete)
 
 
-def has_scan(user_id: int, qr_code_id: int) -> bool:
-    row = db_fetchone("SELECT id FROM scans WHERE user_id = ? AND qr_code_id = ?", (user_id, qr_code_id))
-    return row is not None
-
-
 def save_qr_png(code: str) -> str:
     img = qrcode.make(build_qr_link(code))
     path = os.path.join(QR_DIR, f"{code}.png")
@@ -924,18 +919,15 @@ async def process_qr_scan_atomic(user_id: int, incoming_code: str):
                 }
 
             ts = now_str()
-
             cur.execute(
                 "INSERT INTO scans (user_id, qr_code_id, scanned_at) VALUES (?, ?, ?)",
                 (user_id, qr_row["id"], ts)
             )
-
             cur.execute("""
                 UPDATE users
                 SET points = points + ?, updated_at = ?
                 WHERE user_id = ?
             """, (int(qr_row["points"]), ts, user_id))
-
             cur.execute("SELECT points FROM users WHERE user_id = ?", (user_id,))
             user_row = cur.fetchone()
             points = int(user_row["points"]) if user_row else 0
