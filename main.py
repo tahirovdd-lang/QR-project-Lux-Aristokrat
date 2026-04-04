@@ -10,6 +10,8 @@ import secrets
 import sqlite3
 import subprocess
 import sys
+import time
+from contextlib import contextmanager
 from datetime import datetime
 from urllib.parse import quote
 
@@ -184,7 +186,8 @@ UI = {
         "export_scans_done": "📤 Экспорт scans готов.",
         "myid": "Ваш Telegram ID: <code>{id}</code>\nAdmin access: <b>{admin}</b>\nADMIN_ID env: <code>{admin_id}</code>\nADMIN_IDS env: <code>{admin_ids}</code>",
         "lang_saved": "✅ Язык сохранён: Русский",
-        "done": "✅ Готово."
+        "done": "✅ Готово.",
+        "internal_error": "❌ Внутренняя ошибка. Попробуйте ещё раз."
     },
     "uz": {
         "choose_lang": "Выберите язык / Tilni tanlang / Забонро интихоб кунед / Choose language",
@@ -244,7 +247,8 @@ UI = {
         "export_scans_done": "📤 scans eksport tayyor.",
         "myid": "Sizning Telegram ID: <code>{id}</code>\nAdmin access: <b>{admin}</b>\nADMIN_ID env: <code>{admin_id}</code>\nADMIN_IDS env: <code>{admin_ids}</code>",
         "lang_saved": "✅ Til saqlandi: O‘zbekcha",
-        "done": "✅ Tayyor."
+        "done": "✅ Tayyor.",
+        "internal_error": "❌ Ichki xatolik. Qayta urinib ko‘ring."
     },
     "tj": {
         "choose_lang": "Выберите язык / Tilni tanlang / Забонро интихоб кунед / Choose language",
@@ -304,7 +308,8 @@ UI = {
         "export_scans_done": "📤 scans экспорт тайёр.",
         "myid": "Telegram ID-и шумо: <code>{id}</code>\nAdmin access: <b>{admin}</b>\nADMIN_ID env: <code>{admin_id}</code>\nADMIN_IDS env: <code>{admin_ids}</code>",
         "lang_saved": "✅ Забон нигоҳ дошта шуд: Тоҷикӣ",
-        "done": "✅ Тайёр."
+        "done": "✅ Тайёр.",
+        "internal_error": "❌ Хатои дохилӣ. Боз кӯшиш кунед."
     },
     "en": {
         "choose_lang": "Выберите язык / Tilni tanlang / Забонро интихоб кунед / Choose language",
@@ -364,7 +369,8 @@ UI = {
         "export_scans_done": "📤 scans export is ready.",
         "myid": "Your Telegram ID: <code>{id}</code>\nAdmin access: <b>{admin}</b>\nADMIN_ID env: <code>{admin_id}</code>\nADMIN_IDS env: <code>{admin_ids}</code>",
         "lang_saved": "✅ Language saved: English",
-        "done": "✅ Done."
+        "done": "✅ Done.",
+        "internal_error": "❌ Internal error. Please try again."
     },
 }
 
@@ -410,12 +416,93 @@ def build_qr_link(code: str) -> str:
 
 
 def get_conn() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_FILE, timeout=30, check_same_thread=False)
+    conn = sqlite3.connect(DB_FILE, timeout=30, check_same_thread=False, isolation_level=None)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA synchronous=NORMAL;")
-    conn.execute("PRAGMA busy_timeout = 30000;")
+    conn.execute("PRAGMA foreign_keys=ON;")
+    conn.execute("PRAGMA busy_timeout=30000;")
     return conn
+
+
+@contextmanager
+def db_connection():
+    conn = get_conn()
+    try:
+        yield conn
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+
+def db_run_write(fn, retries: int = 8):
+    last_error = None
+    for attempt in range(retries):
+        try:
+            with db_connection() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                result = fn(conn)
+                conn.commit()
+                return result
+        except sqlite3.OperationalError as e:
+            last_error = e
+            msg = str(e).lower()
+            if "database is locked" in msg or "database table is locked" in msg:
+                sleep_for = 0.2 * (attempt + 1)
+                logging.warning("Database locked. Retry %s/%s in %.1fs", attempt + 1, retries, sleep_for)
+                time.sleep(sleep_for)
+                continue
+            raise
+        except Exception:
+            raise
+    if last_error:
+        raise last_error
+
+
+def db_fetchone(query: str, params=(), retries: int = 5):
+    last_error = None
+    for attempt in range(retries):
+        try:
+            with db_connection() as conn:
+                cur = conn.cursor()
+                cur.execute(query, params)
+                return cur.fetchone()
+        except sqlite3.OperationalError as e:
+            last_error = e
+            msg = str(e).lower()
+            if "database is locked" in msg or "database table is locked" in msg:
+                sleep_for = 0.15 * (attempt + 1)
+                logging.warning("Database locked on fetchone. Retry %s/%s in %.1fs", attempt + 1, retries, sleep_for)
+                time.sleep(sleep_for)
+                continue
+            raise
+    if last_error:
+        raise last_error
+    return None
+
+
+def db_fetchall(query: str, params=(), retries: int = 5):
+    last_error = None
+    for attempt in range(retries):
+        try:
+            with db_connection() as conn:
+                cur = conn.cursor()
+                cur.execute(query, params)
+                return cur.fetchall()
+        except sqlite3.OperationalError as e:
+            last_error = e
+            msg = str(e).lower()
+            if "database is locked" in msg or "database table is locked" in msg:
+                sleep_for = 0.15 * (attempt + 1)
+                logging.warning("Database locked on fetchall. Retry %s/%s in %.1fs", attempt + 1, retries, sleep_for)
+                time.sleep(sleep_for)
+                continue
+            raise
+    if last_error:
+        raise last_error
+    return []
 
 
 def column_exists(conn: sqlite3.Connection, table_name: str, column_name: str) -> bool:
@@ -439,67 +526,66 @@ def add_column_if_missing(conn: sqlite3.Connection, table_name: str, column_name
 
 async def init_db():
     async with db_lock:
-        conn = get_conn()
-        cur = conn.cursor()
+        def _init(conn: sqlite3.Connection):
+            cur = conn.cursor()
 
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                user_id INTEGER PRIMARY KEY,
-                username TEXT,
-                full_name TEXT,
-                phone TEXT,
-                points INTEGER NOT NULL DEFAULT 0,
-                language TEXT DEFAULT 'ru',
-                created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL
-            )
-        """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    user_id INTEGER PRIMARY KEY,
+                    username TEXT,
+                    full_name TEXT,
+                    phone TEXT,
+                    points INTEGER NOT NULL DEFAULT 0,
+                    language TEXT DEFAULT 'ru',
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                )
+            """)
 
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS qr_codes (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                code TEXT NOT NULL UNIQUE,
-                title TEXT NOT NULL,
-                points INTEGER NOT NULL,
-                is_active INTEGER NOT NULL DEFAULT 1,
-                created_by INTEGER,
-                created_at TEXT NOT NULL
-            )
-        """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS qr_codes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    code TEXT NOT NULL UNIQUE,
+                    title TEXT NOT NULL,
+                    points INTEGER NOT NULL,
+                    is_active INTEGER NOT NULL DEFAULT 1,
+                    created_by INTEGER,
+                    created_at TEXT NOT NULL
+                )
+            """)
 
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS scans (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                qr_code_id INTEGER NOT NULL,
-                scanned_at TEXT NOT NULL,
-                UNIQUE(user_id, qr_code_id)
-            )
-        """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS scans (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    qr_code_id INTEGER NOT NULL,
+                    scanned_at TEXT NOT NULL,
+                    UNIQUE(user_id, qr_code_id)
+                )
+            """)
 
-        add_column_if_missing(conn, "users", "username", "TEXT")
-        add_column_if_missing(conn, "users", "full_name", "TEXT")
-        add_column_if_missing(conn, "users", "phone", "TEXT")
-        add_column_if_missing(conn, "users", "points", "INTEGER NOT NULL DEFAULT 0")
-        add_column_if_missing(conn, "users", "language", "TEXT DEFAULT 'ru'")
-        add_column_if_missing(conn, "users", "created_at", "TEXT NOT NULL DEFAULT ''")
-        add_column_if_missing(conn, "users", "updated_at", "TEXT NOT NULL DEFAULT ''")
+            add_column_if_missing(conn, "users", "username", "TEXT")
+            add_column_if_missing(conn, "users", "full_name", "TEXT")
+            add_column_if_missing(conn, "users", "phone", "TEXT")
+            add_column_if_missing(conn, "users", "points", "INTEGER NOT NULL DEFAULT 0")
+            add_column_if_missing(conn, "users", "language", "TEXT DEFAULT 'ru'")
+            add_column_if_missing(conn, "users", "created_at", "TEXT NOT NULL DEFAULT ''")
+            add_column_if_missing(conn, "users", "updated_at", "TEXT NOT NULL DEFAULT ''")
 
-        add_column_if_missing(conn, "qr_codes", "is_active", "INTEGER NOT NULL DEFAULT 1")
-        add_column_if_missing(conn, "qr_codes", "created_by", "INTEGER")
-        add_column_if_missing(conn, "qr_codes", "created_at", "TEXT NOT NULL DEFAULT ''")
+            add_column_if_missing(conn, "qr_codes", "is_active", "INTEGER NOT NULL DEFAULT 1")
+            add_column_if_missing(conn, "qr_codes", "created_by", "INTEGER")
+            add_column_if_missing(conn, "qr_codes", "created_at", "TEXT NOT NULL DEFAULT ''")
 
-        ts = now_str()
-        cur.execute("UPDATE users SET language = 'ru' WHERE language IS NULL OR TRIM(language) = ''")
-        cur.execute("UPDATE users SET points = 0 WHERE points IS NULL")
-        cur.execute("UPDATE users SET created_at = ? WHERE created_at IS NULL OR TRIM(created_at) = ''", (ts,))
-        cur.execute("UPDATE users SET updated_at = ? WHERE updated_at IS NULL OR TRIM(updated_at) = ''", (ts,))
-        cur.execute("UPDATE qr_codes SET is_active = 1 WHERE is_active IS NULL")
-        cur.execute("UPDATE qr_codes SET created_at = ? WHERE created_at IS NULL OR TRIM(created_at) = ''", (ts,))
-        cur.execute("UPDATE scans SET scanned_at = ? WHERE scanned_at IS NULL OR TRIM(scanned_at) = ''", (ts,))
+            ts = now_str()
+            cur.execute("UPDATE users SET language = 'ru' WHERE language IS NULL OR TRIM(language) = ''")
+            cur.execute("UPDATE users SET points = 0 WHERE points IS NULL")
+            cur.execute("UPDATE users SET created_at = ? WHERE created_at IS NULL OR TRIM(created_at) = ''", (ts,))
+            cur.execute("UPDATE users SET updated_at = ? WHERE updated_at IS NULL OR TRIM(updated_at) = ''", (ts,))
+            cur.execute("UPDATE qr_codes SET is_active = 1 WHERE is_active IS NULL")
+            cur.execute("UPDATE qr_codes SET created_at = ? WHERE created_at IS NULL OR TRIM(created_at) = ''", (ts,))
+            cur.execute("UPDATE scans SET scanned_at = ? WHERE scanned_at IS NULL OR TRIM(scanned_at) = ''", (ts,))
 
-        conn.commit()
-        conn.close()
+        db_run_write(_init)
 
 
 def get_level(points: int) -> str:
@@ -511,38 +597,27 @@ def get_level(points: int) -> str:
 
 
 async def ensure_user_in_db(user):
-    async with db_lock:
-        conn = get_conn()
-        cur = conn.cursor()
-        ts = now_str()
-        cur.execute("SELECT user_id FROM users WHERE user_id = ?", (user.id,))
-        row = cur.fetchone()
-        username = user.username or ""
-        full_name = user.full_name or ""
+    username = user.username or ""
+    full_name = user.full_name or ""
+    ts = now_str()
 
-        if row:
-            cur.execute("""
-                UPDATE users
-                SET username = ?, full_name = ?, updated_at = ?
-                WHERE user_id = ?
-            """, (username, full_name, ts, user.id))
-        else:
+    async with db_lock:
+        def _upsert(conn: sqlite3.Connection):
+            cur = conn.cursor()
             cur.execute("""
                 INSERT INTO users (user_id, username, full_name, phone, points, language, created_at, updated_at)
-                VALUES (?, ?, ?, ?, 0, 'ru', ?, ?)
-            """, (user.id, username, full_name, "", ts, ts))
+                VALUES (?, ?, ?, '', 0, 'ru', ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    username = excluded.username,
+                    full_name = excluded.full_name,
+                    updated_at = excluded.updated_at
+            """, (user.id, username, full_name, ts, ts))
 
-        conn.commit()
-        conn.close()
+        db_run_write(_upsert)
 
 
 def get_user_by_id(user_id: int):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
-    row = cur.fetchone()
-    conn.close()
-    return row
+    return db_fetchone("SELECT * FROM users WHERE user_id = ?", (user_id,))
 
 
 def get_lang(user_id: int) -> str:
@@ -551,7 +626,7 @@ def get_lang(user_id: int) -> str:
         return "ru"
     try:
         lang = row["language"]
-    except (IndexError, KeyError, TypeError):
+    except Exception:
         return "ru"
     if lang in ("ru", "uz", "tj", "en"):
         return lang
@@ -563,15 +638,15 @@ async def set_lang(user_id: int, language: str):
         language = "ru"
 
     async with db_lock:
-        conn = get_conn()
-        cur = conn.cursor()
-        cur.execute("""
-            UPDATE users
-            SET language = ?, updated_at = ?
-            WHERE user_id = ?
-        """, (language, now_str(), user_id))
-        conn.commit()
-        conn.close()
+        def _set(conn: sqlite3.Connection):
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE users
+                SET language = ?, updated_at = ?
+                WHERE user_id = ?
+            """, (language, now_str(), user_id))
+
+        db_run_write(_set)
 
 
 def t(user_id: int, key: str, **kwargs) -> str:
@@ -587,25 +662,23 @@ def get_user_points(user_id: int) -> int:
 
 async def change_user_points(user_id: int, delta: int):
     async with db_lock:
-        conn = get_conn()
-        cur = conn.cursor()
-        cur.execute("""
-            UPDATE users
-            SET points = CASE
-                WHEN points + ? < 0 THEN 0
-                ELSE points + ?
-            END,
-            updated_at = ?
-            WHERE user_id = ?
-        """, (delta, delta, now_str(), user_id))
-        conn.commit()
-        conn.close()
+        def _change(conn: sqlite3.Connection):
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE users
+                SET points = CASE
+                    WHEN points + ? < 0 THEN 0
+                    ELSE points + ?
+                END,
+                updated_at = ?
+                WHERE user_id = ?
+            """, (delta, delta, now_str(), user_id))
+
+        db_run_write(_change)
 
 
 def get_user_history(user_id: int, limit: int = 20):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
+    return db_fetchall("""
         SELECT s.scanned_at, q.title, q.code, q.points
         FROM scans s
         JOIN qr_codes q ON q.id = s.qr_code_id
@@ -613,9 +686,6 @@ def get_user_history(user_id: int, limit: int = 20):
         ORDER BY s.id DESC
         LIMIT ?
     """, (user_id, limit))
-    rows = cur.fetchall()
-    conn.close()
-    return rows
 
 
 async def create_qr(title: str, points: int, created_by: int, custom_code: str | None = None) -> str:
@@ -626,83 +696,52 @@ async def create_qr(title: str, points: int, created_by: int, custom_code: str |
         raise ValueError("Баллы должны быть больше 0")
 
     async with db_lock:
-        conn = get_conn()
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO qr_codes (code, title, points, is_active, created_by, created_at)
-            VALUES (?, ?, ?, 1, ?, ?)
-        """, (code, title.strip(), points, created_by, now_str()))
-        conn.commit()
-        conn.close()
+        def _create(conn: sqlite3.Connection):
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO qr_codes (code, title, points, is_active, created_by, created_at)
+                VALUES (?, ?, ?, 1, ?, ?)
+            """, (code, title.strip(), points, created_by, now_str()))
+
+        db_run_write(_create)
 
     return code
 
 
 def get_qr_by_code(code: str):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM qr_codes WHERE code = ?", (code,))
-    row = cur.fetchone()
-    conn.close()
-    return row
+    return db_fetchone("SELECT * FROM qr_codes WHERE code = ?", (code,))
 
 
 def get_qr_by_id(qr_id: int):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM qr_codes WHERE id = ?", (qr_id,))
-    row = cur.fetchone()
-    conn.close()
-    return row
+    return db_fetchone("SELECT * FROM qr_codes WHERE id = ?", (qr_id,))
 
 
 def list_qr(limit: int = 50):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM qr_codes ORDER BY id DESC LIMIT ?", (limit,))
-    rows = cur.fetchall()
-    conn.close()
-    return rows
+    return db_fetchall("SELECT * FROM qr_codes ORDER BY id DESC LIMIT ?", (limit,))
 
 
 async def set_qr_active(qr_id: int, active: bool):
     async with db_lock:
-        conn = get_conn()
-        cur = conn.cursor()
-        cur.execute("UPDATE qr_codes SET is_active = ? WHERE id = ?", (1 if active else 0, qr_id))
-        conn.commit()
-        conn.close()
+        def _set(conn: sqlite3.Connection):
+            cur = conn.cursor()
+            cur.execute("UPDATE qr_codes SET is_active = ? WHERE id = ?", (1 if active else 0, qr_id))
+
+        db_run_write(_set)
 
 
 async def delete_qr(qr_id: int):
     async with db_lock:
-        conn = get_conn()
-        cur = conn.cursor()
-        cur.execute("DELETE FROM scans WHERE qr_code_id = ?", (qr_id,))
-        cur.execute("DELETE FROM qr_codes WHERE id = ?", (qr_id,))
-        conn.commit()
-        conn.close()
+        def _delete(conn: sqlite3.Connection):
+            cur = conn.cursor()
+            cur.execute("DELETE FROM scans WHERE qr_code_id = ?", (qr_id,))
+            cur.execute("DELETE FROM qr_codes WHERE id = ?", (qr_id,))
+
+        db_run_write(_delete)
 
 
 def has_scan(user_id: int, qr_code_id: int) -> bool:
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT id FROM scans WHERE user_id = ? AND qr_code_id = ?", (user_id, qr_code_id))
-    row = cur.fetchone()
-    conn.close()
+    row = db_fetchone("SELECT id FROM scans WHERE user_id = ? AND qr_code_id = ?", (user_id, qr_code_id))
     return row is not None
-
-
-async def register_scan(user_id: int, qr_code_id: int):
-    async with db_lock:
-        conn = get_conn()
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO scans (user_id, qr_code_id, scanned_at) VALUES (?, ?, ?)",
-            (user_id, qr_code_id, now_str())
-        )
-        conn.commit()
-        conn.close()
 
 
 def save_qr_png(code: str) -> str:
@@ -713,52 +752,31 @@ def save_qr_png(code: str) -> str:
 
 
 def get_total_users() -> int:
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) AS c FROM users")
-    row = cur.fetchone()
-    conn.close()
-    return int(row["c"])
+    row = db_fetchone("SELECT COUNT(*) AS c FROM users")
+    return int(row["c"]) if row else 0
 
 
 def get_total_qr() -> int:
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) AS c FROM qr_codes")
-    row = cur.fetchone()
-    conn.close()
-    return int(row["c"])
+    row = db_fetchone("SELECT COUNT(*) AS c FROM qr_codes")
+    return int(row["c"]) if row else 0
 
 
 def get_total_scans() -> int:
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) AS c FROM scans")
-    row = cur.fetchone()
-    conn.close()
-    return int(row["c"])
+    row = db_fetchone("SELECT COUNT(*) AS c FROM scans")
+    return int(row["c"]) if row else 0
 
 
 def get_top_users(limit: int = 10):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM users ORDER BY points DESC, updated_at DESC LIMIT ?", (limit,))
-    rows = cur.fetchall()
-    conn.close()
-    return rows
+    return db_fetchall("SELECT * FROM users ORDER BY points DESC, updated_at DESC LIMIT ?", (limit,))
 
 
 def export_users_csv() -> str:
     path = os.path.join(EXPORT_DIR, f"users_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
+    rows = db_fetchall("""
         SELECT user_id, username, full_name, phone, points, language, created_at, updated_at
         FROM users
         ORDER BY points DESC, updated_at DESC
     """)
-    rows = cur.fetchall()
-    conn.close()
 
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.writer(f, delimiter=";")
@@ -774,17 +792,13 @@ def export_users_csv() -> str:
 
 def export_scans_csv() -> str:
     path = os.path.join(EXPORT_DIR, f"scans_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
+    rows = db_fetchall("""
         SELECT s.id, s.user_id, u.username, u.full_name, q.code, q.title, q.points, s.scanned_at
         FROM scans s
         LEFT JOIN users u ON u.user_id = s.user_id
         LEFT JOIN qr_codes q ON q.id = s.qr_code_id
         ORDER BY s.id DESC
     """)
-    rows = cur.fetchall()
-    conn.close()
 
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.writer(f, delimiter=";")
@@ -858,9 +872,68 @@ async def setup_menu_button():
         logging.warning("Menu button setup failed: %s", e)
 
 
+async def process_qr_scan_atomic(user_id: int, code: str):
+    async with db_lock:
+        def _process(conn: sqlite3.Connection):
+            cur = conn.cursor()
+
+            cur.execute("SELECT * FROM qr_codes WHERE code = ?", (code,))
+            qr_row = cur.fetchone()
+            if not qr_row:
+                return {"status": "not_found"}
+
+            if int(qr_row["is_active"]) != 1:
+                return {"status": "disabled", "qr": qr_row}
+
+            cur.execute(
+                "SELECT id FROM scans WHERE user_id = ? AND qr_code_id = ?",
+                (user_id, qr_row["id"])
+            )
+            already = cur.fetchone()
+            if already:
+                cur.execute("SELECT points FROM users WHERE user_id = ?", (user_id,))
+                user_row = cur.fetchone()
+                points = int(user_row["points"]) if user_row else 0
+                return {
+                    "status": "already_scanned",
+                    "qr": qr_row,
+                    "points": points,
+                    "level": get_level(points)
+                }
+
+            ts = now_str()
+            cur.execute(
+                "INSERT INTO scans (user_id, qr_code_id, scanned_at) VALUES (?, ?, ?)",
+                (user_id, qr_row["id"], ts)
+            )
+            cur.execute("""
+                UPDATE users
+                SET points = points + ?, updated_at = ?
+                WHERE user_id = ?
+            """, (int(qr_row["points"]), ts, user_id))
+            cur.execute("SELECT points FROM users WHERE user_id = ?", (user_id,))
+            user_row = cur.fetchone()
+            points = int(user_row["points"]) if user_row else 0
+
+            return {
+                "status": "ok",
+                "qr": qr_row,
+                "added": int(qr_row["points"]),
+                "points": points,
+                "level": get_level(points)
+            }
+
+        return db_run_write(_process)
+
+
 @dp.message(CommandStart())
 async def start_handler(message: Message, command: CommandStart):
-    await ensure_user_in_db(message.from_user)
+    try:
+        await ensure_user_in_db(message.from_user)
+    except Exception as e:
+        logging.exception("ensure_user_in_db error: %s", e)
+        await message.answer(UI["ru"]["internal_error"])
+        return
 
     try:
         await bot.set_chat_menu_button(
@@ -941,50 +1014,59 @@ async def webapp_data_handler(message: Message):
 
 async def process_qr_scan(message: Message, code: str):
     await ensure_user_in_db(message.from_user)
-    qr_row = get_qr_by_code(code)
 
-    if not qr_row:
+    try:
+        result = await process_qr_scan_atomic(message.from_user.id, code)
+    except Exception as e:
+        logging.exception("process_qr_scan_atomic error: %s", e)
+        await message.answer(t(message.from_user.id, "internal_error"), reply_markup=menu_kb(message.from_user.id))
+        return
+
+    status = result["status"]
+
+    if status == "not_found":
         await message.answer(t(message.from_user.id, "qr_not_found"), reply_markup=menu_kb(message.from_user.id))
         return
 
-    if int(qr_row["is_active"]) != 1:
+    if status == "disabled":
+        qr_row = result["qr"]
         await message.answer(
             t(message.from_user.id, "qr_disabled", title=esc(qr_row["title"])),
             reply_markup=menu_kb(message.from_user.id)
         )
         return
 
-    if has_scan(message.from_user.id, qr_row["id"]):
-        points = get_user_points(message.from_user.id)
+    if status == "already_scanned":
+        qr_row = result["qr"]
         await message.answer(
             t(
                 message.from_user.id,
                 "already_scanned",
                 title=esc(qr_row["title"]),
-                points=points,
-                level=get_level(points)
+                points=result["points"],
+                level=result["level"]
             ),
             reply_markup=menu_kb(message.from_user.id)
         )
         return
 
-    await register_scan(message.from_user.id, qr_row["id"])
-    await change_user_points(message.from_user.id, int(qr_row["points"]))
-    new_points = get_user_points(message.from_user.id)
-    level = get_level(new_points)
+    if status == "ok":
+        qr_row = result["qr"]
+        await message.answer(
+            t(
+                message.from_user.id,
+                "points_added",
+                title=esc(qr_row["title"]),
+                code=esc(qr_row["code"]),
+                added=result["added"],
+                points=result["points"],
+                level=result["level"]
+            ),
+            reply_markup=menu_kb(message.from_user.id)
+        )
+        return
 
-    await message.answer(
-        t(
-            message.from_user.id,
-            "points_added",
-            title=esc(qr_row["title"]),
-            code=esc(qr_row["code"]),
-            added=int(qr_row["points"]),
-            points=new_points,
-            level=level
-        ),
-        reply_markup=menu_kb(message.from_user.id)
-    )
+    await message.answer(t(message.from_user.id, "internal_error"), reply_markup=menu_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(POINTS_TEXT.values())))
@@ -1168,7 +1250,11 @@ async def export_users_handler(message: Message):
     if not is_admin(message.from_user.id):
         return
     path = export_users_csv()
-    await message.answer_document(FSInputFile(path), caption=t(message.from_user.id, "export_users_done"), reply_markup=menu_kb(message.from_user.id))
+    await message.answer_document(
+        FSInputFile(path),
+        caption=t(message.from_user.id, "export_users_done"),
+        reply_markup=menu_kb(message.from_user.id)
+    )
 
 
 @dp.message(F.text.in_(set(EXPORT_SCANS_TEXT.values())))
@@ -1177,7 +1263,11 @@ async def export_scans_handler(message: Message):
     if not is_admin(message.from_user.id):
         return
     path = export_scans_csv()
-    await message.answer_document(FSInputFile(path), caption=t(message.from_user.id, "export_scans_done"), reply_markup=menu_kb(message.from_user.id))
+    await message.answer_document(
+        FSInputFile(path),
+        caption=t(message.from_user.id, "export_scans_done"),
+        reply_markup=menu_kb(message.from_user.id)
+    )
 
 
 @dp.message(F.text.in_(set(TOP_TEXT.values())))
