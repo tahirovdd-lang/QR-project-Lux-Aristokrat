@@ -9,6 +9,7 @@
   <title>Lux Aristokrat QR Scanner</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
     :root{
@@ -336,13 +337,31 @@
       overflow:hidden;
     }
 
-    #video{
+    #reader{
       width:100%;
       height:100%;
-      object-fit:cover;
-      display:block;
       background:#000;
-      filter:saturate(1.02) contrast(1.02);
+    }
+
+    #reader video{
+      width:100% !important;
+      height:100% !important;
+      object-fit:cover !important;
+      border-radius:0 !important;
+      background:#000 !important;
+    }
+
+    #reader__dashboard,
+    #reader__scan_region img{
+      display:none !important;
+    }
+
+    #reader__scan_region{
+      min-height:360px;
+      display:flex !important;
+      align-items:center;
+      justify-content:center;
+      background:#000;
     }
 
     .scan-overlay{
@@ -728,12 +747,12 @@
       <div class="scanner-head">
         <h1 class="scanner-title" id="scannerTitle">📷 Сканировать QR</h1>
         <p class="scanner-subtitle" id="scannerSubtitle">
-          Наведите камеру на QR-код. После распознавания код автоматически отправится в бота.
+          Наведите камеру на QR-код или Data Matrix. После распознавания код автоматически отправится в бота.
         </p>
       </div>
 
       <div class="camera-wrap">
-        <video id="video" playsinline autoplay muted></video>
+        <div id="reader"></div>
 
         <div class="scan-overlay">
           <div class="scan-frame">
@@ -847,7 +866,7 @@
         guest: "Гость",
         sub: "Premium QR bonus system",
         scannerTitle: "📷 Сканировать QR",
-        scannerSubtitle: "Наведите камеру на QR-код. После распознавания код автоматически отправится в бота.",
+        scannerSubtitle: "Наведите камеру на QR-код или Data Matrix. После распознавания код автоматически отправится в бота.",
         manualTitle: "Ручной ввод кода",
         manualPlaceholder: "Введите код вручную",
         send: "Отправить",
@@ -861,7 +880,7 @@
         footer: "Lux Aristokrat • Premium QR Scanner",
         statusInit: "Инициализация камеры...",
         statusLoading: "Загрузка сканера...",
-        statusReady: "Камера активна. Наведите её на QR-код.",
+        statusReady: "Камера активна. Наведите её на QR-код или Data Matrix.",
         statusCodeSent: "Код распознан. Отправляем в бота...",
         statusNeedCode: "Введите или отсканируйте корректный код.",
         statusNoTelegram: "Telegram WebApp недоступен. Откройте страницу из Telegram.",
@@ -875,7 +894,7 @@
         guest: "Mehmon",
         sub: "Premium QR bonus tizimi",
         scannerTitle: "📷 QR skanerlash",
-        scannerSubtitle: "Kamerani QR-kodga yo‘naltiring. Kod aniqlangach, u avtomatik ravishda botga yuboriladi.",
+        scannerSubtitle: "Kamerani QR-kod yoki Data Matrix ga yo‘naltiring. Kod aniqlangach, u avtomatik ravishda botga yuboriladi.",
         manualTitle: "Kodni qo‘lda kiritish",
         manualPlaceholder: "Kodni qo‘lda kiriting",
         send: "Yuborish",
@@ -889,7 +908,7 @@
         footer: "Lux Aristokrat • Premium QR Scanner",
         statusInit: "Kamera ishga tushirilmoqda...",
         statusLoading: "Skaner yuklanmoqda...",
-        statusReady: "Kamera faol. Uni QR-kodga yo‘naltiring.",
+        statusReady: "Kamera faol. Uni QR-kod yoki Data Matrix ga yo‘naltiring.",
         statusCodeSent: "Kod aniqlandi. Botga yuborilmoqda...",
         statusNeedCode: "To‘g‘ri kodni kiriting yoki skaner qiling.",
         statusNoTelegram: "Telegram WebApp mavjud emas. Sahifani Telegram ichida oching.",
@@ -903,7 +922,7 @@
         guest: "Меҳмон",
         sub: "Системаи бонусии Premium QR",
         scannerTitle: "📷 QR-ро скан кардан",
-        scannerSubtitle: "Камераро ба QR-код равона кунед. Пас аз шинохтан, код худкор ба бот фиристода мешавад.",
+        scannerSubtitle: "Камераро ба QR-код ё Data Matrix равона кунед. Пас аз шинохтан, код худкор ба бот фиристода мешавад.",
         manualTitle: "Ворид кардани код дастӣ",
         manualPlaceholder: "Кодро дастӣ ворид кунед",
         send: "Фиристодан",
@@ -917,7 +936,7 @@
         footer: "Lux Aristokrat • Premium QR Scanner",
         statusInit: "Омодасозии камера...",
         statusLoading: "Сканер бор шуда истодааст...",
-        statusReady: "Камера фаъол аст. Онро ба QR-код равона кунед.",
+        statusReady: "Камера фаъол аст. Онро ба QR-код ё Data Matrix равона кунед.",
         statusCodeSent: "Код шинохта шуд. Ба бот фиристода мешавад...",
         statusNeedCode: "Коди дурустро ворид кунед ё скан намоед.",
         statusNoTelegram: "Telegram WebApp дастрас нест. Саҳифаро дар Telegram кушоед.",
@@ -931,7 +950,7 @@
         guest: "Guest",
         sub: "Premium QR bonus system",
         scannerTitle: "📷 Scan QR",
-        scannerSubtitle: "Point the camera at the QR code. After detection, the code will be sent to the bot automatically.",
+        scannerSubtitle: "Point the camera at the QR code or Data Matrix. After detection, the code will be sent to the bot automatically.",
         manualTitle: "Manual code entry",
         manualPlaceholder: "Enter code manually",
         send: "Send",
@@ -945,7 +964,7 @@
         footer: "Lux Aristokrat • Premium QR Scanner",
         statusInit: "Initializing camera...",
         statusLoading: "Loading scanner...",
-        statusReady: "Camera is active. Point it at the QR code.",
+        statusReady: "Camera is active. Point it at the QR code or Data Matrix.",
         statusCodeSent: "Code detected. Sending to bot...",
         statusNeedCode: "Enter or scan a valid code.",
         statusNoTelegram: "Telegram WebApp is unavailable. Open this page from Telegram.",
@@ -963,7 +982,6 @@
     const userSubEl = document.getElementById("userSub");
     const avatarEl = document.getElementById("avatar");
     const statusEl = document.getElementById("status");
-    const videoEl = document.getElementById("video");
     const restartBtn = document.getElementById("restartBtn");
     const closeBtn = document.getElementById("closeBtn");
     const manualCodeEl = document.getElementById("manualCode");
@@ -993,6 +1011,7 @@
     let sendingNow = false;
     let currentStatusKey = "statusInit";
     let currentStatusType = "info";
+    let lastSentCode = "";
 
     function tr(key) {
       return i18n[currentLang][key] || i18n.ru[key] || key;
@@ -1103,7 +1122,9 @@
     });
 
     function normalizeCode(raw) {
-      return String(raw || "").trim().toUpperCase();
+      return String(raw || "")
+        .trim()
+        .toUpperCase();
     }
 
     function sendCodeToBot(code) {
@@ -1115,7 +1136,10 @@
       }
 
       if (sendingNow) return;
+      if (normalized === lastSentCode) return;
+
       sendingNow = true;
+      lastSentCode = normalized;
 
       setStatusByKey("statusCodeSent", "success");
 
@@ -1146,87 +1170,28 @@
       }
     }
 
-    async function loadHtml5QrcodeLib() {
-      if (window.Html5Qrcode) return;
-
-      await new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = "https://unpkg.com/html5-qrcode";
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-    }
-
     async function stopScanner() {
       try {
         if (html5QrCode && scannerStarted) {
           await html5QrCode.stop();
+        }
+      } catch (e) {}
+
+      try {
+        if (html5QrCode) {
           await html5QrCode.clear();
         }
-      } catch (e) {
-      } finally {
-        scannerStarted = false;
-      }
-
-      try {
-        const stream = videoEl.srcObject;
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-        }
-        videoEl.srcObject = null;
       } catch (e) {}
-    }
 
-    async function requestCameraPermission() {
-      try {
-        if (navigator.permissions && navigator.permissions.query) {
-          try {
-            const result = await navigator.permissions.query({ name: "camera" });
-            if (result.state === "granted") return true;
-          } catch (e) {}
-        }
-
-        const tempStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" } },
-          audio: false
-        });
-
-        tempStream.getTracks().forEach(track => track.stop());
-        return true;
-      } catch (e) {
-        return false;
-      }
+      scannerStarted = false;
     }
 
     async function startScanner() {
       try {
         setStatusByKey("statusLoading", "info");
-        await loadHtml5QrcodeLib();
-
-        const permissionGranted = await requestCameraPermission();
-        if (!permissionGranted) {
-          setStatusByKey("statusCameraError", "error");
-          return;
-        }
-
         await stopScanner();
 
-        const containerId = "qr-reader-hidden";
-        let container = document.getElementById(containerId);
-        if (!container) {
-          container = document.createElement("div");
-          container.id = containerId;
-          container.style.position = "fixed";
-          container.style.left = "-99999px";
-          container.style.top = "-99999px";
-          container.style.width = "1px";
-          container.style.height = "1px";
-          container.style.opacity = "0";
-          document.body.appendChild(container);
-        }
-
-        html5QrCode = new Html5Qrcode(containerId);
+        html5QrCode = new Html5Qrcode("reader");
 
         const cameras = await Html5Qrcode.getCameras();
         if (!cameras || !cameras.length) {
@@ -1245,7 +1210,13 @@
           {
             fps: 10,
             qrbox: { width: 260, height: 260 },
-            aspectRatio: 1
+            aspectRatio: 1,
+            disableFlip: false,
+            rememberLastUsedCamera: true,
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.QR_CODE,
+              Html5QrcodeSupportedFormats.DATA_MATRIX
+            ]
           },
           (decodedText) => {
             if (!decodedText || sendingNow) return;
@@ -1256,22 +1227,15 @@
 
         scannerStarted = true;
         setStatusByKey("statusReady", "info");
-
-        const media = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: "environment" }
-          },
-          audio: false
-        });
-
-        videoEl.srcObject = media;
-        await videoEl.play().catch(() => {});
       } catch (e) {
+        console.error("Scanner start error:", e);
         setStatusByKey("statusCameraError", "error");
       }
     }
 
     restartBtn.addEventListener("click", async () => {
+      lastSentCode = "";
+      sendingNow = false;
       await startScanner();
     });
 
