@@ -1,4 +1,4 @@
-print("=== LUX FINAL BUILD 2026-04-04 FULL FIX ===")
+print("=== LUX FINAL BUILD 2026-04-04 FULL FIX DATAMATRIX ===")
 
 import asyncio
 import csv
@@ -136,14 +136,14 @@ UI = {
         "my_level": "🏆 Ваш уровень: <b>{level}</b>\nБаллы: <b>{points}</b>\n\nУровни:\n• Silver: 0–299\n• Gold: 300–999\n• VIP: 1000+",
         "history_empty": "📜 История пока пустая.",
         "history_title": "📜 <b>Ваша история</b>\n",
-        "how": "ℹ️ <b>Как получить баллы</b>\n\n1. Нажмите кнопку «📷 Сканировать QR»\n2. Откроется mini app с камерой\n3. Наведите камеру на код\n4. Баллы начислятся автоматически\n\nОдин и тот же QR-код одному пользователю засчитывается только один раз.",
+        "how": "ℹ️ <b>Как получить баллы</b>\n\n1. Нажмите кнопку «📷 Сканировать QR»\n2. Откроется mini app с камерой\n3. Наведите камеру на QR-код или Data Matrix\n4. Баллы начислятся автоматически\n\nОдин и тот же код одному пользователю засчитывается только один раз.",
         "unknown_menu": "Выберите действие через меню.",
         "webapp_bad": "❌ Ошибка данных из WebApp.",
         "webapp_unknown": "⚠️ Неизвестное действие WebApp.",
-        "bad_code": "❌ Пустой или некорректный QR-код.",
-        "qr_not_found": "❌ Такой QR-код не найден.",
-        "qr_disabled": "⚠️ QR-код <b>{title}</b> отключён.",
-        "already_scanned": "⚠️ Вы уже сканировали этот QR-код.\n\nQR: <b>{title}</b>\nБаланс: <b>{points}</b>\nУровень: <b>{level}</b>",
+        "bad_code": "❌ Пустой или некорректный код.",
+        "qr_not_found": "❌ Такой код не найден.",
+        "qr_disabled": "⚠️ Код <b>{title}</b> отключён.",
+        "already_scanned": "⚠️ Вы уже сканировали этот код.\n\nQR: <b>{title}</b>\nБаланс: <b>{points}</b>\nУровень: <b>{level}</b>",
         "points_added": "✅ <b>Баллы начислены!</b>\n\nQR: <b>{title}</b>\nКод: <code>{code}</code>\nНачислено: <b>+{added}</b>\nБаланс: <b>{points}</b>\nУровень: <b>{level}</b>",
         "add_qr_prompt": "➕ <b>Добавление QR</b>\n\nОтправьте:\n<code>Название|Баллы</code>\nили\n<code>CODE|Название|Баллы</code>",
         "bulk_prompt": "📥 <b>Массовое добавление QR</b>\n\nОтправьте много строк одним сообщением.\n\nФорматы строк:\n<code>CODE</code>\n<code>CODE|Баллы</code>\n<code>CODE|Название|Баллы</code>",
@@ -197,14 +197,14 @@ UI = {
         "my_level": "🏆 Sizning darajangiz: <b>{level}</b>\nBallar: <b>{points}</b>\n\nDarajalar:\n• Silver: 0–299\n• Gold: 300–999\n• VIP: 1000+",
         "history_empty": "📜 Tarix hozircha bo‘sh.",
         "history_title": "📜 <b>Sizning tarixingiz</b>\n",
-        "how": "ℹ️ <b>Ballarni qanday olish mumkin</b>\n\n1. «📷 QR skanerlash» tugmasini bosing\n2. Kamera bilan mini app ochiladi\n3. Kamerani QR-kodga yo‘naltiring\n4. Ballar avtomatik qo‘shiladi\n\nBir xil QR-kod bitta foydalanuvchiga faqat bir marta hisoblanadi.",
+        "how": "ℹ️ <b>Ballarni qanday olish mumkin</b>\n\n1. «📷 QR skanerlash» tugmasini bosing\n2. Kamera bilan mini app ochiladi\n3. Kamerani QR-kod yoki Data Matrix ga yo‘naltiring\n4. Ballar avtomatik qo‘shiladi\n\nBir xil kod bitta foydalanuvchiga faqat bir marta hisoblanadi.",
         "unknown_menu": "Menyudan amalni tanlang.",
         "webapp_bad": "❌ WebApp ma’lumotlarida xatolik.",
         "webapp_unknown": "⚠️ Noma’lum WebApp harakati.",
-        "bad_code": "❌ Bo‘sh yoki noto‘g‘ri QR-kod.",
-        "qr_not_found": "❌ Bunday QR-kod topilmadi.",
-        "qr_disabled": "⚠️ <b>{title}</b> QR-kodi o‘chirilgan.",
-        "already_scanned": "⚠️ Siz bu QR-kodni avval skaner qilgansiz.\n\nQR: <b>{title}</b>\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>",
+        "bad_code": "❌ Bo‘sh yoki noto‘g‘ri kod.",
+        "qr_not_found": "❌ Bunday kod topilmadi.",
+        "qr_disabled": "⚠️ <b>{title}</b> kodi o‘chirilgan.",
+        "already_scanned": "⚠️ Siz bu kodni avval skaner qilgansiz.\n\nQR: <b>{title}</b>\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>",
         "points_added": "✅ <b>Ballar qo‘shildi!</b>\n\nQR: <b>{title}</b>\nKod: <code>{code}</code>\nQo‘shildi: <b>+{added}</b>\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>",
         "add_qr_prompt": "➕ <b>QR qo‘shish</b>\n\nYuboring:\n<code>Nomi|Ball</code>\nyoki\n<code>CODE|Nomi|Ball</code>",
         "bulk_prompt": "📥 <b>QRlarni ommaviy qo‘shish</b>\n\nBir xabarda ko‘p satr yuboring.\n\nFormatlar:\n<code>CODE</code>\n<code>CODE|Ball</code>\n<code>CODE|Nomi|Ball</code>",
@@ -258,14 +258,14 @@ UI = {
         "my_level": "🏆 Сатҳи шумо: <b>{level}</b>\nБаллҳо: <b>{points}</b>\n\nСатҳҳо:\n• Silver: 0–299\n• Gold: 300–999\n• VIP: 1000+",
         "history_empty": "📜 Таърих ҳоло холӣ аст.",
         "history_title": "📜 <b>Таърихи шумо</b>\n",
-        "how": "ℹ️ <b>Чӣ тавр балл гирифтан мумкин</b>\n\n1. Тугмаи «📷 QR-ро скан кардан»-ро пахш кунед\n2. Mini app бо камера кушода мешавад\n3. Камераро ба QR равона кунед\n4. Баллҳо худкор илова мешаванд\n\nЯк QR-код барои як корбар танҳо як бор ҳисоб карда мешавад.",
+        "how": "ℹ️ <b>Чӣ тавр балл гирифтан мумкин</b>\n\n1. Тугмаи «📷 QR-ро скан кардан»-ро пахш кунед\n2. Mini app бо камера кушода мешавад\n3. Камераро ба QR-код ё Data Matrix равона кунед\n4. Баллҳо худкор илова мешаванд\n\nЯк код барои як корбар танҳо як бор ҳисоб карда мешавад.",
         "unknown_menu": "Аз меню амалро интихоб кунед.",
         "webapp_bad": "❌ Хатогии маълумоти WebApp.",
         "webapp_unknown": "⚠️ Амали номаълуми WebApp.",
-        "bad_code": "❌ QR-коди холӣ ё нодуруст.",
-        "qr_not_found": "❌ Чунин QR-код ёфт нашуд.",
-        "qr_disabled": "⚠️ QR-коди <b>{title}</b> хомӯш аст.",
-        "already_scanned": "⚠️ Шумо ин QR-кодро аллакай скан кардаед.\n\nQR: <b>{title}</b>\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>",
+        "bad_code": "❌ Коди холӣ ё нодуруст.",
+        "qr_not_found": "❌ Чунин код ёфт нашуд.",
+        "qr_disabled": "⚠️ Код <b>{title}</b> хомӯш аст.",
+        "already_scanned": "⚠️ Шумо ин кодро аллакай скан кардаед.\n\nQR: <b>{title}</b>\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>",
         "points_added": "✅ <b>Баллҳо илова шуданд!</b>\n\nQR: <b>{title}</b>\nКод: <code>{code}</code>\nИлова шуд: <b>+{added}</b>\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>",
         "add_qr_prompt": "➕ <b>Иловаи QR</b>\n\nФиристед:\n<code>Ном|Балл</code>\nё\n<code>CODE|Ном|Балл</code>",
         "bulk_prompt": "📥 <b>Иловаи гурӯҳии QR</b>\n\nЯк паём бо чанд сатр фиристед.\n\nФорматҳо:\n<code>CODE</code>\n<code>CODE|Балл</code>\n<code>CODE|Ном|Балл</code>",
@@ -319,14 +319,14 @@ UI = {
         "my_level": "🏆 Your level: <b>{level}</b>\nPoints: <b>{points}</b>\n\nLevels:\n• Silver: 0–299\n• Gold: 300–999\n• VIP: 1000+",
         "history_empty": "📜 History is empty.",
         "history_title": "📜 <b>Your History</b>\n",
-        "how": "ℹ️ <b>How to Get Points</b>\n\n1. Press “📷 Scan QR”\n2. A mini app with camera will open\n3. Point the camera at the code\n4. Points will be credited automatically\n\nThe same QR code is counted only once per user.",
+        "how": "ℹ️ <b>How to Get Points</b>\n\n1. Press “📷 Scan QR”\n2. A mini app with camera will open\n3. Point the camera at the QR code or Data Matrix\n4. Points will be credited automatically\n\nThe same code is counted only once per user.",
         "unknown_menu": "Choose an action from the menu.",
         "webapp_bad": "❌ WebApp data error.",
         "webapp_unknown": "⚠️ Unknown WebApp action.",
-        "bad_code": "❌ Empty or invalid QR code.",
-        "qr_not_found": "❌ QR code not found.",
-        "qr_disabled": "⚠️ QR code <b>{title}</b> is disabled.",
-        "already_scanned": "⚠️ You have already scanned this QR code.\n\nQR: <b>{title}</b>\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>",
+        "bad_code": "❌ Empty or invalid code.",
+        "qr_not_found": "❌ Code not found.",
+        "qr_disabled": "⚠️ Code <b>{title}</b> is disabled.",
+        "already_scanned": "⚠️ You have already scanned this code.\n\nQR: <b>{title}</b>\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>",
         "points_added": "✅ <b>Points credited!</b>\n\nQR: <b>{title}</b>\nCode: <code>{code}</code>\nAdded: <b>+{added}</b>\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>",
         "add_qr_prompt": "➕ <b>Add QR</b>\n\nSend:\n<code>Title|Points</code>\nor\n<code>CODE|Title|Points</code>",
         "bulk_prompt": "📥 <b>Bulk QR upload</b>\n\nSend multiple lines in one message.\n\nFormats:\n<code>CODE</code>\n<code>CODE|Points</code>\n<code>CODE|Title|Points</code>",
@@ -391,12 +391,12 @@ def is_admin(user_id: int) -> bool:
 
 def normalize_code(raw: str) -> str:
     raw = (raw or "").strip().upper()
-    raw = re.sub(r"[^A-Z0-9_-]+", "", raw)
     return raw
 
 
 def normalize_bulk_code(raw: str) -> str:
-    raw = (raw or "").strip()
+    raw = (raw or "").strip().upper()
+
     replacements = {
         ">": "_", "<": "_", "!": "_", "&": "_", "'": "_", "\"": "_",
         ".": "_", ",": "_", " ": "_", "/": "_", "\\": "_", ":": "_",
@@ -404,11 +404,13 @@ def normalize_bulk_code(raw: str) -> str:
         "@": "_", "*": "_", "(": "_", ")": "_", "[": "_", "]": "_",
         "{": "_", "}": "_"
     }
+
     for old, new in replacements.items():
         raw = raw.replace(old, new)
+
     raw = re.sub(r"_+", "_", raw)
     raw = raw.strip("_")
-    return normalize_code(raw)
+    return raw
 
 
 def build_qr_link(code: str) -> str:
@@ -861,24 +863,53 @@ async def setup_menu_button():
         logging.warning("Menu button setup failed: %s", e)
 
 
-async def process_qr_scan_atomic(user_id: int, code: str):
+def find_qr_match(raw_code: str):
+    raw_code = (raw_code or "").strip()
+    if not raw_code:
+        return None, None, None
+
+    exact_raw = raw_code.upper()
+    normalized = normalize_bulk_code(raw_code)
+
+    row = db_fetchone("SELECT * FROM qr_codes WHERE UPPER(code) = ?", (exact_raw,))
+    if row:
+        return row, exact_raw, "exact"
+
+    row = db_fetchone("SELECT * FROM qr_codes WHERE UPPER(code) = ?", (normalized,))
+    if row:
+        return row, normalized, "normalized"
+
+    return None, normalized, "not_found"
+
+
+async def process_qr_scan_atomic(user_id: int, incoming_code: str):
     async with db_lock:
         def _process(conn: sqlite3.Connection):
             cur = conn.cursor()
 
-            cur.execute("SELECT * FROM qr_codes WHERE code = ?", (code,))
-            qr_row = cur.fetchone()
+            qr_row, matched_code, match_type = find_qr_match(incoming_code)
+
             if not qr_row:
-                return {"status": "not_found"}
+                return {
+                    "status": "not_found",
+                    "incoming_code": incoming_code,
+                    "normalized_code": normalize_bulk_code(incoming_code)
+                }
 
             if int(qr_row["is_active"]) != 1:
-                return {"status": "disabled", "qr": qr_row}
+                return {
+                    "status": "disabled",
+                    "qr": qr_row,
+                    "matched_code": matched_code,
+                    "match_type": match_type
+                }
 
             cur.execute(
                 "SELECT id FROM scans WHERE user_id = ? AND qr_code_id = ?",
                 (user_id, qr_row["id"])
             )
             already = cur.fetchone()
+
             if already:
                 cur.execute("SELECT points FROM users WHERE user_id = ?", (user_id,))
                 user_row = cur.fetchone()
@@ -887,19 +918,24 @@ async def process_qr_scan_atomic(user_id: int, code: str):
                     "status": "already_scanned",
                     "qr": qr_row,
                     "points": points,
-                    "level": get_level(points)
+                    "level": get_level(points),
+                    "matched_code": matched_code,
+                    "match_type": match_type
                 }
 
             ts = now_str()
+
             cur.execute(
                 "INSERT INTO scans (user_id, qr_code_id, scanned_at) VALUES (?, ?, ?)",
                 (user_id, qr_row["id"], ts)
             )
+
             cur.execute("""
                 UPDATE users
                 SET points = points + ?, updated_at = ?
                 WHERE user_id = ?
             """, (int(qr_row["points"]), ts, user_id))
+
             cur.execute("SELECT points FROM users WHERE user_id = ?", (user_id,))
             user_row = cur.fetchone()
             points = int(user_row["points"]) if user_row else 0
@@ -909,7 +945,9 @@ async def process_qr_scan_atomic(user_id: int, code: str):
                 "qr": qr_row,
                 "added": int(qr_row["points"]),
                 "points": points,
-                "level": get_level(points)
+                "level": get_level(points),
+                "matched_code": matched_code,
+                "match_type": match_type
             }
 
         return db_run_write(_process)
@@ -937,7 +975,7 @@ async def start_handler(message: Message, command: CommandStart):
 
     deep_arg = command.args
     if deep_arg and deep_arg.startswith("qr_"):
-        code = normalize_code(deep_arg[3:])
+        code = deep_arg[3:]
         await process_qr_scan(message, code)
         return
 
@@ -986,19 +1024,30 @@ async def webapp_data_handler(message: Message):
     try:
         data = json.loads(raw)
     except Exception:
-        await message.answer(t(message.from_user.id, "webapp_bad"), reply_markup=menu_kb(message.from_user.id))
+        await message.answer(
+            t(message.from_user.id, "webapp_bad"),
+            reply_markup=menu_kb(message.from_user.id)
+        )
         return
 
     action = str(data.get("action", "")).strip().lower()
+
     if action == "scan_qr":
-        code = normalize_bulk_code(str(data.get("code", "")))
-        if not code:
-            await message.answer(t(message.from_user.id, "bad_code"), reply_markup=menu_kb(message.from_user.id))
+        raw_code = str(data.get("code", "")).strip()
+        if not raw_code:
+            await message.answer(
+                t(message.from_user.id, "bad_code"),
+                reply_markup=menu_kb(message.from_user.id)
+            )
             return
-        await process_qr_scan(message, code)
+
+        await process_qr_scan(message, raw_code)
         return
 
-    await message.answer(t(message.from_user.id, "webapp_unknown"), reply_markup=menu_kb(message.from_user.id))
+    await message.answer(
+        t(message.from_user.id, "webapp_unknown"),
+        reply_markup=menu_kb(message.from_user.id)
+    )
 
 
 async def process_qr_scan(message: Message, code: str):
@@ -1008,13 +1057,23 @@ async def process_qr_scan(message: Message, code: str):
         result = await process_qr_scan_atomic(message.from_user.id, code)
     except Exception as e:
         logging.exception("process_qr_scan_atomic error: %s", e)
-        await message.answer(t(message.from_user.id, "internal_error"), reply_markup=menu_kb(message.from_user.id))
+        await message.answer(
+            t(message.from_user.id, "internal_error"),
+            reply_markup=menu_kb(message.from_user.id)
+        )
         return
 
     status = result["status"]
 
     if status == "not_found":
-        await message.answer(t(message.from_user.id, "qr_not_found"), reply_markup=menu_kb(message.from_user.id))
+        incoming_code = esc(result.get("incoming_code", ""))
+        normalized_code = esc(result.get("normalized_code", ""))
+        await message.answer(
+            f"{t(message.from_user.id, 'qr_not_found')}\n\n"
+            f"RAW: <code>{incoming_code}</code>\n"
+            f"NORMALIZED: <code>{normalized_code}</code>",
+            reply_markup=menu_kb(message.from_user.id)
+        )
         return
 
     if status == "disabled":
@@ -1055,7 +1114,10 @@ async def process_qr_scan(message: Message, code: str):
         )
         return
 
-    await message.answer(t(message.from_user.id, "internal_error"), reply_markup=menu_kb(message.from_user.id))
+    await message.answer(
+        t(message.from_user.id, "internal_error"),
+        reply_markup=menu_kb(message.from_user.id)
+    )
 
 
 @dp.message(F.text.in_(set(POINTS_TEXT.values())))
