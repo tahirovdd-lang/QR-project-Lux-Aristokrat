@@ -1,3 +1,5 @@
+print("=== NEW MAIN.PY VERSION 2 ===")
+
 import asyncio
 import logging
 import os
@@ -6,30 +8,29 @@ import sys
 
 logging.basicConfig(level=logging.INFO)
 
-
-def ensure_package(package: str):
-    try:
-        __import__(package)
-        logging.info("Package %s already installed", package)
-    except ModuleNotFoundError:
-        logging.warning("Package %s not found. Installing...", package)
-        subprocess.check_call([
-            sys.executable, "-m", "pip", "install", "--no-cache-dir", "aiogram==3.22.0"
-        ])
-
-
-ensure_package("aiogram")
-
-from aiogram import Bot, Dispatcher
-from aiogram.client.default import DefaultBotProperties
-from aiogram.filters import CommandStart
-from aiogram.types import Message
+try:
+    from aiogram import Bot, Dispatcher
+    from aiogram.client.default import DefaultBotProperties
+    from aiogram.filters import CommandStart
+    from aiogram.types import Message
+except ModuleNotFoundError:
+    print("=== AIROGRAM NOT FOUND, INSTALLING... ===")
+    subprocess.check_call([
+        sys.executable, "-m", "pip", "install", "--no-cache-dir", "aiogram==3.22.0"
+    ])
+    from aiogram import Bot, Dispatcher
+    from aiogram.client.default import DefaultBotProperties
+    from aiogram.filters import CommandStart
+    from aiogram.types import Message
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN not found")
 
-bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
+bot = Bot(
+    token=BOT_TOKEN,
+    default=DefaultBotProperties(parse_mode="HTML")
+)
 dp = Dispatcher()
 
 
