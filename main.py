@@ -1,7 +1,13 @@
 import asyncio
+import logging
 import os
+
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.filters import CommandStart
+from aiogram.types import Message
+
+logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
@@ -10,10 +16,17 @@ if not BOT_TOKEN:
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
+
+@dp.message(CommandStart())
+async def start_handler(message: Message):
+    await message.answer("✅ Бот Lux Aristokrat запущен и отвечает на /start")
+
+
 async def main():
-    print("Bot started successfully")
+    logging.info("Bot started successfully")
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
