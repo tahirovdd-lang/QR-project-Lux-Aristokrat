@@ -100,6 +100,9 @@ LANG_BUTTONS = {
     "🇬🇧 EN": "en",
 }
 
+BACK_TEXT = {"ru": "🔙 Назад", "uz": "🔙 Orqaga", "tj": "🔙 Бозгашт", "en": "🔙 Back"}
+CANCEL_TEXT = {"ru": "❌ Отмена", "uz": "❌ Bekor qilish", "tj": "❌ Бекор кардан", "en": "❌ Cancel"}
+
 SCAN_TEXT = {"ru": "📷 Сканировать QR", "uz": "📷 QR skanerlash", "tj": "📷 QR-ро скан кардан", "en": "📷 Scan QR"}
 POINTS_TEXT = {"ru": "💎 Мои баллы", "uz": "💎 Mening ballarim", "tj": "💎 Баллҳои ман", "en": "💎 My Points"}
 HISTORY_TEXT = {"ru": "📜 История", "uz": "📜 Tarix", "tj": "📜 Таърих", "en": "📜 History"}
@@ -154,6 +157,7 @@ UI = {
         "top_title": "🥇 <b>Топ пользователей</b>\n",
         "users_none": "Пользователей пока нет.",
         "cancelled": "Отменено.",
+        "backed": "Возврат в главное меню.",
         "bulk_done": "📥 <b>Bulk QR завершён</b>",
         "bulk_created": "✅ Создано: <b>{n}</b>",
         "bulk_skipped": "⚠️ Пропущено: <b>{n}</b>",
@@ -212,6 +216,7 @@ UI = {
         "top_title": "🥇 <b>Top foydalanuvchilar</b>\n",
         "users_none": "Foydalanuvchilar hali yo‘q.",
         "cancelled": "Bekor qilindi.",
+        "backed": "Asosiy menyuga qaytildi.",
         "bulk_done": "📥 <b>Bulk QR tugadi</b>",
         "bulk_created": "✅ Yaratildi: <b>{n}</b>",
         "bulk_skipped": "⚠️ O‘tkazib yuborildi: <b>{n}</b>",
@@ -270,6 +275,7 @@ UI = {
         "top_title": "🥇 <b>Беҳтарин корбарон</b>\n",
         "users_none": "Ҳоло корбарон нестанд.",
         "cancelled": "Бекор карда шуд.",
+        "backed": "Бозгашт ба менюи асосӣ.",
         "bulk_done": "📥 <b>Bulk QR анҷом ёфт</b>",
         "bulk_created": "✅ Сохта шуд: <b>{n}</b>",
         "bulk_skipped": "⚠️ Гузаронида шуд: <b>{n}</b>",
@@ -328,6 +334,7 @@ UI = {
         "top_title": "🥇 <b>Top Users</b>\n",
         "users_none": "No users yet.",
         "cancelled": "Cancelled.",
+        "backed": "Returned to main menu.",
         "bulk_done": "📥 <b>Bulk QR completed</b>",
         "bulk_created": "✅ Created: <b>{n}</b>",
         "bulk_skipped": "⚠️ Skipped: <b>{n}</b>",
@@ -369,12 +376,6 @@ def esc(value) -> str:
 
 def is_admin(user_id: int) -> bool:
     return user_id in ADMIN_IDS
-
-
-def tg_label(user) -> str:
-    if user.username:
-        return f"@{user.username}"
-    return user.full_name or str(user.id)
 
 
 def normalize_code(raw: str) -> str:
@@ -467,7 +468,6 @@ def init_db():
         )
     """)
 
-    # Миграции для старых баз
     add_column_if_missing(conn, "users", "username", "TEXT")
     add_column_if_missing(conn, "users", "full_name", "TEXT")
     add_column_if_missing(conn, "users", "phone", "TEXT")
@@ -480,7 +480,6 @@ def init_db():
     add_column_if_missing(conn, "qr_codes", "created_by", "INTEGER")
     add_column_if_missing(conn, "qr_codes", "created_at", "TEXT NOT NULL DEFAULT ''")
 
-    # Чиним пустые значения в старых строках
     ts = now_str()
     cur.execute("UPDATE users SET language = 'ru' WHERE language IS NULL OR TRIM(language) = ''")
     cur.execute("UPDATE users SET points = 0 WHERE points IS NULL")
@@ -790,6 +789,16 @@ def lang_kb() -> ReplyKeyboardMarkup:
     )
 
 
+def admin_mode_kb(user_id: int) -> ReplyKeyboardMarkup:
+    lang = get_lang(user_id)
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text=BACK_TEXT[lang]), KeyboardButton(text=CANCEL_TEXT[lang])]
+        ],
+        resize_keyboard=True
+    )
+
+
 def main_kb(user_id: int) -> ReplyKeyboardMarkup:
     lang = get_lang(user_id)
     rows = [[KeyboardButton(text=SCAN_TEXT[lang], web_app=WebAppInfo(url=WEBAPP_URL))]]
@@ -884,7 +893,8 @@ async def myid_handler(message: Message):
             admin="YES" if is_admin(message.from_user.id) else "NO",
             admin_id=ADMIN_ID,
             admin_ids=",".join(str(x) for x in sorted(ADMIN_IDS)) or "EMPTY"
-        )
+        ),
+        reply_markup=main_kb(message.from_user.id)
     )
 
 
@@ -1013,7 +1023,7 @@ async def add_qr_enter(message: Message):
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "add_qr"}
-    await message.answer(t(message.from_user.id, "add_qr_prompt"))
+    await message.answer(t(message.from_user.id, "add_qr_prompt"), reply_markup=admin_mode_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(BULK_QR_TEXT.values())))
@@ -1023,7 +1033,7 @@ async def bulk_qr_enter(message: Message):
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "bulk_qr"}
-    await message.answer(t(message.from_user.id, "bulk_prompt"))
+    await message.answer(t(message.from_user.id, "bulk_prompt"), reply_markup=admin_mode_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(LIST_QR_TEXT.values())))
@@ -1035,7 +1045,7 @@ async def list_qr_handler(message: Message):
 
     rows = list_qr(50)
     if not rows:
-        await message.answer(t(message.from_user.id, "qr_list_empty"))
+        await message.answer(t(message.from_user.id, "qr_list_empty"), reply_markup=main_kb(message.from_user.id))
         return
 
     lines = [t(message.from_user.id, "qr_list_title")]
@@ -1047,7 +1057,7 @@ async def list_qr_handler(message: Message):
             f"Код: <code>{esc(row['code'])}</code>\n"
             f"Баллы: <b>{int(row['points'])}</b>\n"
         )
-    await message.answer("\n".join(lines))
+    await message.answer("\n".join(lines), reply_markup=main_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(DISABLE_QR_TEXT.values())))
@@ -1056,7 +1066,7 @@ async def disable_qr_enter(message: Message):
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "disable_qr"}
-    await message.answer(t(message.from_user.id, "disable_prompt"))
+    await message.answer(t(message.from_user.id, "disable_prompt"), reply_markup=admin_mode_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(ENABLE_QR_TEXT.values())))
@@ -1065,7 +1075,7 @@ async def enable_qr_enter(message: Message):
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "enable_qr"}
-    await message.answer(t(message.from_user.id, "enable_prompt"))
+    await message.answer(t(message.from_user.id, "enable_prompt"), reply_markup=admin_mode_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(DELETE_QR_TEXT.values())))
@@ -1074,7 +1084,7 @@ async def delete_qr_enter(message: Message):
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "delete_qr"}
-    await message.answer(t(message.from_user.id, "delete_prompt"))
+    await message.answer(t(message.from_user.id, "delete_prompt"), reply_markup=admin_mode_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(PNG_QR_TEXT.values())))
@@ -1083,7 +1093,7 @@ async def png_qr_enter(message: Message):
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "make_png"}
-    await message.answer(t(message.from_user.id, "png_prompt"))
+    await message.answer(t(message.from_user.id, "png_prompt"), reply_markup=admin_mode_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(ADD_POINTS_TEXT.values())))
@@ -1092,7 +1102,7 @@ async def add_points_enter(message: Message):
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "add_points"}
-    await message.answer(t(message.from_user.id, "add_points_prompt"))
+    await message.answer(t(message.from_user.id, "add_points_prompt"), reply_markup=admin_mode_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(REMOVE_POINTS_TEXT.values())))
@@ -1101,7 +1111,7 @@ async def remove_points_enter(message: Message):
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "remove_points"}
-    await message.answer(t(message.from_user.id, "remove_points_prompt"))
+    await message.answer(t(message.from_user.id, "remove_points_prompt"), reply_markup=admin_mode_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(FIND_USER_TEXT.values())))
@@ -1110,7 +1120,7 @@ async def find_user_enter(message: Message):
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "find_user"}
-    await message.answer(t(message.from_user.id, "find_user_prompt"))
+    await message.answer(t(message.from_user.id, "find_user_prompt"), reply_markup=admin_mode_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(STATS_TEXT.values())))
@@ -1132,7 +1142,7 @@ async def stats_handler(message: Message):
         for i, row in enumerate(top, start=1):
             name = row["full_name"] or row["username"] or row["user_id"]
             lines.append(f"{i}. {esc(name)} — <b>{int(row['points'])}</b> ({get_level(int(row['points']))})")
-    await message.answer("\n".join(lines))
+    await message.answer("\n".join(lines), reply_markup=main_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(EXPORT_USERS_TEXT.values())))
@@ -1141,7 +1151,7 @@ async def export_users_handler(message: Message):
     if not is_admin(message.from_user.id):
         return
     path = export_users_csv()
-    await message.answer_document(FSInputFile(path), caption=t(message.from_user.id, "export_users_done"))
+    await message.answer_document(FSInputFile(path), caption=t(message.from_user.id, "export_users_done"), reply_markup=main_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(EXPORT_SCANS_TEXT.values())))
@@ -1150,7 +1160,7 @@ async def export_scans_handler(message: Message):
     if not is_admin(message.from_user.id):
         return
     path = export_scans_csv()
-    await message.answer_document(FSInputFile(path), caption=t(message.from_user.id, "export_scans_done"))
+    await message.answer_document(FSInputFile(path), caption=t(message.from_user.id, "export_scans_done"), reply_markup=main_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(TOP_TEXT.values())))
@@ -1161,7 +1171,7 @@ async def top_users_handler(message: Message):
 
     rows = get_top_users(20)
     if not rows:
-        await message.answer(t(message.from_user.id, "users_none"))
+        await message.answer(t(message.from_user.id, "users_none"), reply_markup=main_kb(message.from_user.id))
         return
 
     lines = [t(message.from_user.id, "top_title")]
@@ -1174,11 +1184,25 @@ async def top_users_handler(message: Message):
             f"   Баллы: <b>{points}</b>\n"
             f"   Уровень: <b>{get_level(points)}</b>\n"
         )
-    await message.answer("\n".join(lines))
+    await message.answer("\n".join(lines), reply_markup=main_kb(message.from_user.id))
 
 
 @dp.message(Command("cancel"))
 async def cancel_handler(message: Message):
+    ensure_user_in_db(message.from_user)
+    admin_states.pop(message.from_user.id, None)
+    await message.answer(t(message.from_user.id, "cancelled"), reply_markup=main_kb(message.from_user.id))
+
+
+@dp.message(F.text.in_(set(BACK_TEXT.values())))
+async def back_handler(message: Message):
+    ensure_user_in_db(message.from_user)
+    admin_states.pop(message.from_user.id, None)
+    await message.answer(t(message.from_user.id, "backed"), reply_markup=main_kb(message.from_user.id))
+
+
+@dp.message(F.text.in_(set(CANCEL_TEXT.values())))
+async def cancel_button_handler(message: Message):
     ensure_user_in_db(message.from_user)
     admin_states.pop(message.from_user.id, None)
     await message.answer(t(message.from_user.id, "cancelled"), reply_markup=main_kb(message.from_user.id))
@@ -1257,7 +1281,7 @@ async def text_router(message: Message):
             for item in skipped[:20]:
                 lines.append(item)
 
-        await message.answer("\n".join(lines))
+        await message.answer("\n".join(lines), reply_markup=main_kb(message.from_user.id))
         return
 
     if mode == "add_qr":
@@ -1270,7 +1294,7 @@ async def text_router(message: Message):
                 custom_code, title, points_str = parts
                 code = create_qr(title=title, points=int(points_str), created_by=message.from_user.id, custom_code=custom_code)
             else:
-                await message.answer(t(message.from_user.id, "wrong_format"))
+                await message.answer(t(message.from_user.id, "wrong_format"), reply_markup=admin_mode_kb(message.from_user.id))
                 return
 
             row = get_qr_by_code(code)
@@ -1289,60 +1313,61 @@ async def text_router(message: Message):
                 ),
                 reply_markup=qr_link_kb(code)
             )
+            await message.answer("✅ Готово", reply_markup=main_kb(message.from_user.id))
             return
         except sqlite3.IntegrityError:
-            await message.answer(t(message.from_user.id, "code_exists"))
+            await message.answer(t(message.from_user.id, "code_exists"), reply_markup=admin_mode_kb(message.from_user.id))
             return
         except (ValueError, TypeError):
-            await message.answer(t(message.from_user.id, "points_number"))
+            await message.answer(t(message.from_user.id, "points_number"), reply_markup=admin_mode_kb(message.from_user.id))
             return
 
     if mode == "disable_qr":
         if not text.isdigit():
-            await message.answer(t(message.from_user.id, "id_number"))
+            await message.answer(t(message.from_user.id, "id_number"), reply_markup=admin_mode_kb(message.from_user.id))
             return
         row = get_qr_by_id(int(text))
         if not row:
-            await message.answer(t(message.from_user.id, "qr_missing"))
+            await message.answer(t(message.from_user.id, "qr_missing"), reply_markup=admin_mode_kb(message.from_user.id))
             return
         set_qr_active(int(text), False)
         admin_states.pop(message.from_user.id, None)
-        await message.answer(t(message.from_user.id, "qr_disabled_ok", title=esc(row["title"])))
+        await message.answer(t(message.from_user.id, "qr_disabled_ok", title=esc(row["title"])), reply_markup=main_kb(message.from_user.id))
         return
 
     if mode == "enable_qr":
         if not text.isdigit():
-            await message.answer(t(message.from_user.id, "id_number"))
+            await message.answer(t(message.from_user.id, "id_number"), reply_markup=admin_mode_kb(message.from_user.id))
             return
         row = get_qr_by_id(int(text))
         if not row:
-            await message.answer(t(message.from_user.id, "qr_missing"))
+            await message.answer(t(message.from_user.id, "qr_missing"), reply_markup=admin_mode_kb(message.from_user.id))
             return
         set_qr_active(int(text), True)
         admin_states.pop(message.from_user.id, None)
-        await message.answer(t(message.from_user.id, "qr_enabled_ok", title=esc(row["title"])))
+        await message.answer(t(message.from_user.id, "qr_enabled_ok", title=esc(row["title"])), reply_markup=main_kb(message.from_user.id))
         return
 
     if mode == "delete_qr":
         if not text.isdigit():
-            await message.answer(t(message.from_user.id, "id_number"))
+            await message.answer(t(message.from_user.id, "id_number"), reply_markup=admin_mode_kb(message.from_user.id))
             return
         row = get_qr_by_id(int(text))
         if not row:
-            await message.answer(t(message.from_user.id, "qr_missing"))
+            await message.answer(t(message.from_user.id, "qr_missing"), reply_markup=admin_mode_kb(message.from_user.id))
             return
         delete_qr(int(text))
         admin_states.pop(message.from_user.id, None)
-        await message.answer(t(message.from_user.id, "qr_deleted_ok", title=esc(row["title"])))
+        await message.answer(t(message.from_user.id, "qr_deleted_ok", title=esc(row["title"])), reply_markup=main_kb(message.from_user.id))
         return
 
     if mode == "make_png":
         if not text.isdigit():
-            await message.answer(t(message.from_user.id, "id_number"))
+            await message.answer(t(message.from_user.id, "id_number"), reply_markup=admin_mode_kb(message.from_user.id))
             return
         row = get_qr_by_id(int(text))
         if not row:
-            await message.answer(t(message.from_user.id, "qr_missing"))
+            await message.answer(t(message.from_user.id, "qr_missing"), reply_markup=admin_mode_kb(message.from_user.id))
             return
 
         png = save_qr_png(row["code"])
@@ -1360,25 +1385,26 @@ async def text_router(message: Message):
             ),
             reply_markup=qr_link_kb(row["code"])
         )
+        await message.answer("✅ Готово", reply_markup=main_kb(message.from_user.id))
         return
 
     if mode == "add_points":
         parts = [p.strip() for p in text.split("|")]
         try:
             if len(parts) != 2 or not parts[0].isdigit():
-                await message.answer(t(message.from_user.id, "wrong_format"))
+                await message.answer(t(message.from_user.id, "wrong_format"), reply_markup=admin_mode_kb(message.from_user.id))
                 return
 
             user_id = int(parts[0])
             points = int(parts[1])
 
             if points <= 0:
-                await message.answer(t(message.from_user.id, "points_number"))
+                await message.answer(t(message.from_user.id, "points_number"), reply_markup=admin_mode_kb(message.from_user.id))
                 return
 
             user_row = get_user_by_id(user_id)
             if not user_row:
-                await message.answer(t(message.from_user.id, "user_not_found"))
+                await message.answer(t(message.from_user.id, "user_not_found"), reply_markup=admin_mode_kb(message.from_user.id))
                 return
 
             change_user_points(user_id, points)
@@ -1386,7 +1412,8 @@ async def text_router(message: Message):
             admin_states.pop(message.from_user.id, None)
 
             await message.answer(
-                t(message.from_user.id, "add_points_ok", user_id=user_id, added=points, points=new_points, level=get_level(new_points))
+                t(message.from_user.id, "add_points_ok", user_id=user_id, added=points, points=new_points, level=get_level(new_points)),
+                reply_markup=main_kb(message.from_user.id)
             )
             try:
                 await bot.send_message(
@@ -1397,26 +1424,26 @@ async def text_router(message: Message):
                 pass
             return
         except (ValueError, TypeError):
-            await message.answer(t(message.from_user.id, "wrong_format"))
+            await message.answer(t(message.from_user.id, "wrong_format"), reply_markup=admin_mode_kb(message.from_user.id))
             return
 
     if mode == "remove_points":
         parts = [p.strip() for p in text.split("|")]
         try:
             if len(parts) != 2 or not parts[0].isdigit():
-                await message.answer(t(message.from_user.id, "wrong_format"))
+                await message.answer(t(message.from_user.id, "wrong_format"), reply_markup=admin_mode_kb(message.from_user.id))
                 return
 
             user_id = int(parts[0])
             points = int(parts[1])
 
             if points <= 0:
-                await message.answer(t(message.from_user.id, "points_number"))
+                await message.answer(t(message.from_user.id, "points_number"), reply_markup=admin_mode_kb(message.from_user.id))
                 return
 
             user_row = get_user_by_id(user_id)
             if not user_row:
-                await message.answer(t(message.from_user.id, "user_not_found"))
+                await message.answer(t(message.from_user.id, "user_not_found"), reply_markup=admin_mode_kb(message.from_user.id))
                 return
 
             change_user_points(user_id, -points)
@@ -1424,7 +1451,8 @@ async def text_router(message: Message):
             admin_states.pop(message.from_user.id, None)
 
             await message.answer(
-                t(message.from_user.id, "remove_points_ok", user_id=user_id, removed=points, points=new_points, level=get_level(new_points))
+                t(message.from_user.id, "remove_points_ok", user_id=user_id, removed=points, points=new_points, level=get_level(new_points)),
+                reply_markup=main_kb(message.from_user.id)
             )
             try:
                 await bot.send_message(
@@ -1435,17 +1463,17 @@ async def text_router(message: Message):
                 pass
             return
         except (ValueError, TypeError):
-            await message.answer(t(message.from_user.id, "wrong_format"))
+            await message.answer(t(message.from_user.id, "wrong_format"), reply_markup=admin_mode_kb(message.from_user.id))
             return
 
     if mode == "find_user":
         if not text.isdigit():
-            await message.answer(t(message.from_user.id, "id_number"))
+            await message.answer(t(message.from_user.id, "id_number"), reply_markup=admin_mode_kb(message.from_user.id))
             return
 
         user_row = get_user_by_id(int(text))
         if not user_row:
-            await message.answer(t(message.from_user.id, "user_not_found"))
+            await message.answer(t(message.from_user.id, "user_not_found"), reply_markup=admin_mode_kb(message.from_user.id))
             return
 
         history = get_user_history(int(text), 5)
@@ -1471,7 +1499,7 @@ async def text_router(message: Message):
             lines.append(t(message.from_user.id, "history_none"))
 
         admin_states.pop(message.from_user.id, None)
-        await message.answer("\n".join(lines))
+        await message.answer("\n".join(lines), reply_markup=main_kb(message.from_user.id))
         return
 
     await message.answer(t(message.from_user.id, "unknown_menu"), reply_markup=main_kb(message.from_user.id))
