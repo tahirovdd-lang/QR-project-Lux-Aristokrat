@@ -416,7 +416,12 @@ def build_qr_link(code: str) -> str:
 
 
 def get_conn() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_FILE, timeout=30, check_same_thread=False, isolation_level=None)
+    conn = sqlite3.connect(
+        DB_FILE,
+        timeout=30,
+        check_same_thread=False,
+        isolation_level=None
+    )
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA synchronous=NORMAL;")
@@ -448,17 +453,11 @@ def db_run_write(fn, retries: int = 8):
                 return result
         except sqlite3.OperationalError as e:
             last_error = e
-            msg = str(e).lower()
-            if "database is locked" in msg or "database table is locked" in msg:
-                sleep_for = 0.2 * (attempt + 1)
-                logging.warning("Database locked. Retry %s/%s in %.1fs", attempt + 1, retries, sleep_for)
-                time.sleep(sleep_for)
+            if "locked" in str(e).lower():
+                time.sleep(0.2 * (attempt + 1))
                 continue
             raise
-        except Exception:
-            raise
-    if last_error:
-        raise last_error
+    raise last_error
 
 
 def db_fetchone(query: str, params=(), retries: int = 5):
@@ -471,16 +470,11 @@ def db_fetchone(query: str, params=(), retries: int = 5):
                 return cur.fetchone()
         except sqlite3.OperationalError as e:
             last_error = e
-            msg = str(e).lower()
-            if "database is locked" in msg or "database table is locked" in msg:
-                sleep_for = 0.15 * (attempt + 1)
-                logging.warning("Database locked on fetchone. Retry %s/%s in %.1fs", attempt + 1, retries, sleep_for)
-                time.sleep(sleep_for)
+            if "locked" in str(e).lower():
+                time.sleep(0.15 * (attempt + 1))
                 continue
             raise
-    if last_error:
-        raise last_error
-    return None
+    raise last_error
 
 
 def db_fetchall(query: str, params=(), retries: int = 5):
@@ -493,16 +487,11 @@ def db_fetchall(query: str, params=(), retries: int = 5):
                 return cur.fetchall()
         except sqlite3.OperationalError as e:
             last_error = e
-            msg = str(e).lower()
-            if "database is locked" in msg or "database table is locked" in msg:
-                sleep_for = 0.15 * (attempt + 1)
-                logging.warning("Database locked on fetchall. Retry %s/%s in %.1fs", attempt + 1, retries, sleep_for)
-                time.sleep(sleep_for)
+            if "locked" in str(e).lower():
+                time.sleep(0.15 * (attempt + 1))
                 continue
             raise
-    if last_error:
-        raise last_error
-    return []
+    raise last_error
 
 
 def column_exists(conn: sqlite3.Connection, table_name: str, column_name: str) -> bool:
