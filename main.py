@@ -16,17 +16,14 @@ if not BOT_TOKEN:
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
-
 @dp.message(CommandStart())
 async def start_handler(message: Message):
-    await message.answer("✅ Бот Lux Aristokrat запущен и отвечает на /start")
-
+    await message.answer("✅ Lux Aristokrat bot работает")
 
 async def main():
     logging.info("Bot started successfully")
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
