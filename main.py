@@ -1,4 +1,4 @@
-print("=== LUX ARISTOKRAT FINAL MAIN.PY WITH BULK QR ===")
+print("=== LUX ARISTOKRAT FINAL LOGIC VERSION ===")
 
 import asyncio
 import csv
@@ -27,7 +27,6 @@ try:
         FSInputFile,
     )
 except ModuleNotFoundError:
-    print("=== AIOGRAM NOT FOUND, INSTALLING... ===")
     subprocess.check_call([
         sys.executable, "-m", "pip", "install", "--no-cache-dir", "aiogram==3.22.0"
     ])
@@ -46,11 +45,11 @@ except ModuleNotFoundError:
 try:
     import qrcode
 except ModuleNotFoundError:
-    print("=== QRCODE NOT FOUND, INSTALLING... ===")
     subprocess.check_call([
         sys.executable, "-m", "pip", "install", "--no-cache-dir", "qrcode==8.2", "pillow==11.3.0"
     ])
     import qrcode
+
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
@@ -71,7 +70,9 @@ DB_FILE = os.path.join(DATA_DIR, DB_PATH) if not os.path.isabs(DB_PATH) else DB_
 
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
+
 admin_states: dict[int, dict] = {}
+user_states: dict[int, dict] = {}
 
 
 def now_str() -> str:
@@ -475,8 +476,9 @@ def export_scans_csv() -> str:
 
 def main_kb(user_id: int) -> ReplyKeyboardMarkup:
     rows = [
-        [KeyboardButton(text="💎 Мои баллы"), KeyboardButton(text="📜 История")],
-        [KeyboardButton(text="🏆 Мой уровень"), KeyboardButton(text="ℹ️ Как получить баллы")],
+        [KeyboardButton(text="📷 Сканировать QR"), KeyboardButton(text="💎 Мои баллы")],
+        [KeyboardButton(text="📜 История"), KeyboardButton(text="🏆 Мой уровень")],
+        [KeyboardButton(text="ℹ️ Как получить баллы")],
     ]
 
     if is_admin(user_id):
@@ -511,7 +513,7 @@ def welcome_text(user) -> str:
         f"• получать бонусные баллы\n"
         f"• смотреть историю начислений\n"
         f"• отслеживать свой уровень\n\n"
-        f"Нажмите <b>«💎 Мои баллы»</b>."
+        f"Нажмите <b>«📷 Сканировать QR»</b> или <b>«💎 Мои баллы»</b>."
     )
 
 
@@ -585,6 +587,18 @@ async def process_qr_scan(message: Message, code: str):
             logging.warning("Admin notify error: %s", e)
 
 
+@dp.message(F.text == "📷 Сканировать QR")
+async def scan_qr_enter(message: Message):
+    user_states[message.from_user.id] = {"mode": "scan_qr"}
+    await message.answer(
+        "📷 <b>Сканирование QR</b>\n\n"
+        "Отправьте код QR вручную одним сообщением.\n\n"
+        "Например:\n"
+        "<code>046201464492952IPVCNRAE0VAGJP</code>",
+        reply_markup=main_kb(message.from_user.id)
+    )
+
+
 @dp.message(F.text == "💎 Мои баллы")
 async def my_points_handler(message: Message):
     ensure_user_in_db(message.from_user)
@@ -636,7 +650,7 @@ async def how_to_get_handler(message: Message):
     await message.answer(
         "ℹ️ <b>Как получить баллы</b>\n\n"
         "1. Отсканируйте QR-код Lux Aristokrat\n"
-        "2. Откроется бот\n"
+        "2. Откроется бот или нажмите кнопку «📷 Сканировать QR»\n"
         "3. Баллы начислятся автоматически\n\n"
         "Один и тот же QR-код одному пользователю засчитывается только один раз.",
         reply_markup=main_kb(message.from_user.id)
@@ -673,11 +687,7 @@ async def bulk_qr_enter(message: Message):
         "<code>CODE|Баллы</code>\n"
         "<code>CODE|Название|Баллы</code>\n\n"
         "Если указать только CODE — будет название <b>QR CODE</b> и 10 баллов.\n"
-        "Если указать CODE|Баллы — название будет <b>QR CODE</b>.\n\n"
-        "Пример:\n"
-        "<code>ABC123</code>\n"
-        "<code>ABC124|15</code>\n"
-        "<code>ABC125|Подарочный QR|25</code>"
+        "Если указать CODE|Баллы — название будет <b>QR CODE</b>."
     )
 
 
@@ -829,12 +839,25 @@ async def top_users_handler(message: Message):
 @dp.message(Command("cancel"))
 async def cancel_handler(message: Message):
     admin_states.pop(message.from_user.id, None)
+    user_states.pop(message.from_user.id, None)
     await message.answer("Отменено.", reply_markup=main_kb(message.from_user.id))
 
 
 @dp.message(F.text)
 async def text_router(message: Message):
     ensure_user_in_db(message.from_user)
+
+    user_state = user_states.get(message.from_user.id)
+    if user_state and user_state.get("mode") == "scan_qr":
+        code = normalize_bulk_code(message.text or "")
+        user_states.pop(message.from_user.id, None)
+
+        if not code:
+            await message.answer("❌ Пустой или некорректный QR-код.", reply_markup=main_kb(message.from_user.id))
+            return
+
+        await process_qr_scan(message, code)
+        return
 
     if not is_admin(message.from_user.id):
         await message.answer("Выберите действие через меню.", reply_markup=main_kb(message.from_user.id))
@@ -866,18 +889,15 @@ async def text_router(message: Message):
                     code = normalize_bulk_code(raw_code)
                     title = f"QR {code}"
                     points = 10
-
                 elif len(parts) == 2:
                     raw_code, points_str = parts
                     code = normalize_bulk_code(raw_code)
                     title = f"QR {code}"
                     points = int(points_str)
-
                 elif len(parts) == 3:
                     raw_code, title, points_str = parts
                     code = normalize_bulk_code(raw_code)
                     points = int(points_str)
-
                 else:
                     skipped.append(f"{idx}. Неверный формат: {esc(line)}")
                     continue
@@ -890,12 +910,7 @@ async def text_router(message: Message):
                     skipped.append(f"{idx}. Баллы должны быть > 0: {esc(line)}")
                     continue
 
-                create_qr(
-                    title=title,
-                    points=points,
-                    created_by=message.from_user.id,
-                    custom_code=code
-                )
+                create_qr(title=title, points=points, created_by=message.from_user.id, custom_code=code)
                 created.append((code, title, points))
 
             except sqlite3.IntegrityError:
@@ -918,9 +933,7 @@ async def text_router(message: Message):
             lines.append("")
             lines.append("<b>Созданные QR:</b>")
             for i, (code, title, points) in enumerate(created[:20], start=1):
-                lines.append(
-                    f"{i}. <code>{esc(code)}</code> — {esc(title)} — <b>{points}</b>"
-                )
+                lines.append(f"{i}. <code>{esc(code)}</code> — {esc(title)} — <b>{points}</b>")
             if len(created) > 20:
                 lines.append(f"... и ещё {len(created) - 20}")
 
