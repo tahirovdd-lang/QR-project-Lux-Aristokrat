@@ -1,7 +1,8 @@
-print("=== LUX ARISTOKRAT FINAL LOGIC VERSION ===")
+print("=== LUX ARISTOKRAT CAMERA WEBAPP VERSION ===")
 
 import asyncio
 import csv
+import json
 import logging
 import os
 import re
@@ -15,7 +16,7 @@ from urllib.parse import quote
 logging.basicConfig(level=logging.INFO)
 
 try:
-    from aiogram import Bot, Dispatcher, F
+    from aiogram import Bot, Dispatcher, F, types
     from aiogram.client.default import DefaultBotProperties
     from aiogram.filters import CommandStart, Command
     from aiogram.types import (
@@ -25,12 +26,14 @@ try:
         InlineKeyboardMarkup,
         InlineKeyboardButton,
         FSInputFile,
+        WebAppInfo,
+        MenuButtonWebApp,
     )
 except ModuleNotFoundError:
     subprocess.check_call([
         sys.executable, "-m", "pip", "install", "--no-cache-dir", "aiogram==3.22.0"
     ])
-    from aiogram import Bot, Dispatcher, F
+    from aiogram import Bot, Dispatcher, F, types
     from aiogram.client.default import DefaultBotProperties
     from aiogram.filters import CommandStart, Command
     from aiogram.types import (
@@ -40,6 +43,8 @@ except ModuleNotFoundError:
         InlineKeyboardMarkup,
         InlineKeyboardButton,
         FSInputFile,
+        WebAppInfo,
+        MenuButtonWebApp,
     )
 
 try:
@@ -56,9 +61,24 @@ if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN not found")
 
 BOT_USERNAME = os.getenv("BOT_USERNAME", "QR_Lux_Aristokrat_bot").replace("@", "").strip()
-ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/QR-project-Lux-Aristokrat/").strip()
 DB_PATH = os.getenv("DB_PATH", "lux_aristokrat.db")
 DATA_DIR = os.getenv("DATA_DIR", "/app/data")
+
+# Можно указать одного или нескольких админов:
+# ADMIN_ID=123456
+# или ADMIN_IDS=123456,987654
+ADMIN_ID = int(os.getenv("ADMIN_ID", "0") or "0")
+ADMIN_IDS_RAW = os.getenv("ADMIN_IDS", "").strip()
+
+ADMIN_IDS = set()
+if ADMIN_ID:
+    ADMIN_IDS.add(ADMIN_ID)
+if ADMIN_IDS_RAW:
+    for x in ADMIN_IDS_RAW.split(","):
+        x = x.strip()
+        if x.isdigit():
+            ADMIN_IDS.add(int(x))
 
 os.makedirs(DATA_DIR, exist_ok=True)
 QR_DIR = os.path.join(DATA_DIR, "generated_qr")
@@ -72,7 +92,6 @@ bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
 admin_states: dict[int, dict] = {}
-user_states: dict[int, dict] = {}
 
 
 def now_str() -> str:
@@ -86,7 +105,7 @@ def esc(value) -> str:
 
 
 def is_admin(user_id: int) -> bool:
-    return user_id == ADMIN_ID
+    return user_id in ADMIN_IDS
 
 
 def tg_label(user) -> str:
@@ -476,9 +495,9 @@ def export_scans_csv() -> str:
 
 def main_kb(user_id: int) -> ReplyKeyboardMarkup:
     rows = [
-        [KeyboardButton(text="📷 Сканировать QR"), KeyboardButton(text="💎 Мои баллы")],
-        [KeyboardButton(text="📜 История"), KeyboardButton(text="🏆 Мой уровень")],
-        [KeyboardButton(text="ℹ️ Как получить баллы")],
+        [KeyboardButton(text="📷 Сканировать QR", web_app=WebAppInfo(url=WEBAPP_URL))],
+        [KeyboardButton(text="💎 Мои баллы"), KeyboardButton(text="📜 История")],
+        [KeyboardButton(text="🏆 Мой уровень"), KeyboardButton(text="ℹ️ Как получить баллы")],
     ]
 
     if is_admin(user_id):
@@ -504,6 +523,10 @@ def qr_link_kb(code: str) -> InlineKeyboardMarkup:
 
 
 def welcome_text(user) -> str:
+    admin_part = ""
+    if is_admin(user.id):
+        admin_part = "\n\n<b>Вы вошли как администратор.</b> Вам доступны загрузка и управление QR."
+
     return (
         f"✨ <b>Lux Aristokrat</b>\n\n"
         f"Здравствуйте, {esc(user.full_name)}!\n"
@@ -512,14 +535,39 @@ def welcome_text(user) -> str:
         f"• сканировать QR-коды\n"
         f"• получать бонусные баллы\n"
         f"• смотреть историю начислений\n"
-        f"• отслеживать свой уровень\n\n"
-        f"Нажмите <b>«📷 Сканировать QR»</b> или <b>«💎 Мои баллы»</b>."
+        f"• отслеживать свой уровень\n"
+        f"{admin_part}\n\n"
+        f"Нажмите <b>«📷 Сканировать QR»</b>."
     )
+
+
+async def setup_menu_button():
+    try:
+        await bot.set_chat_menu_button(
+            menu_button=MenuButtonWebApp(
+                text="Сканер QR",
+                web_app=WebAppInfo(url=WEBAPP_URL)
+            )
+        )
+        logging.info("Menu button WebApp set successfully")
+    except Exception as e:
+        logging.warning("Menu button setup failed: %s", e)
 
 
 @dp.message(CommandStart())
 async def start_handler(message: Message, command: CommandStart):
     ensure_user_in_db(message.from_user)
+
+    try:
+        await bot.set_chat_menu_button(
+            chat_id=message.chat.id,
+            menu_button=MenuButtonWebApp(
+                text="Сканер QR",
+                web_app=WebAppInfo(url=WEBAPP_URL)
+            )
+        )
+    except Exception as e:
+        logging.warning("Per-chat menu button setup failed: %s", e)
 
     deep_arg = command.args
     if deep_arg and deep_arg.startswith("qr_"):
@@ -528,6 +576,40 @@ async def start_handler(message: Message, command: CommandStart):
         return
 
     await message.answer(welcome_text(message.from_user), reply_markup=main_kb(message.from_user.id))
+
+
+@dp.message(Command("myid"))
+async def myid_handler(message: Message):
+    await message.answer(
+        f"Ваш Telegram ID: <code>{message.from_user.id}</code>\n"
+        f"Admin access: <b>{'YES' if is_admin(message.from_user.id) else 'NO'}</b>"
+    )
+
+
+@dp.message(F.web_app_data)
+async def webapp_data_handler(message: Message):
+    ensure_user_in_db(message.from_user)
+
+    raw = message.web_app_data.data
+    logging.info("WEB_APP_DATA RAW: %s", raw)
+
+    try:
+        data = json.loads(raw)
+    except Exception:
+        await message.answer("❌ Ошибка данных из WebApp.", reply_markup=main_kb(message.from_user.id))
+        return
+
+    action = str(data.get("action", "")).strip().lower()
+
+    if action == "scan_qr":
+        code = normalize_bulk_code(str(data.get("code", "")))
+        if not code:
+            await message.answer("❌ Пустой или некорректный QR-код.", reply_markup=main_kb(message.from_user.id))
+            return
+        await process_qr_scan(message, code)
+        return
+
+    await message.answer("⚠️ Неизвестное действие WebApp.", reply_markup=main_kb(message.from_user.id))
 
 
 async def process_qr_scan(message: Message, code: str):
@@ -565,38 +647,28 @@ async def process_qr_scan(message: Message, code: str):
     await message.answer(
         f"✅ <b>Баллы начислены!</b>\n\n"
         f"QR: <b>{esc(qr_row['title'])}</b>\n"
+        f"Код: <code>{esc(qr_row['code'])}</code>\n"
         f"Начислено: <b>+{int(qr_row['points'])}</b>\n"
         f"Баланс: <b>{new_points}</b>\n"
         f"Уровень: <b>{level}</b>",
         reply_markup=main_kb(message.from_user.id)
     )
 
-    if ADMIN_ID:
-        try:
-            await bot.send_message(
-                ADMIN_ID,
-                f"📥 <b>Новый скан QR</b>\n\n"
-                f"ID QR: <code>{qr_row['id']}</code>\n"
-                f"Код: <code>{esc(qr_row['code'])}</code>\n"
-                f"Название: <b>{esc(qr_row['title'])}</b>\n"
-                f"Баллы: <b>{int(qr_row['points'])}</b>\n\n"
-                f"Пользователь: {esc(tg_label(message.from_user))}\n"
-                f"User ID: <code>{message.from_user.id}</code>"
-            )
-        except Exception as e:
-            logging.warning("Admin notify error: %s", e)
-
-
-@dp.message(F.text == "📷 Сканировать QR")
-async def scan_qr_enter(message: Message):
-    user_states[message.from_user.id] = {"mode": "scan_qr"}
-    await message.answer(
-        "📷 <b>Сканирование QR</b>\n\n"
-        "Отправьте код QR вручную одним сообщением.\n\n"
-        "Например:\n"
-        "<code>046201464492952IPVCNRAE0VAGJP</code>",
-        reply_markup=main_kb(message.from_user.id)
-    )
+    if ADMIN_IDS:
+        for admin_id in ADMIN_IDS:
+            try:
+                await bot.send_message(
+                    admin_id,
+                    f"📥 <b>Новый скан QR</b>\n\n"
+                    f"ID QR: <code>{qr_row['id']}</code>\n"
+                    f"Код: <code>{esc(qr_row['code'])}</code>\n"
+                    f"Название: <b>{esc(qr_row['title'])}</b>\n"
+                    f"Баллы: <b>{int(qr_row['points'])}</b>\n\n"
+                    f"Пользователь: {esc(tg_label(message.from_user))}\n"
+                    f"User ID: <code>{message.from_user.id}</code>"
+                )
+            except Exception as e:
+                logging.warning("Admin notify error for %s: %s", admin_id, e)
 
 
 @dp.message(F.text == "💎 Мои баллы")
@@ -649,9 +721,10 @@ async def history_handler(message: Message):
 async def how_to_get_handler(message: Message):
     await message.answer(
         "ℹ️ <b>Как получить баллы</b>\n\n"
-        "1. Отсканируйте QR-код Lux Aristokrat\n"
-        "2. Откроется бот или нажмите кнопку «📷 Сканировать QR»\n"
-        "3. Баллы начислятся автоматически\n\n"
+        "1. Нажмите кнопку «📷 Сканировать QR»\n"
+        "2. Откроется mini app с камерой\n"
+        "3. Наведите камеру на код\n"
+        "4. Баллы начислятся автоматически\n\n"
         "Один и тот же QR-код одному пользователю засчитывается только один раз.",
         reply_markup=main_kb(message.from_user.id)
     )
@@ -839,25 +912,12 @@ async def top_users_handler(message: Message):
 @dp.message(Command("cancel"))
 async def cancel_handler(message: Message):
     admin_states.pop(message.from_user.id, None)
-    user_states.pop(message.from_user.id, None)
     await message.answer("Отменено.", reply_markup=main_kb(message.from_user.id))
 
 
 @dp.message(F.text)
 async def text_router(message: Message):
     ensure_user_in_db(message.from_user)
-
-    user_state = user_states.get(message.from_user.id)
-    if user_state and user_state.get("mode") == "scan_qr":
-        code = normalize_bulk_code(message.text or "")
-        user_states.pop(message.from_user.id, None)
-
-        if not code:
-            await message.answer("❌ Пустой или некорректный QR-код.", reply_markup=main_kb(message.from_user.id))
-            return
-
-        await process_qr_scan(message, code)
-        return
 
     if not is_admin(message.from_user.id):
         await message.answer("Выберите действие через меню.", reply_markup=main_kb(message.from_user.id))
@@ -1165,6 +1225,7 @@ async def text_router(message: Message):
 
 async def main():
     init_db()
+    await setup_menu_button()
     logging.info("Bot started successfully")
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
