@@ -2,680 +2,282 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Lux Aristokrat — Бонусная система</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0d0d0f" />
+  <title>Lux Aristokrat Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#09090b;
-      --bg-soft:#111114;
-      --card:rgba(255,255,255,.06);
-      --card-strong:rgba(255,255,255,.08);
-      --stroke:rgba(255,255,255,.12);
+      --bg:#0b0b0d;
+      --card:#141418;
+      --stroke:rgba(255,255,255,.10);
       --gold:#d4af37;
-      --gold-2:#f2d777;
-      --text:#ffffff;
+      --gold2:#f2d777;
+      --text:#fff;
       --muted:rgba(255,255,255,.72);
-      --shadow:0 20px 60px rgba(0,0,0,.45);
-      --radius:24px;
+      --radius:22px;
     }
 
-    *{
-      box-sizing:border-box;
-      -webkit-tap-highlight-color:transparent;
-    }
-
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{
       margin:0;
       padding:0;
-      min-height:100%;
-      font-family:'Montserrat', sans-serif;
+      background:linear-gradient(180deg,#0a0a0c,#111114);
       color:var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(212,175,55,.18), transparent 30%),
-        radial-gradient(circle at top right, rgba(212,175,55,.08), transparent 22%),
-        linear-gradient(180deg, #0b0b0d 0%, #111114 100%);
-      overflow-x:hidden;
+      font-family:'Montserrat',sans-serif;
+      min-height:100%;
     }
 
-    body{
-      display:flex;
-      justify-content:center;
+    body{padding:16px;}
+
+    .wrap{
+      width:min(100%,760px);
+      margin:0 auto;
     }
 
-    .page{
-      width:min(100%, 1180px);
-      padding:24px 16px 56px;
-    }
-
-    .hero{
-      position:relative;
-      overflow:hidden;
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03));
       border:1px solid var(--stroke);
-      border-radius:32px;
-      padding:32px 22px 28px;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02)),
-        linear-gradient(145deg, rgba(212,175,55,.08), transparent 40%);
-      box-shadow:var(--shadow);
-      backdrop-filter: blur(10px);
+      border-radius:24px;
+      padding:18px;
+      box-shadow:0 18px 40px rgba(0,0,0,.35);
+      margin-bottom:16px;
     }
 
-    .hero::before{
-      content:"";
-      position:absolute;
-      width:240px;
-      height:240px;
-      border-radius:50%;
-      background:radial-gradient(circle, rgba(212,175,55,.28), transparent 70%);
-      right:-40px;
-      top:-40px;
-      filter:blur(6px);
-      pointer-events:none;
-    }
-
-    .hero-top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:20px;
-      flex-wrap:wrap;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      min-width:0;
-    }
-
-    .brand-logo{
-      width:64px;
-      height:64px;
-      border-radius:20px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+    .title{
       font-size:28px;
       font-weight:800;
-      background:linear-gradient(135deg, #2a2a2f, #111114);
-      border:1px solid rgba(212,175,55,.26);
-      box-shadow:0 12px 28px rgba(0,0,0,.35);
-      flex:0 0 auto;
-    }
-
-    .brand-copy{
-      min-width:0;
-    }
-
-    .brand-name{
-      font-size:30px;
-      font-weight:800;
-      line-height:1;
-      letter-spacing:.3px;
-    }
-
-    .brand-sub{
-      margin-top:6px;
-      font-size:14px;
-      color:var(--muted);
-      font-weight:500;
-      line-height:1.35;
-    }
-
-    .badge{
-      padding:10px 14px;
-      border-radius:999px;
-      background:rgba(212,175,55,.12);
-      border:1px solid rgba(212,175,55,.28);
-      color:#fff4c3;
-      font-size:13px;
-      font-weight:700;
-      white-space:nowrap;
-    }
-
-    .hero-content{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:22px;
-      margin-top:24px;
-      align-items:stretch;
-    }
-
-    .hero-text{
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      min-width:0;
-    }
-
-    .hero-title{
-      font-size:40px;
-      line-height:1.08;
-      font-weight:800;
-      margin:0;
+      line-height:1.1;
+      margin:0 0 10px;
     }
 
     .gold{
-      background:linear-gradient(135deg, var(--gold), var(--gold-2));
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
       -webkit-background-clip:text;
       -webkit-text-fill-color:transparent;
       background-clip:text;
       color:transparent;
     }
 
-    .hero-desc{
-      margin-top:16px;
-      font-size:17px;
-      line-height:1.7;
+    .sub{
       color:var(--muted);
-      max-width:700px;
+      font-size:14px;
+      line-height:1.7;
     }
 
-    .hero-actions{
+    #reader{
+      width:100%;
+      overflow:hidden;
+      border-radius:18px;
+      background:#000;
+      min-height:280px;
+    }
+
+    .actions{
       display:flex;
-      gap:12px;
+      gap:10px;
       flex-wrap:wrap;
-      margin-top:22px;
+      margin-top:14px;
     }
 
     .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      min-height:54px;
-      padding:0 22px;
-      border-radius:18px;
-      text-decoration:none;
+      border:none;
+      border-radius:16px;
+      min-height:50px;
+      padding:0 18px;
       font-weight:800;
-      transition:.2s ease;
-      border:1px solid transparent;
+      font-size:14px;
       cursor:pointer;
     }
 
     .btn-primary{
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
       color:#111;
-      background:linear-gradient(135deg, var(--gold), var(--gold-2));
-      box-shadow:0 14px 28px rgba(212,175,55,.18);
     }
 
     .btn-secondary{
+      background:rgba(255,255,255,.06);
       color:#fff;
-      background:rgba(255,255,255,.05);
-      border-color:var(--stroke);
-    }
-
-    .btn:hover{
-      transform:translateY(-2px);
-    }
-
-    .hero-panel{
-      border-radius:28px;
-      padding:18px;
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       border:1px solid var(--stroke);
-      box-shadow:var(--shadow);
     }
 
-    .panel-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:14px;
-    }
-
-    .panel-title{
-      font-size:16px;
-      font-weight:800;
-    }
-
-    .panel-mini{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:600;
-    }
-
-    .levels{
-      display:grid;
-      gap:10px;
-    }
-
-    .level-card{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      border-radius:18px;
-      padding:14px 14px;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .level-left{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-
-    .level-icon{
-      width:42px;
-      height:42px;
-      border-radius:14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:18px;
-      background:rgba(212,175,55,.12);
-      border:1px solid rgba(212,175,55,.22);
-      flex:0 0 auto;
-    }
-
-    .level-name{
-      font-size:15px;
-      font-weight:800;
-    }
-
-    .level-desc{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:3px;
-      font-weight:600;
-    }
-
-    .level-points{
-      font-size:13px;
-      font-weight:800;
-      color:#fff4c3;
-      white-space:nowrap;
-    }
-
-    .section{
-      margin-top:24px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0,1fr));
-      gap:18px;
-    }
-
-    .card{
-      border-radius:24px;
-      padding:22px 18px;
-      background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.03));
-      border:1px solid var(--stroke);
-      box-shadow:var(--shadow);
-      min-width:0;
-    }
-
-    .card-icon{
-      width:48px;
-      height:48px;
+    .field{
+      width:100%;
+      min-height:52px;
       border-radius:16px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:21px;
-      margin-bottom:14px;
-      background:rgba(212,175,55,.12);
-      border:1px solid rgba(212,175,55,.22);
-    }
-
-    .card-title{
-      font-size:18px;
-      font-weight:800;
-      margin-bottom:10px;
-    }
-
-    .card-text{
-      font-size:14px;
-      line-height:1.7;
-      color:var(--muted);
-    }
-
-    .how{
-      display:grid;
-      grid-template-columns:repeat(4, minmax(0,1fr));
-      gap:18px;
-      margin-top:18px;
-    }
-
-    .step{
-      position:relative;
-      border-radius:22px;
-      padding:20px 16px;
-      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
       border:1px solid var(--stroke);
-      box-shadow:var(--shadow);
-      min-width:0;
+      background:rgba(255,255,255,.04);
+      color:#fff;
+      padding:14px 14px;
+      font-size:14px;
+      outline:none;
+      margin-top:10px;
     }
 
-    .step-num{
-      width:36px;
-      height:36px;
-      border-radius:12px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:15px;
-      font-weight:800;
-      background:linear-gradient(135deg, var(--gold), var(--gold-2));
-      color:#111;
-      margin-bottom:14px;
+    .status{
+      margin-top:12px;
+      font-size:14px;
+      color:#fff4c3;
+      min-height:22px;
+      font-weight:700;
     }
 
-    .step-title{
-      font-size:16px;
-      font-weight:800;
-      margin-bottom:8px;
-    }
-
-    .step-text{
-      font-size:13px;
-      line-height:1.65;
-      color:var(--muted);
-    }
-
-    .cta{
-      margin-top:24px;
-      border-radius:28px;
-      padding:24px 22px;
-      background:
-        linear-gradient(135deg, rgba(212,175,55,.12), rgba(255,255,255,.03)),
-        rgba(255,255,255,.03);
-      border:1px solid rgba(212,175,55,.24);
-      box-shadow:var(--shadow);
-      text-align:center;
-    }
-
-    .cta-title{
-      font-size:28px;
-      font-weight:800;
-      margin:0;
-    }
-
-    .cta-text{
-      margin:12px auto 0;
-      max-width:760px;
-      color:var(--muted);
-      font-size:15px;
-      line-height:1.75;
-    }
-
-    .cta-actions{
-      display:flex;
-      justify-content:center;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-top:18px;
-    }
-
-    .footer{
-      margin-top:28px;
-      text-align:center;
-      color:rgba(255,255,255,.5);
+    .hint{
+      margin-top:8px;
       font-size:12px;
-      font-weight:600;
+      color:var(--muted);
+      line-height:1.6;
     }
 
-    @media (max-width: 980px){
-      .hero-content{
-        grid-template-columns:1fr;
-      }
-
-      .grid{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .how{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .hero-title{
-        font-size:34px;
-      }
-    }
-
-    @media (max-width: 640px){
-      .page{
-        padding:14px 12px 34px;
-      }
-
-      .hero{
-        padding:22px 14px 18px;
-        border-radius:24px;
-      }
-
-      .brand-logo{
-        width:56px;
-        height:56px;
-        font-size:24px;
-      }
-
-      .brand-name{
-        font-size:24px;
-      }
-
-      .hero-title{
-        font-size:28px;
-      }
-
-      .hero-desc{
-        font-size:15px;
-      }
-
-      .grid,
-      .how{
-        grid-template-columns:1fr;
-      }
-
-      .cta-title{
-        font-size:24px;
-      }
+    @media (max-width:640px){
+      .title{font-size:24px}
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <section class="hero">
-      <div class="hero-top">
-        <div class="brand">
-          <div class="brand-logo">💎</div>
-          <div class="brand-copy">
-            <div class="brand-name">Lux Aristokrat</div>
-            <div class="brand-sub">Премиальная бонусная система для клиентов</div>
-          </div>
-        </div>
-        <div class="badge">QR • Баллы • Уровни • Привилегии</div>
+  <div class="wrap">
+    <div class="card">
+      <h1 class="title"><span class="gold">Lux Aristokrat</span> QR Scanner</h1>
+      <div class="sub">
+        Нажмите «Запустить камеру» и наведите телефон на QR-код.  
+        Если камера недоступна, вставьте код вручную.
+      </div>
+    </div>
+
+    <div class="card">
+      <div id="reader"></div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="startBtn">📷 Запустить камеру</button>
+        <button class="btn btn-secondary" id="stopBtn">⛔ Остановить</button>
       </div>
 
-      <div class="hero-content">
-        <div class="hero-text">
-          <h1 class="hero-title">
-            Сканируйте QR, получайте <span class="gold">бонусные баллы</span> и открывайте новые уровни.
-          </h1>
-          <div class="hero-desc">
-            Lux Aristokrat — это современная система лояльности, в которой клиент получает баллы за сканирование QR-кодов, следит за историей начислений, повышает уровень и открывает доступ к привилегиям.
-          </div>
-
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="https://t.me/QR_Lux_Aristokrat_bot" target="_blank" rel="noopener noreferrer">
-              🚀 Открыть Telegram-бота
-            </a>
-            <a class="btn btn-secondary" href="#how">
-              📘 Как это работает
-            </a>
-          </div>
-        </div>
-
-        <div class="hero-panel">
-          <div class="panel-head">
-            <div class="panel-title">Уровни клиента</div>
-            <div class="panel-mini">Чем выше уровень — тем больше возможностей</div>
-          </div>
-
-          <div class="levels">
-            <div class="level-card">
-              <div class="level-left">
-                <div class="level-icon">🥈</div>
-                <div>
-                  <div class="level-name">Silver</div>
-                  <div class="level-desc">Стартовый уровень участника программы</div>
-                </div>
-              </div>
-              <div class="level-points">0–299</div>
-            </div>
-
-            <div class="level-card">
-              <div class="level-left">
-                <div class="level-icon">🥇</div>
-                <div>
-                  <div class="level-name">Gold</div>
-                  <div class="level-desc">Повышенный статус и больше бонусов</div>
-                </div>
-              </div>
-              <div class="level-points">300–999</div>
-            </div>
-
-            <div class="level-card">
-              <div class="level-left">
-                <div class="level-icon">👑</div>
-                <div>
-                  <div class="level-name">VIP</div>
-                  <div class="level-desc">Максимальный статус для привилегированных клиентов</div>
-                </div>
-              </div>
-              <div class="level-points">1000+</div>
-            </div>
-          </div>
-        </div>
+      <input id="manualCode" class="field" placeholder="Или вставьте QR-код вручную" />
+      <div class="actions">
+        <button class="btn btn-primary" id="sendManualBtn">✅ Отправить код</button>
       </div>
-    </section>
 
-    <section class="section">
-      <div class="grid">
-        <div class="card">
-          <div class="card-icon">📷</div>
-          <div class="card-title">Сканирование QR</div>
-          <div class="card-text">
-            Клиент сканирует QR-код или вводит его вручную в Telegram-боте. Система распознаёт код и начисляет баллы автоматически.
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-icon">💎</div>
-          <div class="card-title">Бонусный баланс</div>
-          <div class="card-text">
-            В боте можно в любой момент проверить текущий баланс, посмотреть свой уровень и контролировать накопленные бонусы.
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-icon">📜</div>
-          <div class="card-title">История начислений</div>
-          <div class="card-text">
-            Пользователь видит историю сканов и начисленных баллов, а администратор контролирует статистику и активность в системе.
-          </div>
-        </div>
+      <div class="status" id="status">Готово к сканированию</div>
+      <div class="hint">
+        WebApp работает внутри Telegram. Камера открывается только по кнопке и на HTTPS.
       </div>
-    </section>
-
-    <section class="section" id="how">
-      <div class="cta" style="text-align:left;">
-        <h2 class="cta-title">Как это работает</h2>
-        <div class="cta-text" style="margin-left:0; max-width:none;">
-          Система построена максимально просто для клиента и удобно для администратора.
-        </div>
-
-        <div class="how">
-          <div class="step">
-            <div class="step-num">1</div>
-            <div class="step-title">Откройте бота</div>
-            <div class="step-text">
-              Перейдите в Telegram-бот Lux Aristokrat и нажмите кнопку старта.
-            </div>
-          </div>
-
-          <div class="step">
-            <div class="step-num">2</div>
-            <div class="step-title">Сканируйте QR</div>
-            <div class="step-text">
-              Отсканируйте QR-код или используйте кнопку «Сканировать QR» и введите код вручную.
-            </div>
-          </div>
-
-          <div class="step">
-            <div class="step-num">3</div>
-            <div class="step-title">Получите баллы</div>
-            <div class="step-text">
-              После проверки кода бот автоматически начислит бонусные баллы на ваш аккаунт.
-            </div>
-          </div>
-
-          <div class="step">
-            <div class="step-num">4</div>
-            <div class="step-title">Повышайте уровень</div>
-            <div class="step-text">
-              Копите баллы, переходите на Gold и VIP и получайте дополнительные преимущества.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="grid">
-        <div class="card">
-          <div class="card-icon">🛡️</div>
-          <div class="card-title">Защита от повторов</div>
-          <div class="card-text">
-            Один и тот же QR-код не может быть повторно засчитан одному и тому же пользователю, что защищает бонусную систему от дублей.
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-icon">⚙️</div>
-          <div class="card-title">Админ-контроль</div>
-          <div class="card-text">
-            Администратор может добавлять QR-коды, массово загружать их, отключать, включать, удалять и выгружать статистику в CSV.
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-icon">📈</div>
-          <div class="card-title">Рост лояльности</div>
-          <div class="card-text">
-            Чем чаще клиент взаимодействует с брендом, тем выше его вовлечённость, уровень и ценность для программы лояльности.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="cta">
-      <h2 class="cta-title">Подключайтесь к Lux Aristokrat</h2>
-      <div class="cta-text">
-        Откройте бота, начните сканировать QR-коды и накапливать бонусы уже сейчас. Быстро, удобно и премиально.
-      </div>
-      <div class="cta-actions">
-        <a class="btn btn-primary" href="https://t.me/QR_Lux_Aristokrat_bot" target="_blank" rel="noopener noreferrer">
-          Открыть бота
-        </a>
-        <a class="btn btn-secondary" href="#how">
-          Узнать подробнее
-        </a>
-      </div>
-    </section>
-
-    <div class="footer">
-      © Lux Aristokrat • Бонусная система • Telegram Loyalty Experience
     </div>
   </div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      try {
+        tg.setHeaderColor?.("#0b0b0d");
+        tg.setBackgroundColor?.("#0b0b0d");
+      } catch (_) {}
+    }
+
+    const statusEl = document.getElementById("status");
+    const manualCodeEl = document.getElementById("manualCode");
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const sendManualBtn = document.getElementById("sendManualBtn");
+
+    let qrScanner = null;
+    let scannerStarted = false;
+
+    function setStatus(text) {
+      statusEl.textContent = text || "";
+    }
+
+    function normalizeLocalCode(v) {
+      return String(v || "")
+        .trim()
+        .replace(/[><!&'" .,\/\\:;?=+#%@*()\[\]{}]+/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "");
+    }
+
+    function sendCode(code) {
+      const normalized = normalizeLocalCode(code);
+      if (!normalized) {
+        setStatus("Некорректный QR-код");
+        return;
+      }
+
+      const payload = {
+        action: "scan_qr",
+        code: normalized
+      };
+
+      try {
+        tg.sendData(JSON.stringify(payload));
+        setStatus("Код отправлен в бота");
+        setTimeout(() => {
+          tg.close();
+        }, 500);
+      } catch (e) {
+        setStatus("Ошибка отправки: " + e.message);
+      }
+    }
+
+    async function startScanner() {
+      try {
+        if (!qrScanner) {
+          qrScanner = new Html5Qrcode("reader");
+        }
+
+        if (scannerStarted) {
+          setStatus("Камера уже запущена");
+          return;
+        }
+
+        await qrScanner.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 240, height: 240 },
+            aspectRatio: 1.333334
+          },
+          (decodedText) => {
+            setStatus("QR найден: " + decodedText);
+            stopScanner().finally(() => sendCode(decodedText));
+          },
+          () => {}
+        );
+
+        scannerStarted = true;
+        setStatus("Камера запущена. Наведите на QR-код.");
+      } catch (e) {
+        setStatus("Не удалось открыть камеру. Используйте ручной ввод.");
+      }
+    }
+
+    async function stopScanner() {
+      try {
+        if (qrScanner && scannerStarted) {
+          await qrScanner.stop();
+          await qrScanner.clear();
+          scannerStarted = false;
+          setStatus("Камера остановлена");
+        }
+      } catch (_) {}
+    }
+
+    startBtn.addEventListener("click", startScanner);
+    stopBtn.addEventListener("click", stopScanner);
+
+    sendManualBtn.addEventListener("click", () => {
+      sendCode(manualCodeEl.value);
+    });
+
+    manualCodeEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendCode(manualCodeEl.value);
+      }
+    });
+  </script>
 </body>
 </html>
