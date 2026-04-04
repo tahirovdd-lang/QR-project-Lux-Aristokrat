@@ -1,4 +1,4 @@
-print("=== LUX FINAL BUILD 2026-04-04 BACK BUTTON + DB LOCK FIX ===")
+print("=== LUX FINAL BUILD 2026-04-04 FULL FIX ===")
 
 import asyncio
 import csv
