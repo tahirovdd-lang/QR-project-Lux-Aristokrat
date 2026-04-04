@@ -347,11 +347,12 @@
       width:100% !important;
       height:100% !important;
       object-fit:cover !important;
-      border-radius:0 !important;
       background:#000 !important;
     }
 
-    #reader__dashboard,
+    #reader__dashboard_section_swaplink,
+    #reader__dashboard_section_csr,
+    #reader__dashboard_section_fsr,
     #reader__scan_region img{
       display:none !important;
     }
@@ -880,7 +881,7 @@
         footer: "Lux Aristokrat • Premium QR Scanner",
         statusInit: "Инициализация камеры...",
         statusLoading: "Загрузка сканера...",
-        statusReady: "Камера активна. Наведите её на QR-код или Data Matrix.",
+        statusReady: "Задняя камера активна. Наведите её на QR-код или Data Matrix.",
         statusCodeSent: "Код распознан. Отправляем в бота...",
         statusNeedCode: "Введите или отсканируйте корректный код.",
         statusNoTelegram: "Telegram WebApp недоступен. Откройте страницу из Telegram.",
@@ -908,7 +909,7 @@
         footer: "Lux Aristokrat • Premium QR Scanner",
         statusInit: "Kamera ishga tushirilmoqda...",
         statusLoading: "Skaner yuklanmoqda...",
-        statusReady: "Kamera faol. Uni QR-kod yoki Data Matrix ga yo‘naltiring.",
+        statusReady: "Orqa kamera faol. Uni QR-kod yoki Data Matrix ga yo‘naltiring.",
         statusCodeSent: "Kod aniqlandi. Botga yuborilmoqda...",
         statusNeedCode: "To‘g‘ri kodni kiriting yoki skaner qiling.",
         statusNoTelegram: "Telegram WebApp mavjud emas. Sahifani Telegram ichida oching.",
@@ -936,7 +937,7 @@
         footer: "Lux Aristokrat • Premium QR Scanner",
         statusInit: "Омодасозии камера...",
         statusLoading: "Сканер бор шуда истодааст...",
-        statusReady: "Камера фаъол аст. Онро ба QR-код ё Data Matrix равона кунед.",
+        statusReady: "Камераи қафо фаъол аст. Онро ба QR-код ё Data Matrix равона кунед.",
         statusCodeSent: "Код шинохта шуд. Ба бот фиристода мешавад...",
         statusNeedCode: "Коди дурустро ворид кунед ё скан намоед.",
         statusNoTelegram: "Telegram WebApp дастрас нест. Саҳифаро дар Telegram кушоед.",
@@ -964,7 +965,7 @@
         footer: "Lux Aristokrat • Premium QR Scanner",
         statusInit: "Initializing camera...",
         statusLoading: "Loading scanner...",
-        statusReady: "Camera is active. Point it at the QR code or Data Matrix.",
+        statusReady: "Rear camera is active. Point it at the QR code or Data Matrix.",
         statusCodeSent: "Code detected. Sending to bot...",
         statusNeedCode: "Enter or scan a valid code.",
         statusNoTelegram: "Telegram WebApp is unavailable. Open this page from Telegram.",
@@ -1122,9 +1123,7 @@
     });
 
     function normalizeCode(raw) {
-      return String(raw || "")
-        .trim()
-        .toUpperCase();
+      return String(raw || "").trim().toUpperCase();
     }
 
     function sendCodeToBot(code) {
@@ -1186,47 +1185,80 @@
       scannerStarted = false;
     }
 
+    async function tryStartWithConfig(cameraConfig) {
+      html5QrCode = new Html5Qrcode("reader");
+
+      await html5QrCode.start(
+        cameraConfig,
+        {
+          fps: 10,
+          qrbox: { width: 260, height: 260 },
+          aspectRatio: 1,
+          disableFlip: false,
+          rememberLastUsedCamera: false,
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.QR_CODE,
+            Html5QrcodeSupportedFormats.DATA_MATRIX
+          ]
+        },
+        (decodedText) => {
+          if (!decodedText || sendingNow) return;
+          sendCodeToBot(decodedText);
+        },
+        () => {}
+      );
+
+      scannerStarted = true;
+      setStatusByKey("statusReady", "info");
+    }
+
     async function startScanner() {
       try {
         setStatusByKey("statusLoading", "info");
         await stopScanner();
 
-        html5QrCode = new Html5Qrcode("reader");
+        // 1. Жёсткая попытка открыть заднюю камеру
+        try {
+          await tryStartWithConfig({ facingMode: { exact: "environment" } });
+          return;
+        } catch (e) {
+          console.warn("Exact rear camera failed:", e);
+          await stopScanner();
+        }
 
+        // 2. Более мягкая попытка rear camera
+        try {
+          await tryStartWithConfig({ facingMode: "environment" });
+          return;
+        } catch (e) {
+          console.warn("Environment camera failed:", e);
+          await stopScanner();
+        }
+
+        // 3. Поиск задней камеры по label
         const cameras = await Html5Qrcode.getCameras();
         if (!cameras || !cameras.length) {
           setStatusByKey("statusCameraNotFound", "error");
           return;
         }
 
-        let cameraId = cameras[0].id;
         const backCam = cameras.find(c =>
-          /back|rear|environment/gi.test(c.label || "")
-        );
-        if (backCam) cameraId = backCam.id;
-
-        await html5QrCode.start(
-          cameraId,
-          {
-            fps: 10,
-            qrbox: { width: 260, height: 260 },
-            aspectRatio: 1,
-            disableFlip: false,
-            rememberLastUsedCamera: true,
-            formatsToSupport: [
-              Html5QrcodeSupportedFormats.QR_CODE,
-              Html5QrcodeSupportedFormats.DATA_MATRIX
-            ]
-          },
-          (decodedText) => {
-            if (!decodedText || sendingNow) return;
-            sendCodeToBot(decodedText);
-          },
-          () => {}
+          /back|rear|environment|traseira|trasera|зад/i.test(c.label || "")
         );
 
-        scannerStarted = true;
-        setStatusByKey("statusReady", "info");
+        if (backCam) {
+          try {
+            await tryStartWithConfig(backCam.id);
+            return;
+          } catch (e) {
+            console.warn("Back camera by label failed:", e);
+            await stopScanner();
+          }
+        }
+
+        // 4. Fallback на первую доступную
+        await tryStartWithConfig(cameras[0].id);
+
       } catch (e) {
         console.error("Scanner start error:", e);
         setStatusByKey("statusCameraError", "error");
