@@ -851,12 +851,13 @@
   </aside>
 
   <script>
-    const tg = window.Telegram?.WebApp;
+    const tg = window.Telegram?.WebApp || null;
+
     if (tg) {
       tg.ready();
       tg.expand();
-      tg.MainButton.hide();
-      tg.BackButton.hide();
+      try { tg.MainButton.hide(); } catch(e) {}
+      try { tg.BackButton.hide(); } catch(e) {}
     }
 
     const user = tg?.initDataUnsafe?.user || null;
@@ -1126,7 +1127,7 @@
       return String(raw || "").trim().toUpperCase();
     }
 
-    function sendCodeToBot(code) {
+    async function sendCodeToBot(code) {
       const normalized = normalizeCode(code);
 
       if (!normalized) {
@@ -1142,28 +1143,40 @@
 
       setStatusByKey("statusCodeSent", "success");
 
-      const payload = {
-        action: "scan_qr",
-        code: normalized
-      };
-
       try {
-        if (tg && typeof tg.sendData === "function") {
-          tg.sendData(JSON.stringify(payload));
-
-          setTimeout(() => {
-            sendingNow = false;
-            if (tg && typeof tg.close === "function") {
-              tg.close();
-            } else {
-              setStatusByKey("statusSentReturn", "success");
-            }
-          }, 500);
-        } else {
+        if (!tg || typeof tg.sendData !== "function") {
           sendingNow = false;
           setStatusByKey("statusNoTelegram", "error");
+          return;
         }
+
+        try {
+          tg.HapticFeedback?.notificationOccurred?.("success");
+        } catch (e) {}
+
+        const payload = {
+          action: "scan_qr",
+          code: normalized,
+          source: "webapp",
+          ts: Date.now()
+        };
+
+        tg.sendData(JSON.stringify(payload));
+
+        try {
+          await stopScanner();
+        } catch (e) {}
+
+        setTimeout(() => {
+          setStatusByKey("statusSentReturn", "success");
+          try {
+            tg.close();
+          } catch (e) {}
+          sendingNow = false;
+        }, 900);
+
       } catch (e) {
+        console.error("sendData error:", e);
         sendingNow = false;
         setStatusByKey("statusSendError", "error");
       }
@@ -1182,6 +1195,7 @@
         }
       } catch (e) {}
 
+      html5QrCode = null;
       scannerStarted = false;
     }
 
@@ -1217,7 +1231,6 @@
         setStatusByKey("statusLoading", "info");
         await stopScanner();
 
-        // 1. Жёсткая попытка открыть заднюю камеру
         try {
           await tryStartWithConfig({ facingMode: { exact: "environment" } });
           return;
@@ -1226,7 +1239,6 @@
           await stopScanner();
         }
 
-        // 2. Более мягкая попытка rear camera
         try {
           await tryStartWithConfig({ facingMode: "environment" });
           return;
@@ -1235,7 +1247,6 @@
           await stopScanner();
         }
 
-        // 3. Поиск задней камеры по label
         const cameras = await Html5Qrcode.getCameras();
         if (!cameras || !cameras.length) {
           setStatusByKey("statusCameraNotFound", "error");
@@ -1256,7 +1267,6 @@
           }
         }
 
-        // 4. Fallback на первую доступную
         await tryStartWithConfig(cameras[0].id);
 
       } catch (e) {
