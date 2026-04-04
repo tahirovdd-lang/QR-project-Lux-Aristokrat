@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  lux_aristokrat_bot:
+    build: .
+    container_name: lux_aristokrat_bot
+    restart: unless-stopped
+    environment:
+      BOT_TOKEN: "${BOT_TOKEN}"
+      BOT_USERNAME: "${BOT_USERNAME}"
+      WEBAPP_URL: "${WEBAPP_URL}"
+      DB_PATH: "${DB_PATH}"
+      DATA_DIR: "${DATA_DIR}"
+      ADMIN_ID: "${ADMIN_ID}"
+      ADMIN_IDS: "${ADMIN_IDS}"
+      TZ: "${TZ}"
+    volumes:
+      - ./data:/app/data
+      - ./main.py:/app/main.py
+    command: python main.py
