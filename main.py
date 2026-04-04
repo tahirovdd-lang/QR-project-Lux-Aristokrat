@@ -1,4 +1,4 @@
-print("=== LUX FINAL BUILD 2026-04-04 FULL FIX DATAMATRIX ASYNC ===")
+print("=== LUX FINAL BUILD 2026-04-04 FULL FIX STABLE ===")
 
 import asyncio
 import csv
@@ -385,18 +385,8 @@ def esc(value) -> str:
     return str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def is_admin(user_id: int) -> bool:
-    return user_id in ADMIN_IDS
-
-
-def normalize_code(raw: str) -> str:
-    raw = (raw or "").strip().upper()
-    return raw
-
-
 def normalize_bulk_code(raw: str) -> str:
     raw = (raw or "").strip().upper()
-
     replacements = {
         ">": "_", "<": "_", "!": "_", "&": "_", "'": "_", "\"": "_",
         ".": "_", ",": "_", " ": "_", "/": "_", "\\": "_", ":": "_",
@@ -404,13 +394,15 @@ def normalize_bulk_code(raw: str) -> str:
         "@": "_", "*": "_", "(": "_", ")": "_", "[": "_", "]": "_",
         "{": "_", "}": "_"
     }
-
     for old, new in replacements.items():
         raw = raw.replace(old, new)
-
     raw = re.sub(r"_+", "_", raw)
     raw = raw.strip("_")
     return raw
+
+
+def normalize_code(raw: str) -> str:
+    return (raw or "").strip().upper()
 
 
 def build_qr_link(code: str) -> str:
@@ -949,8 +941,7 @@ async def process_qr_scan_atomic(user_id: int, incoming_code: str):
 async def start_handler(message: Message, command: CommandStart):
     try:
         await ensure_user_in_db(message.from_user)
-    except Exception as e:
-        logging.exception("ensure_user_in_db error: %s", e)
+    except Exception:
         await message.answer(UI["ru"]["internal_error"])
         return
 
@@ -962,8 +953,8 @@ async def start_handler(message: Message, command: CommandStart):
                 web_app=WebAppInfo(url=WEBAPP_URL)
             )
         )
-    except Exception as e:
-        logging.warning("Per-chat menu button setup failed: %s", e)
+    except Exception:
+        pass
 
     deep_arg = command.args
     if deep_arg and deep_arg.startswith("qr_"):
@@ -1011,15 +1002,11 @@ async def myid_handler(message: Message):
 async def webapp_data_handler(message: Message):
     await ensure_user_in_db(message.from_user)
     raw = message.web_app_data.data
-    logging.info("WEB_APP_DATA RAW: %s", raw)
 
     try:
         data = json.loads(raw)
     except Exception:
-        await message.answer(
-            t(message.from_user.id, "webapp_bad"),
-            reply_markup=menu_kb(message.from_user.id)
-        )
+        await message.answer(t(message.from_user.id, "webapp_bad"), reply_markup=menu_kb(message.from_user.id))
         return
 
     action = str(data.get("action", "")).strip().lower()
@@ -1027,19 +1014,12 @@ async def webapp_data_handler(message: Message):
     if action == "scan_qr":
         raw_code = str(data.get("code", "")).strip()
         if not raw_code:
-            await message.answer(
-                t(message.from_user.id, "bad_code"),
-                reply_markup=menu_kb(message.from_user.id)
-            )
+            await message.answer(t(message.from_user.id, "bad_code"), reply_markup=menu_kb(message.from_user.id))
             return
-
         await process_qr_scan(message, raw_code)
         return
 
-    await message.answer(
-        t(message.from_user.id, "webapp_unknown"),
-        reply_markup=menu_kb(message.from_user.id)
-    )
+    await message.answer(t(message.from_user.id, "webapp_unknown"), reply_markup=menu_kb(message.from_user.id))
 
 
 async def process_qr_scan(message: Message, code: str):
@@ -1047,12 +1027,8 @@ async def process_qr_scan(message: Message, code: str):
 
     try:
         result = await process_qr_scan_atomic(message.from_user.id, code)
-    except Exception as e:
-        logging.exception("process_qr_scan_atomic error: %s", e)
-        await message.answer(
-            t(message.from_user.id, "internal_error"),
-            reply_markup=menu_kb(message.from_user.id)
-        )
+    except Exception:
+        await message.answer(t(message.from_user.id, "internal_error"), reply_markup=menu_kb(message.from_user.id))
         return
 
     status = result["status"]
@@ -1106,10 +1082,7 @@ async def process_qr_scan(message: Message, code: str):
         )
         return
 
-    await message.answer(
-        t(message.from_user.id, "internal_error"),
-        reply_markup=menu_kb(message.from_user.id)
-    )
+    await message.answer(t(message.from_user.id, "internal_error"), reply_markup=menu_kb(message.from_user.id))
 
 
 @dp.message(F.text.in_(set(POINTS_TEXT.values())))
