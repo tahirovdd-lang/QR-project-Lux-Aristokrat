@@ -1,3 +1,4 @@
-aiogram==2.25.1
-python-dotenv
-tgcrypto
+python-dotenv==1.0.1
+requests==2.32.3
+tgcrypto==1.2.5
+aiohttp==3.9.5
