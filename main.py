@@ -1,4 +1,4 @@
-print("=== LUX ARISTOKRAT CAMERA WEBAPP VERSION ===")
+print("=== LUX ARISTOKRAT ADMIN FIXED VERSION ===")
 
 import asyncio
 import csv
@@ -65,9 +65,6 @@ WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/QR-projec
 DB_PATH = os.getenv("DB_PATH", "lux_aristokrat.db")
 DATA_DIR = os.getenv("DATA_DIR", "/app/data")
 
-# Можно указать одного или нескольких админов:
-# ADMIN_ID=123456
-# или ADMIN_IDS=123456,987654
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0") or "0")
 ADMIN_IDS_RAW = os.getenv("ADMIN_IDS", "").strip()
 
@@ -79,6 +76,9 @@ if ADMIN_IDS_RAW:
         x = x.strip()
         if x.isdigit():
             ADMIN_IDS.add(int(x))
+
+logging.info("ADMIN_ID from env: %s", ADMIN_ID)
+logging.info("ADMIN_IDS from env: %s", sorted(list(ADMIN_IDS)))
 
 os.makedirs(DATA_DIR, exist_ok=True)
 QR_DIR = os.path.join(DATA_DIR, "generated_qr")
@@ -582,7 +582,9 @@ async def start_handler(message: Message, command: CommandStart):
 async def myid_handler(message: Message):
     await message.answer(
         f"Ваш Telegram ID: <code>{message.from_user.id}</code>\n"
-        f"Admin access: <b>{'YES' if is_admin(message.from_user.id) else 'NO'}</b>"
+        f"Admin access: <b>{'YES' if is_admin(message.from_user.id) else 'NO'}</b>\n"
+        f"ADMIN_ID env: <code>{ADMIN_ID}</code>\n"
+        f"ADMIN_IDS env: <code>{','.join(str(x) for x in sorted(ADMIN_IDS)) or 'EMPTY'}</code>"
     )
 
 
