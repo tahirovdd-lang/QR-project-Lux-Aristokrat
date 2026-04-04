@@ -4,54 +4,93 @@
   <meta charset="UTF-8" />
   <title>Lux Aristokrat Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0b0d" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
   <style>
     :root{
       --bg:#0b0b0d;
-      --card:#141418;
+      --bg2:#111114;
+      --card:rgba(255,255,255,.05);
+      --card2:rgba(255,255,255,.03);
       --stroke:rgba(255,255,255,.10);
       --gold:#d4af37;
       --gold2:#f2d777;
       --text:#fff;
       --muted:rgba(255,255,255,.72);
-      --radius:22px;
+      --radius:24px;
+      --shadow:0 18px 40px rgba(0,0,0,.35);
     }
 
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{
       margin:0;
       padding:0;
-      background:linear-gradient(180deg,#0a0a0c,#111114);
+      min-height:100%;
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.10), transparent 25%),
+        radial-gradient(circle at top left, rgba(212,175,55,.07), transparent 18%),
+        linear-gradient(180deg,var(--bg),var(--bg2));
       color:var(--text);
       font-family:'Montserrat',sans-serif;
-      min-height:100%;
+      overflow-x:hidden;
     }
 
-    body{padding:16px;}
+    body{padding:16px}
 
     .wrap{
-      width:min(100%,760px);
+      width:min(100%, 860px);
       margin:0 auto;
     }
 
     .card{
-      background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03));
+      background:linear-gradient(180deg,var(--card),var(--card2));
       border:1px solid var(--stroke);
-      border-radius:24px;
+      border-radius:28px;
       padding:18px;
-      box-shadow:0 18px 40px rgba(0,0,0,.35);
+      box-shadow:var(--shadow);
       margin-bottom:16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+    }
+
+    .logo{
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,#202026,#111114);
+      border:1px solid rgba(212,175,55,.22);
+      font-size:26px;
+      font-weight:800;
+      flex:0 0 auto;
     }
 
     .title{
+      margin:0;
       font-size:28px;
-      font-weight:800;
       line-height:1.1;
-      margin:0 0 10px;
+      font-weight:800;
     }
 
     .gold{
@@ -63,17 +102,52 @@
     }
 
     .sub{
+      margin-top:6px;
+      font-size:13px;
       color:var(--muted);
+      line-height:1.6;
+    }
+
+    .lang-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .lang-btn{
+      min-width:64px;
+      height:40px;
+      border:none;
+      border-radius:14px;
+      padding:0 12px;
+      cursor:pointer;
+      font-weight:800;
+      font-size:13px;
+      color:#fff;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+    }
+
+    .lang-btn.active{
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      color:#111;
+      border-color:transparent;
+    }
+
+    .hero-text{
+      margin-top:12px;
+      color:var(--muted);
+      line-height:1.75;
       font-size:14px;
-      line-height:1.7;
     }
 
     #reader{
       width:100%;
       overflow:hidden;
-      border-radius:18px;
+      border-radius:20px;
       background:#000;
       min-height:280px;
+      margin-top:8px;
     }
 
     .actions{
@@ -84,23 +158,30 @@
     }
 
     .btn{
-      border:none;
-      border-radius:16px;
       min-height:50px;
       padding:0 18px;
+      border:none;
+      border-radius:16px;
+      cursor:pointer;
       font-weight:800;
       font-size:14px;
-      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+      transition:.2s ease;
     }
 
+    .btn:hover{transform:translateY(-1px)}
+
     .btn-primary{
-      background:linear-gradient(135deg,var(--gold),var(--gold2));
       color:#111;
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
     }
 
     .btn-secondary{
-      background:rgba(255,255,255,.06);
       color:#fff;
+      background:rgba(255,255,255,.06);
       border:1px solid var(--stroke);
     }
 
@@ -111,39 +192,113 @@
       border:1px solid var(--stroke);
       background:rgba(255,255,255,.04);
       color:#fff;
-      padding:14px 14px;
+      padding:14px;
       font-size:14px;
       outline:none;
-      margin-top:10px;
+      margin-top:12px;
     }
 
     .status{
       margin-top:12px;
-      font-size:14px;
-      color:#fff4c3;
       min-height:22px;
+      color:#fff4c3;
+      font-size:14px;
       font-weight:700;
     }
 
     .hint{
       margin-top:8px;
-      font-size:12px;
       color:var(--muted);
-      line-height:1.6;
+      font-size:12px;
+      line-height:1.7;
     }
 
-    @media (max-width:640px){
-      .title{font-size:24px}
+    .steps{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .step{
+      border-radius:20px;
+      padding:16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      min-width:0;
+    }
+
+    .step-num{
+      width:34px;
+      height:34px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      color:#111;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+
+    .step-title{
+      font-size:15px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    .step-text{
+      font-size:13px;
+      line-height:1.65;
+      color:var(--muted);
+    }
+
+    .footer{
+      margin-top:10px;
+      text-align:center;
+      color:rgba(255,255,255,.5);
+      font-size:12px;
+      font-weight:600;
+    }
+
+    @media (max-width:700px){
+      .steps{
+        grid-template-columns:1fr;
+      }
+      .title{
+        font-size:24px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1 class="title"><span class="gold">Lux Aristokrat</span> QR Scanner</h1>
-      <div class="sub">
-        Нажмите «Запустить камеру» и наведите телефон на QR-код.  
-        Если камера недоступна, вставьте код вручную.
+      <div class="topbar">
+        <div class="brand">
+          <div class="logo">💎</div>
+          <div>
+            <h1 class="title"><span class="gold">Lux Aristokrat</span></h1>
+            <div class="sub" id="subTitle">Премиальный QR scanner и бонусная система</div>
+          </div>
+        </div>
+
+        <div class="lang-row">
+          <button class="lang-btn active" data-lang="ru">RU</button>
+          <button class="lang-btn" data-lang="uz">UZ</button>
+          <button class="lang-btn" data-lang="tj">TJ</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+      </div>
+
+      <div class="hero-text" id="heroText">
+        Нажмите кнопку запуска камеры, наведите телефон на QR-код и отправьте результат в Telegram-бот.
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-secondary" id="openBotBtn" href="https://t.me/QR_Lux_Aristokrat_bot" target="_blank" rel="noopener noreferrer">
+          🚀 Открыть бота
+        </a>
       </div>
     </div>
 
@@ -156,15 +311,40 @@
       </div>
 
       <input id="manualCode" class="field" placeholder="Или вставьте QR-код вручную" />
+
       <div class="actions">
         <button class="btn btn-primary" id="sendManualBtn">✅ Отправить код</button>
       </div>
 
       <div class="status" id="status">Готово к сканированию</div>
-      <div class="hint">
-        WebApp работает внутри Telegram. Камера открывается только по кнопке и на HTTPS.
+      <div class="hint" id="hintText">
+        WebApp работает внутри Telegram. Камера откроется только по нажатию кнопки и на HTTPS.
       </div>
     </div>
+
+    <div class="card">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-title" id="step1Title">Откройте камеру</div>
+          <div class="step-text" id="step1Text">Нажмите кнопку запуска и разрешите доступ к камере телефона.</div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-title" id="step2Title">Сканируйте QR</div>
+          <div class="step-text" id="step2Text">Наведите камеру на QR-код. Система считает его автоматически.</div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-title" id="step3Title">Получите баллы</div>
+          <div class="step-text" id="step3Text">Код отправится в Telegram-бот, и баллы будут начислены на ваш аккаунт.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">© Lux Aristokrat • QR Loyalty WebApp</div>
   </div>
 
   <script>
@@ -178,17 +358,154 @@
       } catch (_) {}
     }
 
+    const I18N = {
+      ru: {
+        subTitle: "Премиальный QR scanner и бонусная система",
+        heroText: "Нажмите кнопку запуска камеры, наведите телефон на QR-код и отправьте результат в Telegram-бот.",
+        openBotBtn: "🚀 Открыть бота",
+        startBtn: "📷 Запустить камеру",
+        stopBtn: "⛔ Остановить",
+        manualPlaceholder: "Или вставьте QR-код вручную",
+        sendManualBtn: "✅ Отправить код",
+        statusReady: "Готово к сканированию",
+        statusAlready: "Камера уже запущена",
+        statusStarted: "Камера запущена. Наведите на QR-код.",
+        statusStopped: "Камера остановлена",
+        statusFound: "QR найден: ",
+        statusBadCode: "Некорректный QR-код",
+        statusSent: "Код отправлен в бота",
+        statusCameraError: "Не удалось открыть камеру. Используйте ручной ввод.",
+        statusSendError: "Ошибка отправки: ",
+        hintText: "WebApp работает внутри Telegram. Камера откроется только по нажатию кнопки и на HTTPS.",
+        step1Title: "Откройте камеру",
+        step1Text: "Нажмите кнопку запуска и разрешите доступ к камере телефона.",
+        step2Title: "Сканируйте QR",
+        step2Text: "Наведите камеру на QR-код. Система считает его автоматически.",
+        step3Title: "Получите баллы",
+        step3Text: "Код отправится в Telegram-бот, и баллы будут начислены на ваш аккаунт."
+      },
+      uz: {
+        subTitle: "Premium QR scanner va bonus tizimi",
+        heroText: "Kamerani ishga tushirish tugmasini bosing, telefonni QR-kodga yo‘naltiring va natijani Telegram-botga yuboring.",
+        openBotBtn: "🚀 Botni ochish",
+        startBtn: "📷 Kamerani ishga tushirish",
+        stopBtn: "⛔ To‘xtatish",
+        manualPlaceholder: "Yoki QR-kodni qo‘lda kiriting",
+        sendManualBtn: "✅ Kodni yuborish",
+        statusReady: "Skanerlashga tayyor",
+        statusAlready: "Kamera allaqachon ishga tushgan",
+        statusStarted: "Kamera ishga tushdi. QR-kodga yo‘naltiring.",
+        statusStopped: "Kamera to‘xtatildi",
+        statusFound: "QR topildi: ",
+        statusBadCode: "Noto‘g‘ri QR-kod",
+        statusSent: "Kod botga yuborildi",
+        statusCameraError: "Kamerani ochib bo‘lmadi. Qo‘lda kiritishdan foydalaning.",
+        statusSendError: "Yuborish xatosi: ",
+        hintText: "WebApp Telegram ichida ishlaydi. Kamera faqat tugma bosilganda va HTTPS orqali ochiladi.",
+        step1Title: "Kamerani oching",
+        step1Text: "Ishga tushirish tugmasini bosing va telefon kamerasiga ruxsat bering.",
+        step2Title: "QR-ni skaner qiling",
+        step2Text: "Kamerani QR-kodga yo‘naltiring. Tizim uni avtomatik o‘qiydi.",
+        step3Title: "Ballarni oling",
+        step3Text: "Kod Telegram-botga yuboriladi va ballar akkauntingizga qo‘shiladi."
+      },
+      tj: {
+        subTitle: "QR scanner-и премиалӣ ва системаи бонусӣ",
+        heroText: "Тугмаи кушодани камераро пахш кунед, телефонро ба QR-код равона кунед ва натиҷаро ба Telegram-бот фиристед.",
+        openBotBtn: "🚀 Кушодани бот",
+        startBtn: "📷 Камераро кушоед",
+        stopBtn: "⛔ Ист",
+        manualPlaceholder: "Ё QR-кодро дастӣ ворид кунед",
+        sendManualBtn: "✅ Фиристодани код",
+        statusReady: "Ба скан омода аст",
+        statusAlready: "Камера аллакай кушода шудааст",
+        statusStarted: "Камера фаъол шуд. Ба QR-код равона кунед.",
+        statusStopped: "Камера қатъ шуд",
+        statusFound: "QR ёфт шуд: ",
+        statusBadCode: "QR-коди нодуруст",
+        statusSent: "Код ба бот фиристода шуд",
+        statusCameraError: "Камера кушода нашуд. Воридкунии дастиро истифода баред.",
+        statusSendError: "Хатои фиристодан: ",
+        hintText: "WebApp дар дохили Telegram кор мекунад. Камера танҳо бо пахши тугма ва дар HTTPS кушода мешавад.",
+        step1Title: "Камераро кушоед",
+        step1Text: "Тугмаи оғозро пахш кунед ва барои камера иҷозат диҳед.",
+        step2Title: "QR-ро скан кунед",
+        step2Text: "Камераро ба QR-код равона кунед. Система онро худкор мехонад.",
+        step3Title: "Балл гиред",
+        step3Text: "Код ба Telegram-бот фиристода мешавад ва баллҳо ба ҳисоби шумо илова мегарданд."
+      },
+      en: {
+        subTitle: "Premium QR scanner and bonus system",
+        heroText: "Press the camera start button, point your phone at the QR code, and send the result to the Telegram bot.",
+        openBotBtn: "🚀 Open Bot",
+        startBtn: "📷 Start Camera",
+        stopBtn: "⛔ Stop",
+        manualPlaceholder: "Or paste QR code manually",
+        sendManualBtn: "✅ Send Code",
+        statusReady: "Ready to scan",
+        statusAlready: "Camera is already running",
+        statusStarted: "Camera started. Point it at the QR code.",
+        statusStopped: "Camera stopped",
+        statusFound: "QR found: ",
+        statusBadCode: "Invalid QR code",
+        statusSent: "Code sent to bot",
+        statusCameraError: "Could not open camera. Use manual input.",
+        statusSendError: "Send error: ",
+        hintText: "WebApp works inside Telegram. The camera opens only after pressing the button and on HTTPS.",
+        step1Title: "Open Camera",
+        step1Text: "Press the start button and allow access to your phone camera.",
+        step2Title: "Scan QR",
+        step2Text: "Point the camera at the QR code. The system reads it automatically.",
+        step3Title: "Get Points",
+        step3Text: "The code will be sent to the Telegram bot and points will be credited to your account."
+      }
+    };
+
+    let currentLang = "ru";
+
     const statusEl = document.getElementById("status");
     const manualCodeEl = document.getElementById("manualCode");
     const startBtn = document.getElementById("startBtn");
     const stopBtn = document.getElementById("stopBtn");
     const sendManualBtn = document.getElementById("sendManualBtn");
 
+    const qrLangButtons = document.querySelectorAll(".lang-btn");
+
     let qrScanner = null;
     let scannerStarted = false;
 
-    function setStatus(text) {
+    function applyLang(lang) {
+      currentLang = lang;
+      const t = I18N[lang];
+
+      document.documentElement.lang = lang;
+      document.getElementById("subTitle").textContent = t.subTitle;
+      document.getElementById("heroText").textContent = t.heroText;
+      document.getElementById("openBotBtn").textContent = t.openBotBtn;
+      document.getElementById("startBtn").textContent = t.startBtn;
+      document.getElementById("stopBtn").textContent = t.stopBtn;
+      document.getElementById("manualCode").placeholder = t.manualPlaceholder;
+      document.getElementById("sendManualBtn").textContent = t.sendManualBtn;
+      document.getElementById("hintText").textContent = t.hintText;
+      document.getElementById("step1Title").textContent = t.step1Title;
+      document.getElementById("step1Text").textContent = t.step1Text;
+      document.getElementById("step2Title").textContent = t.step2Title;
+      document.getElementById("step2Text").textContent = t.step2Text;
+      document.getElementById("step3Title").textContent = t.step3Title;
+      document.getElementById("step3Text").textContent = t.step3Text;
+
+      if (!statusEl.dataset.locked) {
+        setStatus(t.statusReady);
+      }
+
+      qrLangButtons.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.lang === lang);
+      });
+    }
+
+    function setStatus(text, lock=false) {
       statusEl.textContent = text || "";
+      statusEl.dataset.locked = lock ? "1" : "";
     }
 
     function normalizeLocalCode(v) {
@@ -196,13 +513,16 @@
         .trim()
         .replace(/[><!&'" .,\/\\:;?=+#%@*()\[\]{}]+/g, "_")
         .replace(/_+/g, "_")
-        .replace(/^_+|_+$/g, "");
+        .replace(/^_+|_+$/g, "")
+        .toUpperCase();
     }
 
     function sendCode(code) {
+      const t = I18N[currentLang];
       const normalized = normalizeLocalCode(code);
+
       if (!normalized) {
-        setStatus("Некорректный QR-код");
+        setStatus(t.statusBadCode);
         return;
       }
 
@@ -213,23 +533,25 @@
 
       try {
         tg.sendData(JSON.stringify(payload));
-        setStatus("Код отправлен в бота");
+        setStatus(t.statusSent, true);
         setTimeout(() => {
           tg.close();
         }, 500);
       } catch (e) {
-        setStatus("Ошибка отправки: " + e.message);
+        setStatus(t.statusSendError + e.message);
       }
     }
 
     async function startScanner() {
+      const t = I18N[currentLang];
+
       try {
         if (!qrScanner) {
           qrScanner = new Html5Qrcode("reader");
         }
 
         if (scannerStarted) {
-          setStatus("Камера уже запущена");
+          setStatus(t.statusAlready);
           return;
         }
 
@@ -241,26 +563,27 @@
             aspectRatio: 1.333334
           },
           (decodedText) => {
-            setStatus("QR найден: " + decodedText);
+            setStatus(t.statusFound + decodedText, true);
             stopScanner().finally(() => sendCode(decodedText));
           },
           () => {}
         );
 
         scannerStarted = true;
-        setStatus("Камера запущена. Наведите на QR-код.");
+        setStatus(t.statusStarted);
       } catch (e) {
-        setStatus("Не удалось открыть камеру. Используйте ручной ввод.");
+        setStatus(t.statusCameraError);
       }
     }
 
     async function stopScanner() {
+      const t = I18N[currentLang];
       try {
         if (qrScanner && scannerStarted) {
           await qrScanner.stop();
           await qrScanner.clear();
           scannerStarted = false;
-          setStatus("Камера остановлена");
+          setStatus(t.statusStopped);
         }
       } catch (_) {}
     }
@@ -278,6 +601,14 @@
         sendCode(manualCodeEl.value);
       }
     });
+
+    qrLangButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        applyLang(btn.dataset.lang);
+      });
+    });
+
+    applyLang("ru");
   </script>
 </body>
 </html>
