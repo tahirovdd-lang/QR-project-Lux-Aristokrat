@@ -2,529 +2,648 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Lux Aristokrat Scanner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b0b0d" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Lux Aristokrat QR Scanner</title>
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg:#0b0b0d;
-      --bg2:#111114;
-      --card:rgba(255,255,255,.05);
-      --card2:rgba(255,255,255,.03);
-      --stroke:rgba(255,255,255,.10);
-      --gold:#d4af37;
-      --gold2:#f2d777;
-      --text:#fff;
-      --muted:rgba(255,255,255,.72);
-      --radius:24px;
-      --shadow:0 18px 40px rgba(0,0,0,.35);
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #17212b;
+      --muted: #6b7a90;
+      --line: #e7ebf2;
+      --primary: #2a8cff;
+      --primary-dark: #1877f2;
+      --success: #1fa971;
+      --danger: #e34f4f;
+      --shadow: 0 10px 30px rgba(19, 33, 68, .08);
+      --radius: 18px;
     }
 
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{
-      margin:0;
-      padding:0;
-      min-height:100%;
-      background:
-        radial-gradient(circle at top right, rgba(212,175,55,.10), transparent 25%),
-        radial-gradient(circle at top left, rgba(212,175,55,.07), transparent 18%),
-        linear-gradient(180deg,var(--bg),var(--bg2));
-      color:var(--text);
-      font-family:'Montserrat',sans-serif;
-      overflow-x:hidden;
+    *{
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    body{padding:16px}
-
-    .wrap{
-      width:min(100%, 860px);
-      margin:0 auto;
+    html, body{
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      height: 100%;
     }
 
-    .card{
-      background:linear-gradient(180deg,var(--card),var(--card2));
-      border:1px solid var(--stroke);
-      border-radius:28px;
-      padding:18px;
-      box-shadow:var(--shadow);
-      margin-bottom:16px;
-      backdrop-filter: blur(8px);
+    body{
+      min-height: 100vh;
+    }
+
+    .app{
+      max-width: 640px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 14px 14px 24px;
+      position: relative;
     }
 
     .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .profile-card{
+      flex: 1;
+      min-width: 0;
+      background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar{
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2a8cff, #63b3ff);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      flex: 0 0 52px;
+      box-shadow: 0 8px 18px rgba(42, 140, 255, .24);
+    }
+
+    .profile-text{
+      min-width: 0;
+      flex: 1;
     }
 
     .brand{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      min-width:0;
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 4px;
     }
 
-    .logo{
-      width:58px;
-      height:58px;
-      border-radius:18px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:linear-gradient(135deg,#202026,#111114);
-      border:1px solid rgba(212,175,55,.22);
-      font-size:26px;
-      font-weight:800;
-      flex:0 0 auto;
-    }
-
-    .title{
-      margin:0;
-      font-size:28px;
-      line-height:1.1;
-      font-weight:800;
-    }
-
-    .gold{
-      background:linear-gradient(135deg,var(--gold),var(--gold2));
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      background-clip:text;
-      color:transparent;
+    .name{
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .sub{
-      margin-top:6px;
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.6;
+      margin-top: 4px;
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .lang-row{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
+    .burger-btn{
+      width: 52px;
+      height: 52px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex: 0 0 52px;
     }
 
-    .lang-btn{
-      min-width:64px;
-      height:40px;
-      border:none;
-      border-radius:14px;
-      padding:0 12px;
-      cursor:pointer;
-      font-weight:800;
-      font-size:13px;
-      color:#fff;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--stroke);
+    .burger-icon{
+      width: 22px;
+      height: 16px;
+      position: relative;
     }
 
-    .lang-btn.active{
-      background:linear-gradient(135deg,var(--gold),var(--gold2));
-      color:#111;
-      border-color:transparent;
+    .burger-icon span{
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background: var(--text);
+      border-radius: 99px;
+      transition: .2s ease;
     }
 
-    .hero-text{
-      margin-top:12px;
-      color:var(--muted);
-      line-height:1.75;
-      font-size:14px;
+    .burger-icon span:nth-child(1){ top: 0; }
+    .burger-icon span:nth-child(2){ top: 6.5px; }
+    .burger-icon span:nth-child(3){ bottom: 0; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
-    #reader{
-      width:100%;
-      overflow:hidden;
-      border-radius:20px;
-      background:#000;
-      min-height:280px;
-      margin-top:8px;
+    .scanner-card{
+      overflow: hidden;
     }
 
-    .actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:14px;
+    .scanner-head{
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--line);
     }
 
-    .btn{
-      min-height:50px;
-      padding:0 18px;
-      border:none;
-      border-radius:16px;
-      cursor:pointer;
-      font-weight:800;
-      font-size:14px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      text-decoration:none;
-      transition:.2s ease;
+    .scanner-title{
+      font-size: 20px;
+      font-weight: 800;
+      margin: 0 0 6px;
     }
 
-    .btn:hover{transform:translateY(-1px)}
-
-    .btn-primary{
-      color:#111;
-      background:linear-gradient(135deg,var(--gold),var(--gold2));
+    .scanner-subtitle{
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
     }
 
-    .btn-secondary{
-      color:#fff;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--stroke);
+    .camera-wrap{
+      position: relative;
+      background: #000;
+      aspect-ratio: 3 / 4;
+      min-height: 360px;
+      overflow: hidden;
     }
 
-    .field{
-      width:100%;
-      min-height:52px;
-      border-radius:16px;
-      border:1px solid var(--stroke);
-      background:rgba(255,255,255,.04);
-      color:#fff;
-      padding:14px;
-      font-size:14px;
-      outline:none;
-      margin-top:12px;
+    #video{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: #000;
+    }
+
+    .scan-overlay{
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scan-frame{
+      width: min(72vw, 280px);
+      height: min(72vw, 280px);
+      border: 3px solid rgba(255,255,255,.95);
+      border-radius: 24px;
+      position: relative;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,.26);
+    }
+
+    .scan-line{
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: 18px;
+      height: 3px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, transparent, #4de3a3, transparent);
+      animation: scan 2s linear infinite;
+      box-shadow: 0 0 14px rgba(77, 227, 163, .8);
+    }
+
+    @keyframes scan{
+      0%{ top: 18px; opacity: .9; }
+      50%{ opacity: 1; }
+      100%{ top: calc(100% - 22px); opacity: .9; }
     }
 
     .status{
-      margin-top:12px;
-      min-height:22px;
-      color:#fff4c3;
-      font-size:14px;
-      font-weight:700;
+      margin-top: 14px;
+      padding: 14px 16px;
+      font-size: 14px;
+      line-height: 1.45;
     }
 
-    .hint{
-      margin-top:8px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.7;
+    .status.info{
+      color: var(--muted);
     }
 
-    .steps{
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:12px;
-      margin-top:12px;
+    .status.success{
+      color: var(--success);
+      font-weight: 600;
     }
 
-    .step{
-      border-radius:20px;
-      padding:16px;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.08);
-      min-width:0;
+    .status.error{
+      color: var(--danger);
+      font-weight: 600;
     }
 
-    .step-num{
-      width:34px;
-      height:34px;
-      border-radius:12px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:linear-gradient(135deg,var(--gold),var(--gold2));
-      color:#111;
-      font-weight:800;
-      margin-bottom:10px;
+    .actions{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 0 0 14px;
+      margin-top: 10px;
     }
 
-    .step-title{
-      font-size:15px;
-      font-weight:800;
-      margin-bottom:6px;
+    .btn{
+      border: none;
+      border-radius: 14px;
+      height: 48px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .15s ease;
     }
 
-    .step-text{
-      font-size:13px;
-      line-height:1.65;
-      color:var(--muted);
+    .btn:active{
+      transform: scale(.98);
     }
 
-    .footer{
-      margin-top:10px;
-      text-align:center;
-      color:rgba(255,255,255,.5);
-      font-size:12px;
-      font-weight:600;
+    .btn-primary{
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(42, 140, 255, .25);
     }
 
-    @media (max-width:700px){
-      .steps{
-        grid-template-columns:1fr;
+    .btn-primary:hover{
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary{
+      background: #eef4ff;
+      color: var(--primary-dark);
+    }
+
+    .manual-card{
+      margin-top: 14px;
+      padding: 14px;
+    }
+
+    .manual-title{
+      font-size: 16px;
+      font-weight: 800;
+      margin: 0 0 10px;
+    }
+
+    .manual-row{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .manual-input{
+      flex: 1;
+      height: 46px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 0 14px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .manual-input:focus{
+      border-color: #9cc6ff;
+      box-shadow: 0 0 0 3px rgba(42, 140, 255, .1);
+    }
+
+    .drawer-backdrop{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.26);
+      opacity: 0;
+      pointer-events: none;
+      transition: .2s ease;
+      z-index: 50;
+    }
+
+    .drawer-backdrop.show{
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer{
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(86vw, 360px);
+      background: #fff;
+      box-shadow: -10px 0 30px rgba(19, 33, 68, .15);
+      transform: translateX(100%);
+      transition: .25s ease;
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .drawer.show{
+      transform: translateX(0);
+    }
+
+    .drawer-head{
+      padding: 18px 16px 12px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .drawer-title{
+      font-size: 18px;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .drawer-close{
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .drawer-body{
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .menu-link{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 8px 22px rgba(19, 33, 68, .05);
+    }
+
+    .menu-emoji{
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: #f4f7fc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex: 0 0 42px;
+    }
+
+    .menu-text{
+      min-width: 0;
+      flex: 1;
+    }
+
+    .menu-title{
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 3px;
+    }
+
+    .menu-sub{
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .footer-note{
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 14px;
+      padding-bottom: 8px;
+    }
+
+    @media (max-width: 420px){
+      .actions{
+        grid-template-columns: 1fr;
       }
-      .title{
-        font-size:24px;
+
+      .name{
+        font-size: 16px;
+      }
+
+      .scanner-title{
+        font-size: 18px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <div class="topbar">
-        <div class="brand">
-          <div class="logo">💎</div>
-          <div>
-            <h1 class="title"><span class="gold">Lux Aristokrat</span></h1>
-            <div class="sub" id="subTitle">Премиальный QR scanner и бонусная система</div>
+  <div class="app">
+    <div class="topbar">
+      <div class="profile-card">
+        <div class="avatar" id="avatar">L</div>
+        <div class="profile-text">
+          <div class="brand">Lux Aristokrat</div>
+          <div class="name" id="userName">Гость</div>
+          <div class="sub" id="userSub">QR бонусная система</div>
+        </div>
+      </div>
+
+      <button class="burger-btn" id="burgerBtn" aria-label="Меню">
+        <div class="burger-icon">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+    </div>
+
+    <div class="card scanner-card">
+      <div class="scanner-head">
+        <h1 class="scanner-title">📷 Сканировать QR</h1>
+        <p class="scanner-subtitle">
+          Наведите камеру на QR-код. После распознавания код автоматически отправится в бота.
+        </p>
+      </div>
+
+      <div class="camera-wrap">
+        <video id="video" playsinline autoplay muted></video>
+
+        <div class="scan-overlay">
+          <div class="scan-frame">
+            <div class="scan-line"></div>
           </div>
         </div>
-
-        <div class="lang-row">
-          <button class="lang-btn active" data-lang="ru">RU</button>
-          <button class="lang-btn" data-lang="uz">UZ</button>
-          <button class="lang-btn" data-lang="tj">TJ</button>
-          <button class="lang-btn" data-lang="en">EN</button>
-        </div>
       </div>
 
-      <div class="hero-text" id="heroText">
-        Нажмите кнопку запуска камеры, наведите телефон на QR-код и отправьте результат в Telegram-бот.
+      <div class="status info" id="status">
+        Инициализация камеры...
       </div>
 
-      <div class="actions">
-        <a class="btn btn-secondary" id="openBotBtn" href="https://t.me/QR_Lux_Aristokrat_bot" target="_blank" rel="noopener noreferrer">
-          🚀 Открыть бота
-        </a>
+      <div class="actions" style="padding: 0 14px 14px;">
+        <button class="btn btn-primary" id="restartBtn" type="button">Перезапустить камеру</button>
+        <button class="btn btn-secondary" id="closeBtn" type="button">Закрыть</button>
       </div>
     </div>
 
-    <div class="card">
-      <div id="reader"></div>
-
-      <div class="actions">
-        <button class="btn btn-primary" id="startBtn">📷 Запустить камеру</button>
-        <button class="btn btn-secondary" id="stopBtn">⛔ Остановить</button>
-      </div>
-
-      <input id="manualCode" class="field" placeholder="Или вставьте QR-код вручную" />
-
-      <div class="actions">
-        <button class="btn btn-primary" id="sendManualBtn">✅ Отправить код</button>
-      </div>
-
-      <div class="status" id="status">Готово к сканированию</div>
-      <div class="hint" id="hintText">
-        WebApp работает внутри Telegram. Камера откроется только по нажатию кнопки и на HTTPS.
+    <div class="card manual-card">
+      <h2 class="manual-title">Ручной ввод кода</h2>
+      <div class="manual-row">
+        <input
+          id="manualCode"
+          class="manual-input"
+          type="text"
+          placeholder="Введите код вручную"
+          autocomplete="off"
+          autocapitalize="characters"
+          spellcheck="false"
+        />
+        <button class="btn btn-primary" id="sendManualBtn" type="button" style="padding: 0 18px;">
+          Отправить
+        </button>
       </div>
     </div>
 
-    <div class="card">
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-title" id="step1Title">Откройте камеру</div>
-          <div class="step-text" id="step1Text">Нажмите кнопку запуска и разрешите доступ к камере телефона.</div>
-        </div>
-
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-title" id="step2Title">Сканируйте QR</div>
-          <div class="step-text" id="step2Text">Наведите камеру на QR-код. Система считает его автоматически.</div>
-        </div>
-
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-title" id="step3Title">Получите баллы</div>
-          <div class="step-text" id="step3Text">Код отправится в Telegram-бот, и баллы будут начислены на ваш аккаунт.</div>
-        </div>
-      </div>
+    <div class="footer-note">
+      Lux Aristokrat • QR Scanner WebApp
     </div>
-
-    <div class="footer">© Lux Aristokrat • QR Loyalty WebApp</div>
   </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head">
+      <h3 class="drawer-title">Меню</h3>
+      <button class="drawer-close" id="drawerClose" type="button">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <a
+        class="menu-link"
+        href="https://yandex.uz/maps/org/5186268545/?ll=66.919482%2C39.643378&z=21"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <div class="menu-emoji">📍</div>
+        <div class="menu-text">
+          <div class="menu-title">Как проехать</div>
+          <div class="menu-sub">Открыть адрес в Яндекс Картах</div>
+        </div>
+      </a>
+
+      <a
+        class="menu-link"
+        href="https://instagram.com/aristokrat.hookah_shop_"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <div class="menu-emoji">📷</div>
+        <div class="menu-text">
+          <div class="menu-title">Instagram</div>
+          <div class="menu-sub">@aristokrat.hookah_shop_</div>
+        </div>
+      </a>
+    </div>
+  </aside>
 
   <script>
     const tg = window.Telegram?.WebApp;
     if (tg) {
       tg.ready();
       tg.expand();
-      try {
-        tg.setHeaderColor?.("#0b0b0d");
-        tg.setBackgroundColor?.("#0b0b0d");
-      } catch (_) {}
+      tg.MainButton.hide();
+      tg.BackButton.hide();
     }
 
-    const I18N = {
-      ru: {
-        subTitle: "Премиальный QR scanner и бонусная система",
-        heroText: "Нажмите кнопку запуска камеры, наведите телефон на QR-код и отправьте результат в Telegram-бот.",
-        openBotBtn: "🚀 Открыть бота",
-        startBtn: "📷 Запустить камеру",
-        stopBtn: "⛔ Остановить",
-        manualPlaceholder: "Или вставьте QR-код вручную",
-        sendManualBtn: "✅ Отправить код",
-        statusReady: "Готово к сканированию",
-        statusAlready: "Камера уже запущена",
-        statusStarted: "Камера запущена. Наведите на QR-код.",
-        statusStopped: "Камера остановлена",
-        statusFound: "QR найден: ",
-        statusBadCode: "Некорректный QR-код",
-        statusSent: "Код отправлен в бота",
-        statusCameraError: "Не удалось открыть камеру. Используйте ручной ввод.",
-        statusSendError: "Ошибка отправки: ",
-        hintText: "WebApp работает внутри Telegram. Камера откроется только по нажатию кнопки и на HTTPS.",
-        step1Title: "Откройте камеру",
-        step1Text: "Нажмите кнопку запуска и разрешите доступ к камере телефона.",
-        step2Title: "Сканируйте QR",
-        step2Text: "Наведите камеру на QR-код. Система считает его автоматически.",
-        step3Title: "Получите баллы",
-        step3Text: "Код отправится в Telegram-бот, и баллы будут начислены на ваш аккаунт."
-      },
-      uz: {
-        subTitle: "Premium QR scanner va bonus tizimi",
-        heroText: "Kamerani ishga tushirish tugmasini bosing, telefonni QR-kodga yo‘naltiring va natijani Telegram-botga yuboring.",
-        openBotBtn: "🚀 Botni ochish",
-        startBtn: "📷 Kamerani ishga tushirish",
-        stopBtn: "⛔ To‘xtatish",
-        manualPlaceholder: "Yoki QR-kodni qo‘lda kiriting",
-        sendManualBtn: "✅ Kodni yuborish",
-        statusReady: "Skanerlashga tayyor",
-        statusAlready: "Kamera allaqachon ishga tushgan",
-        statusStarted: "Kamera ishga tushdi. QR-kodga yo‘naltiring.",
-        statusStopped: "Kamera to‘xtatildi",
-        statusFound: "QR topildi: ",
-        statusBadCode: "Noto‘g‘ri QR-kod",
-        statusSent: "Kod botga yuborildi",
-        statusCameraError: "Kamerani ochib bo‘lmadi. Qo‘lda kiritishdan foydalaning.",
-        statusSendError: "Yuborish xatosi: ",
-        hintText: "WebApp Telegram ichida ishlaydi. Kamera faqat tugma bosilganda va HTTPS orqali ochiladi.",
-        step1Title: "Kamerani oching",
-        step1Text: "Ishga tushirish tugmasini bosing va telefon kamerasiga ruxsat bering.",
-        step2Title: "QR-ni skaner qiling",
-        step2Text: "Kamerani QR-kodga yo‘naltiring. Tizim uni avtomatik o‘qiydi.",
-        step3Title: "Ballarni oling",
-        step3Text: "Kod Telegram-botga yuboriladi va ballar akkauntingizga qo‘shiladi."
-      },
-      tj: {
-        subTitle: "QR scanner-и премиалӣ ва системаи бонусӣ",
-        heroText: "Тугмаи кушодани камераро пахш кунед, телефонро ба QR-код равона кунед ва натиҷаро ба Telegram-бот фиристед.",
-        openBotBtn: "🚀 Кушодани бот",
-        startBtn: "📷 Камераро кушоед",
-        stopBtn: "⛔ Ист",
-        manualPlaceholder: "Ё QR-кодро дастӣ ворид кунед",
-        sendManualBtn: "✅ Фиристодани код",
-        statusReady: "Ба скан омода аст",
-        statusAlready: "Камера аллакай кушода шудааст",
-        statusStarted: "Камера фаъол шуд. Ба QR-код равона кунед.",
-        statusStopped: "Камера қатъ шуд",
-        statusFound: "QR ёфт шуд: ",
-        statusBadCode: "QR-коди нодуруст",
-        statusSent: "Код ба бот фиристода шуд",
-        statusCameraError: "Камера кушода нашуд. Воридкунии дастиро истифода баред.",
-        statusSendError: "Хатои фиристодан: ",
-        hintText: "WebApp дар дохили Telegram кор мекунад. Камера танҳо бо пахши тугма ва дар HTTPS кушода мешавад.",
-        step1Title: "Камераро кушоед",
-        step1Text: "Тугмаи оғозро пахш кунед ва барои камера иҷозат диҳед.",
-        step2Title: "QR-ро скан кунед",
-        step2Text: "Камераро ба QR-код равона кунед. Система онро худкор мехонад.",
-        step3Title: "Балл гиред",
-        step3Text: "Код ба Telegram-бот фиристода мешавад ва баллҳо ба ҳисоби шумо илова мегарданд."
-      },
-      en: {
-        subTitle: "Premium QR scanner and bonus system",
-        heroText: "Press the camera start button, point your phone at the QR code, and send the result to the Telegram bot.",
-        openBotBtn: "🚀 Open Bot",
-        startBtn: "📷 Start Camera",
-        stopBtn: "⛔ Stop",
-        manualPlaceholder: "Or paste QR code manually",
-        sendManualBtn: "✅ Send Code",
-        statusReady: "Ready to scan",
-        statusAlready: "Camera is already running",
-        statusStarted: "Camera started. Point it at the QR code.",
-        statusStopped: "Camera stopped",
-        statusFound: "QR found: ",
-        statusBadCode: "Invalid QR code",
-        statusSent: "Code sent to bot",
-        statusCameraError: "Could not open camera. Use manual input.",
-        statusSendError: "Send error: ",
-        hintText: "WebApp works inside Telegram. The camera opens only after pressing the button and on HTTPS.",
-        step1Title: "Open Camera",
-        step1Text: "Press the start button and allow access to your phone camera.",
-        step2Title: "Scan QR",
-        step2Text: "Point the camera at the QR code. The system reads it automatically.",
-        step3Title: "Get Points",
-        step3Text: "The code will be sent to the Telegram bot and points will be credited to your account."
-      }
-    };
+    const user = tg?.initDataUnsafe?.user || null;
 
-    let currentLang = "ru";
-
+    const userNameEl = document.getElementById("userName");
+    const userSubEl = document.getElementById("userSub");
+    const avatarEl = document.getElementById("avatar");
     const statusEl = document.getElementById("status");
+    const videoEl = document.getElementById("video");
+    const restartBtn = document.getElementById("restartBtn");
+    const closeBtn = document.getElementById("closeBtn");
     const manualCodeEl = document.getElementById("manualCode");
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
     const sendManualBtn = document.getElementById("sendManualBtn");
 
-    const qrLangButtons = document.querySelectorAll(".lang-btn");
+    const burgerBtn = document.getElementById("burgerBtn");
+    const drawer = document.getElementById("drawer");
+    const drawerBackdrop = document.getElementById("drawerBackdrop");
+    const drawerClose = document.getElementById("drawerClose");
 
-    let qrScanner = null;
+    let html5QrCode = null;
     let scannerStarted = false;
+    let sendingNow = false;
 
-    function applyLang(lang) {
-      currentLang = lang;
-      const t = I18N[lang];
+    function setUserProfile() {
+      const fullName = user
+        ? [user.first_name, user.last_name].filter(Boolean).join(" ").trim()
+        : "Гость";
 
-      document.documentElement.lang = lang;
-      document.getElementById("subTitle").textContent = t.subTitle;
-      document.getElementById("heroText").textContent = t.heroText;
-      document.getElementById("openBotBtn").textContent = t.openBotBtn;
-      document.getElementById("startBtn").textContent = t.startBtn;
-      document.getElementById("stopBtn").textContent = t.stopBtn;
-      document.getElementById("manualCode").placeholder = t.manualPlaceholder;
-      document.getElementById("sendManualBtn").textContent = t.sendManualBtn;
-      document.getElementById("hintText").textContent = t.hintText;
-      document.getElementById("step1Title").textContent = t.step1Title;
-      document.getElementById("step1Text").textContent = t.step1Text;
-      document.getElementById("step2Title").textContent = t.step2Title;
-      document.getElementById("step2Text").textContent = t.step2Text;
-      document.getElementById("step3Title").textContent = t.step3Title;
-      document.getElementById("step3Text").textContent = t.step3Text;
+      const username = user?.username ? "@" + user.username : "QR бонусная система";
 
-      if (!statusEl.dataset.locked) {
-        setStatus(t.statusReady);
-      }
+      userNameEl.textContent = fullName || "Гость";
+      userSubEl.textContent = username;
 
-      qrLangButtons.forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.lang === lang);
-      });
+      const initial = (fullName || "L").trim().charAt(0).toUpperCase();
+      avatarEl.textContent = initial || "L";
     }
 
-    function setStatus(text, lock=false) {
-      statusEl.textContent = text || "";
-      statusEl.dataset.locked = lock ? "1" : "";
+    function setStatus(text, type = "info") {
+      statusEl.className = "status " + type;
+      statusEl.textContent = text;
     }
 
-    function normalizeLocalCode(v) {
-      return String(v || "")
+    function openDrawer() {
+      drawer.classList.add("show");
+      drawerBackdrop.classList.add("show");
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove("show");
+      drawerBackdrop.classList.remove("show");
+    }
+
+    burgerBtn.addEventListener("click", openDrawer);
+    drawerClose.addEventListener("click", closeDrawer);
+    drawerBackdrop.addEventListener("click", closeDrawer);
+
+    function normalizeCode(raw) {
+      return String(raw || "")
         .trim()
-        .replace(/[><!&'" .,\/\\:;?=+#%@*()\[\]{}]+/g, "_")
-        .replace(/_+/g, "_")
-        .replace(/^_+|_+$/g, "")
         .toUpperCase();
     }
 
-    function sendCode(code) {
-      const t = I18N[currentLang];
-      const normalized = normalizeLocalCode(code);
+    function sendCodeToBot(code) {
+      const normalized = normalizeCode(code);
 
       if (!normalized) {
-        setStatus(t.statusBadCode);
+        setStatus("Введите или отсканируйте корректный код.", "error");
         return;
       }
+
+      if (sendingNow) return;
+      sendingNow = true;
+
+      setStatus("Код распознан. Отправляем в бота...", "success");
 
       const payload = {
         action: "scan_qr",
@@ -532,83 +651,163 @@
       };
 
       try {
-        tg.sendData(JSON.stringify(payload));
-        setStatus(t.statusSent, true);
-        setTimeout(() => {
-          tg.close();
-        }, 500);
+        if (tg && typeof tg.sendData === "function") {
+          tg.sendData(JSON.stringify(payload));
+
+          setTimeout(() => {
+            sendingNow = false;
+            if (tg && typeof tg.close === "function") {
+              tg.close();
+            } else {
+              setStatus("Код отправлен. Вернитесь в Telegram.", "success");
+            }
+          }, 500);
+        } else {
+          sendingNow = false;
+          setStatus("Telegram WebApp недоступен. Откройте страницу из Telegram.", "error");
+        }
       } catch (e) {
-        setStatus(t.statusSendError + e.message);
+        sendingNow = false;
+        setStatus("Не удалось отправить код в бота.", "error");
+      }
+    }
+
+    async function loadHtml5QrcodeLib() {
+      if (window.Html5Qrcode) return;
+
+      await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://unpkg.com/html5-qrcode";
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    async function stopScanner() {
+      try {
+        if (html5QrCode && scannerStarted) {
+          await html5QrCode.stop();
+          await html5QrCode.clear();
+        }
+      } catch (e) {
+      } finally {
+        scannerStarted = false;
       }
     }
 
     async function startScanner() {
-      const t = I18N[currentLang];
-
       try {
-        if (!qrScanner) {
-          qrScanner = new Html5Qrcode("reader");
+        setStatus("Загрузка сканера...", "info");
+        await loadHtml5QrcodeLib();
+
+        await stopScanner();
+
+        const containerId = "qr-reader-hidden";
+        let container = document.getElementById(containerId);
+        if (!container) {
+          container = document.createElement("div");
+          container.id = containerId;
+          container.style.position = "fixed";
+          container.style.left = "-99999px";
+          container.style.top = "-99999px";
+          container.style.width = "1px";
+          container.style.height = "1px";
+          container.style.opacity = "0";
+          document.body.appendChild(container);
         }
 
-        if (scannerStarted) {
-          setStatus(t.statusAlready);
+        html5QrCode = new Html5Qrcode(containerId);
+
+        const cameras = await Html5Qrcode.getCameras();
+        if (!cameras || !cameras.length) {
+          setStatus("Камера не найдена на устройстве.", "error");
           return;
         }
 
-        await qrScanner.start(
-          { facingMode: "environment" },
+        let cameraId = cameras[0].id;
+        const backCam = cameras.find(c =>
+          /back|rear|environment/gi.test(c.label || "")
+        );
+        if (backCam) cameraId = backCam.id;
+
+        await html5QrCode.start(
+          cameraId,
           {
             fps: 10,
-            qrbox: { width: 240, height: 240 },
-            aspectRatio: 1.333334
+            qrbox: { width: 260, height: 260 },
+            aspectRatio: 1
           },
           (decodedText) => {
-            setStatus(t.statusFound + decodedText, true);
-            stopScanner().finally(() => sendCode(decodedText));
+            if (!decodedText || sendingNow) return;
+            sendCodeToBot(decodedText);
           },
           () => {}
         );
 
         scannerStarted = true;
-        setStatus(t.statusStarted);
+        setStatus("Камера активна. Наведите её на QR-код.", "info");
+
+        const stream = videoEl.srcObject;
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+
+        const media = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: "environment" }
+          },
+          audio: false
+        });
+
+        videoEl.srcObject = media;
+        await videoEl.play().catch(() => {});
       } catch (e) {
-        setStatus(t.statusCameraError);
+        setStatus("Не удалось запустить камеру. Разрешите доступ к камере.", "error");
       }
     }
 
-    async function stopScanner() {
-      const t = I18N[currentLang];
-      try {
-        if (qrScanner && scannerStarted) {
-          await qrScanner.stop();
-          await qrScanner.clear();
-          scannerStarted = false;
-          setStatus(t.statusStopped);
-        }
-      } catch (_) {}
-    }
+    restartBtn.addEventListener("click", async () => {
+      await startScanner();
+    });
 
-    startBtn.addEventListener("click", startScanner);
-    stopBtn.addEventListener("click", stopScanner);
+    closeBtn.addEventListener("click", async () => {
+      try {
+        await stopScanner();
+      } catch (e) {}
+      if (tg && typeof tg.close === "function") {
+        tg.close();
+      } else {
+        window.close();
+      }
+    });
 
     sendManualBtn.addEventListener("click", () => {
-      sendCode(manualCodeEl.value);
+      sendCodeToBot(manualCodeEl.value);
     });
 
     manualCodeEl.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        sendCode(manualCodeEl.value);
+        sendCodeToBot(manualCodeEl.value);
       }
     });
 
-    qrLangButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        applyLang(btn.dataset.lang);
-      });
+    document.addEventListener("visibilitychange", async () => {
+      if (document.hidden) return;
+      if (!scannerStarted && !sendingNow) {
+        await startScanner();
+      }
     });
 
-    applyLang("ru");
+    window.addEventListener("beforeunload", async () => {
+      try {
+        await stopScanner();
+      } catch (e) {}
+    });
+
+    setUserProfile();
+    startScanner();
   </script>
 </body>
 </html>
