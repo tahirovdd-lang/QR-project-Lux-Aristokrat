@@ -1,9 +1,19 @@
 FROM python:3.11-slim
 
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
 COPY . /app
 
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir python-dotenv==1.0.1 qrcode==8.2 pillow==11.3.0
+RUN mkdir -p /app/data/generated_qr /app/data/exports
 
 CMD ["python", "main.py"]
