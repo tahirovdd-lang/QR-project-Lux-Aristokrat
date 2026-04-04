@@ -180,52 +180,258 @@ UI = {
         "myid": "Ваш Telegram ID: <code>{id}</code>\nAdmin access: <b>{admin}</b>\nADMIN_ID env: <code>{admin_id}</code>\nADMIN_IDS env: <code>{admin_ids}</code>",
         "lang_saved": "✅ Язык сохранён: Русский",
     },
-    "uz": {"choose_lang":"Выберите язык / Tilni tanlang / Забонро интихоб кунед / Choose language","welcome":"✨ <b>Lux Aristokrat</b>\n\nSalom, {name}!\nBonus tizimiga xush kelibsiz.\n\nBu yerda siz:\n• QR-kodlarni skaner qilishingiz\n• bonus ballar olishingiz\n• tarixni ko‘rishingiz\n• darajangizni kuzatishingiz mumkin\n{admin}\n\n<b>«📷 QR skanerlash»</b> tugmasini bosing.","admin_note":"\n\n<b>Siz administrator sifatida kirdingiz.</b> QR yuklash va boshqarish imkoniyati mavjud.","my_points":"💎 Sizning balansingiz: <b>{points}</b>\n🏆 Darajangiz: <b>{level}</b>","my_level":"🏆 Sizning darajangiz: <b>{level}</b>\nBallar: <b>{points}</b>\n\nDarajalar:\n• Silver: 0–299\n• Gold: 300–999\n• VIP: 1000+","history_empty":"📜 Tarix hozircha bo‘sh.","history_title":"📜 <b>Sizning tarixingiz</b>\n","how":"ℹ️ <b>Ballarni qanday olish mumkin</b>\n\n1. «📷 QR skanerlash» tugmasini bosing\n2. Kamera bilan mini app ochiladi\n3. Kamerani QR-kodga yo‘naltiring\n4. Ballar avtomatik qo‘shiladi\n\nBir xil QR-kod bitta foydalanuvchiga faqat bir marta hisoblanadi.","unknown_menu":"Menyudan amalni tanlang.","webapp_bad":"❌ WebApp ma’lumotlarida xatolik.","webapp_unknown":"⚠️ Noma’lum WebApp harakati.","bad_code":"❌ Bo‘sh yoki noto‘g‘ri QR-kod.","qr_not_found":"❌ Bunday QR-kod topilmadi.","qr_disabled":"⚠️ <b>{title}</b> QR-kodi o‘chirilgan.","already_scanned":"⚠️ Siz bu QR-kodni avval skaner qilgansiz.\n\nQR: <b>{title}</b>\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>","points_added":"✅ <b>Ballar qo‘shildi!</b>\n\nQR: <b>{title}</b>\nKod: <code>{code}</code>\nQo‘shildi: <b>+{added}</b>\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>","add_qr_prompt":"➕ <b>QR qo‘shish</b>\n\nYuboring:\n<code>Nomi|Ball</code>\nyoki\n<code>CODE|Nomi|Ball</code>","bulk_prompt":"📥 <b>QRlarni ommaviy qo‘shish</b>\n\nBir xabarda ko‘p satr yuboring.\n\nFormatlar:\n<code>CODE</code>\n<code>CODE|Ball</code>\n<code>CODE|Nomi|Ball</code>","qr_list_empty":"QR ro‘yxati bo‘sh.","qr_list_title":"📋 <b>QR ro‘yxati</b>\n","disable_prompt":"O‘chirish uchun <b>QR ID</b> yuboring.","enable_prompt":"Yoqish uchun <b>QR ID</b> yuboring.","delete_prompt":"O‘chirish uchun <b>QR ID</b> yuboring.","png_prompt":"<b>QR ID</b> yuboring, PNG tayyorlanadi.","add_points_prompt":"Yuboring:\n<code>user_id|ball</code>","remove_points_prompt":"Yuboring:\n<code>user_id|ball</code>","find_user_prompt":"<b>Foydalanuvchi ID</b> yuboring.","stats_title":"📊 <b>Statistika</b>\n","top_title":"🥇 <b>Top foydalanuvchilar</b>\n","users_none":"Foydalanuvchilar hali yo‘q.","cancelled":"Bekor qilindi.","bulk_done":"📥 <b>Bulk QR tugadi</b>","bulk_created":"✅ Yaratildi: <b>{n}</b>","bulk_skipped":"⚠️ O‘tkazib yuborildi: <b>{n}</b>","bulk_created_title":"<b>Yaratilgan QRlar:</b>","bulk_skipped_title":"<b>O‘tkazib yuborilgan satrlar:</b>","wrong_format":"❌ Noto‘g‘ri format.","code_exists":"❌ Bunday kod allaqachon mavjud.","points_number":"❌ Ball son bo‘lishi va 0 dan katta bo‘lishi kerak.","id_number":"❌ ID son bo‘lishi kerak.","qr_missing":"❌ QR topilmadi.","qr_disabled_ok":"⛔️ <b>{title}</b> QR o‘chirildi.","qr_enabled_ok":"✅ <b>{title}</b> QR yoqildi.","qr_deleted_ok":"🗑 <b>{title}</b> QR o‘chirildi.","user_not_found":"❌ Foydalanuvchi topilmadi.","add_points_ok":"✅ <code>{user_id}</code> foydalanuvchiga <b>+{added}</b> ball qo‘shildi\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>","remove_points_ok":"➖ <code>{user_id}</code> foydalanuvchidan <b>{removed}</b> ball yechildi\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>","notify_add":"🎁 Sizga <b>+{added}</b> ball qo‘shildi.\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>","notify_remove":"➖ Sizdan <b>{removed}</b> ball yechildi.\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>","find_user_title":"👤 <b>Foydalanuvchi</b>\n","last_scans":"<b>Oxirgi skanlar:</b>","history_none":"Tarix bo‘sh.","export_users_done":"📤 users eksport tayyor.","export_scans_done":"📤 scans eksport tayyor.","myid":"Sizning Telegram ID: <code>{id}</code>\nAdmin access: <b>{admin}</b>\nADMIN_ID env: <code>{admin_id}</code>\nADMIN_IDS env: <code>{admin_ids}</code>","lang_saved":"✅ Til saqlandi: O‘zbekcha"},
-    "tj": {"choose_lang":"Выберите язык / Tilni tanlang / Забонро интихоб кунед / Choose language","welcome":"✨ <b>Lux Aristokrat</b>\n\nСалом, {name}!\nБа системаи бонусӣ хуш омадед.\n\nДар ин ҷо шумо метавонед:\n• QR-кодҳоро скан кунед\n• баллҳои бонусӣ гиред\n• таърихро бинед\n• сатҳи худро назорат кунед\n{admin}\n\nТугмаи <b>«📷 QR-ро скан кардан»</b>-ро пахш кунед.","admin_note":"\n\n<b>Шумо ҳамчун администратор ворид шудед.</b> Ба шумо боркунӣ ва идоракунии QR дастрас аст.","my_points":"💎 Баланси шумо: <b>{points}</b>\n🏆 Сатҳи шумо: <b>{level}</b>","my_level":"🏆 Сатҳи шумо: <b>{level}</b>\nБаллҳо: <b>{points}</b>\n\nСатҳҳо:\n• Silver: 0–299\n• Gold: 300–999\n• VIP: 1000+","history_empty":"📜 Таърих ҳоло холӣ аст.","history_title":"📜 <b>Таърихи шумо</b>\n","how":"ℹ️ <b>Чӣ тавр балл гирифтан мумкин</b>\n\n1. Тугмаи «📷 QR-ро скан кардан»-ро пахш кунед\n2. Mini app бо камера кушода мешавад\n3. Камераро ба QR равона кунед\n4. Баллҳо худкор илова мешаванд\n\nЯк QR-код барои як корбар танҳо як бор ҳисоб карда мешавад.","unknown_menu":"Аз меню амалро интихоб кунед.","webapp_bad":"❌ Хатогии маълумоти WebApp.","webapp_unknown":"⚠️ Амали номаълуми WebApp.","bad_code":"❌ QR-коди холӣ ё нодуруст.","qr_not_found":"❌ Чунин QR-код ёфт нашуд.","qr_disabled":"⚠️ QR-коди <b>{title}</b> хомӯш аст.","already_scanned":"⚠️ Шумо ин QR-кодро аллакай скан кардаед.\n\nQR: <b>{title}</b>\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>","points_added":"✅ <b>Баллҳо илова шуданд!</b>\n\nQR: <b>{title}</b>\nКод: <code>{code}</code>\nИлова шуд: <b>+{added}</b>\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>","add_qr_prompt":"➕ <b>Иловаи QR</b>\n\nФиристед:\n<code>Ном|Балл</code>\nё\n<code>CODE|Ном|Балл</code>","bulk_prompt":"📥 <b>Иловаи гурӯҳии QR</b>\n\nЯк паём бо чанд сатр фиристед.\n\nФорматҳо:\n<code>CODE</code>\n<code>CODE|Балл</code>\n<code>CODE|Ном|Балл</code>","qr_list_empty":"Рӯйхати QR холӣ аст.","qr_list_title":"📋 <b>Рӯйхати QR</b>\n","disable_prompt":"<b>ID QR</b>-ро барои хомӯш кардан фиристед.","enable_prompt":"<b>ID QR</b>-ро барои фаъол кардан фиристед.","delete_prompt":"<b>ID QR</b>-ро барои ҳазф кардан фиристед.","png_prompt":"<b>ID QR</b>-ро фиристед, PNG сохта мешавад.","add_points_prompt":"Фиристед:\n<code>user_id|балл</code>","remove_points_prompt":"Фиристед:\n<code>user_id|балл</code>","find_user_prompt":"<b>ID корбар</b>-ро фиристед.","stats_title":"📊 <b>Омор</b>\n","top_title":"🥇 <b>Беҳтарин корбарон</b>\n","users_none":"Ҳоло корбарон нестанд.","cancelled":"Бекор карда шуд.","bulk_done":"📥 <b>Bulk QR анҷом ёфт</b>","bulk_created":"✅ Сохта шуд: <b>{n}</b>","bulk_skipped":"⚠️ Гузаронида шуд: <b>{n}</b>","bulk_created_title":"<b>QR-ҳои сохташуда:</b>","bulk_skipped_title":"<b>Сатрҳои гузаронидашуда:</b>","wrong_format":"❌ Формати нодуруст.","code_exists":"❌ Чунин код аллакай ҳаст.","points_number":"❌ Балл бояд рақам ва аз 0 зиёд бошад.","id_number":"❌ ID бояд рақам бошад.","qr_missing":"❌ QR ёфт нашуд.","qr_disabled_ok":"⛔️ QR <b>{title}</b> хомӯш шуд.","qr_enabled_ok":"✅ QR <b>{title}</b> фаъол шуд.","qr_deleted_ok":"🗑 QR <b>{title}</b> ҳазф шуд.","user_not_found":"❌ Корбар ёфт нашуд.","add_points_ok":"✅ Ба корбар <code>{user_id}</code> <b>+{added}</b> балл илова шуд\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>","remove_points_ok":"➖ Аз корбар <code>{user_id}</code> <b>{removed}</b> балл кам шуд\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>","notify_add":"🎁 Ба шумо <b>+{added}</b> балл илова шуд.\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>","notify_remove":"➖ Аз шумо <b>{removed}</b> балл кам шуд.\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>","find_user_title":"👤 <b>Корбар</b>\n","last_scans":"<b>Сканҳои охирин:</b>","history_none":"Таърих холӣ аст.","export_users_done":"📤 users экспорт тайёр.","export_scans_done":"📤 scans экспорт тайёр.","myid":"Telegram ID-и шумо: <code>{id}</code>\nAdmin access: <b>{admin}</b>\nADMIN_ID env: <code>{admin_id}</code>\nADMIN_IDS env: <code>{admin_ids}</code>","lang_saved":"✅ Забон нигоҳ дошта шуд: Тоҷикӣ"},
-    "en": {"choose_lang":"Выберите язык / Tilni tanlang / Забонро интихоб кунед / Choose language","welcome":"✨ <b>Lux Aristokrat</b>\n\nHello, {name}!\nWelcome to the bonus system.\n\nHere you can:\n• scan QR codes\n• receive bonus points\n• view your history\n• track your level\n{admin}\n\nPress <b>“📷 Scan QR”</b>.","admin_note":"\n\n<b>You are logged in as administrator.</b> QR upload and management are available.","my_points":"💎 Your balance: <b>{points}</b>\n🏆 Your level: <b>{level}</b>","my_level":"🏆 Your level: <b>{level}</b>\nPoints: <b>{points}</b>\n\nLevels:\n• Silver: 0–299\n• Gold: 300–999\n• VIP: 1000+","history_empty":"📜 History is empty.","history_title":"📜 <b>Your History</b>\n","how":"ℹ️ <b>How to Get Points</b>\n\n1. Press “📷 Scan QR”\n2. A mini app with camera will open\n3. Point the camera at the code\n4. Points will be credited automatically\n\nThe same QR code is counted only once per user.","unknown_menu":"Choose an action from the menu.","webapp_bad":"❌ WebApp data error.","webapp_unknown":"⚠️ Unknown WebApp action.","bad_code":"❌ Empty or invalid QR code.","qr_not_found":"❌ QR code not found.","qr_disabled":"⚠️ QR code <b>{title}</b> is disabled.","already_scanned":"⚠️ You have already scanned this QR code.\n\nQR: <b>{title}</b>\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>","points_added":"✅ <b>Points credited!</b>\n\nQR: <b>{title}</b>\nCode: <code>{code}</code>\nAdded: <b>+{added}</b>\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>","add_qr_prompt":"➕ <b>Add QR</b>\n\nSend:\n<code>Title|Points</code>\nor\n<code>CODE|Title|Points</code>","bulk_prompt":"📥 <b>Bulk QR upload</b>\n\nSend multiple lines in one message.\n\nFormats:\n<code>CODE</code>\n<code>CODE|Points</code>\n<code>CODE|Title|Points</code>","qr_list_empty":"QR list is empty.","qr_list_title":"📋 <b>QR List</b>\n","disable_prompt":"Send the <b>QR ID</b> to disable.","enable_prompt":"Send the <b>QR ID</b> to enable.","delete_prompt":"Send the <b>QR ID</b> to delete.","png_prompt":"Send the <b>QR ID</b> to generate PNG.","add_points_prompt":"Send:\n<code>user_id|points</code>","remove_points_prompt":"Send:\n<code>user_id|points</code>","find_user_prompt":"Send the <b>user ID</b>.","stats_title":"📊 <b>Statistics</b>\n","top_title":"🥇 <b>Top Users</b>\n","users_none":"No users yet.","cancelled":"Cancelled.","bulk_done":"📥 <b>Bulk QR completed</b>","bulk_created":"✅ Created: <b>{n}</b>","bulk_skipped":"⚠️ Skipped: <b>{n}</b>","bulk_created_title":"<b>Created QR codes:</b>","bulk_skipped_title":"<b>Skipped lines:</b>","wrong_format":"❌ Wrong format.","code_exists":"❌ This code already exists.","points_number":"❌ Points must be a number greater than 0.","id_number":"❌ ID must be a number.","qr_missing":"❌ QR not found.","qr_disabled_ok":"⛔️ QR <b>{title}</b> disabled.","qr_enabled_ok":"✅ QR <b>{title}</b> enabled.","qr_deleted_ok":"🗑 QR <b>{title}</b> deleted.","user_not_found":"❌ User not found.","add_points_ok":"✅ Added <b>+{added}</b> points to user <code>{user_id}</code>\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>","remove_points_ok":"➖ Removed <b>{removed}</b> points from user <code>{user_id}</code>\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>","notify_add":"🎁 <b>+{added}</b> points have been added to your account.\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>","notify_remove":"➖ <b>{removed}</b> points have been removed from your account.\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>","find_user_title":"👤 <b>User</b>\n","last_scans":"<b>Last scans:</b>","history_none":"History is empty.","export_users_done":"📤 users export is ready.","export_scans_done":"📤 scans export is ready.","myid":"Your Telegram ID: <code>{id}</code>\nAdmin access: <b>{admin}</b>\nADMIN_ID env: <code>{admin_id}</code>\nADMIN_IDS env: <code>{admin_ids}</code>","lang_saved":"✅ Language saved: English"},
+    "uz": {
+        "choose_lang": "Выберите язык / Tilni tanlang / Забонро интихоб кунед / Choose language",
+        "welcome": "✨ <b>Lux Aristokrat</b>\n\nSalom, {name}!\nBonus tizimiga xush kelibsiz.\n\nBu yerda siz:\n• QR-kodlarni skaner qilishingiz\n• bonus ballar olishingiz\n• tarixni ko‘rishingiz\n• darajangizni kuzatishingiz mumkin\n{admin}\n\n<b>«📷 QR skanerlash»</b> tugmasini bosing.",
+        "admin_note": "\n\n<b>Siz administrator sifatida kirdingiz.</b> QR yuklash va boshqarish imkoniyati mavjud.",
+        "my_points": "💎 Sizning balansingiz: <b>{points}</b>\n🏆 Darajangiz: <b>{level}</b>",
+        "my_level": "🏆 Sizning darajangiz: <b>{level}</b>\nBallar: <b>{points}</b>\n\nDarajalar:\n• Silver: 0–299\n• Gold: 300–999\n• VIP: 1000+",
+        "history_empty": "📜 Tarix hozircha bo‘sh.",
+        "history_title": "📜 <b>Sizning tarixingiz</b>\n",
+        "how": "ℹ️ <b>Ballarni qanday olish mumkin</b>\n\n1. «📷 QR skanerlash» tugmasini bosing\n2. Kamera bilan mini app ochiladi\n3. Kamerani QR-kodga yo‘naltiring\n4. Ballar avtomatik qo‘shiladi\n\nBir xil QR-kod bitta foydalanuvchiga faqat bir marta hisoblanadi.",
+        "unknown_menu": "Menyudan amalni tanlang.",
+        "webapp_bad": "❌ WebApp ma’lumotlarida xatolik.",
+        "webapp_unknown": "⚠️ Noma’lum WebApp harakati.",
+        "bad_code": "❌ Bo‘sh yoki noto‘g‘ri QR-kod.",
+        "qr_not_found": "❌ Bunday QR-kod topilmadi.",
+        "qr_disabled": "⚠️ <b>{title}</b> QR-kodi o‘chirilgan.",
+        "already_scanned": "⚠️ Siz bu QR-kodni avval skaner qilgansiz.\n\nQR: <b>{title}</b>\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>",
+        "points_added": "✅ <b>Ballar qo‘shildi!</b>\n\nQR: <b>{title}</b>\nKod: <code>{code}</code>\nQo‘shildi: <b>+{added}</b>\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>",
+        "add_qr_prompt": "➕ <b>QR qo‘shish</b>\n\nYuboring:\n<code>Nomi|Ball</code>\nyoki\n<code>CODE|Nomi|Ball</code>",
+        "bulk_prompt": "📥 <b>QRlarni ommaviy qo‘shish</b>\n\nBir xabarda ko‘p satr yuboring.\n\nFormatlar:\n<code>CODE</code>\n<code>CODE|Ball</code>\n<code>CODE|Nomi|Ball</code>",
+        "qr_list_empty": "QR ro‘yxati bo‘sh.",
+        "qr_list_title": "📋 <b>QR ro‘yxati</b>\n",
+        "disable_prompt": "O‘chirish uchun <b>QR ID</b> yuboring.",
+        "enable_prompt": "Yoqish uchun <b>QR ID</b> yuboring.",
+        "delete_prompt": "O‘chirish uchun <b>QR ID</b> yuboring.",
+        "png_prompt": "<b>QR ID</b> yuboring, PNG tayyorlanadi.",
+        "add_points_prompt": "Yuboring:\n<code>user_id|ball</code>",
+        "remove_points_prompt": "Yuboring:\n<code>user_id|ball</code>",
+        "find_user_prompt": "<b>Foydalanuvchi ID</b> yuboring.",
+        "stats_title": "📊 <b>Statistika</b>\n",
+        "top_title": "🥇 <b>Top foydalanuvchilar</b>\n",
+        "users_none": "Foydalanuvchilar hali yo‘q.",
+        "cancelled": "Bekor qilindi.",
+        "bulk_done": "📥 <b>Bulk QR tugadi</b>",
+        "bulk_created": "✅ Yaratildi: <b>{n}</b>",
+        "bulk_skipped": "⚠️ O‘tkazib yuborildi: <b>{n}</b>",
+        "bulk_created_title": "<b>Yaratilgan QRlar:</b>",
+        "bulk_skipped_title": "<b>O‘tkazib yuborilgan satrlar:</b>",
+        "wrong_format": "❌ Noto‘g‘ri format.",
+        "code_exists": "❌ Bunday kod allaqachon mavjud.",
+        "points_number": "❌ Ball son bo‘lishi va 0 dan katta bo‘lishi kerak.",
+        "id_number": "❌ ID son bo‘lishi kerak.",
+        "qr_missing": "❌ QR topilmadi.",
+        "qr_disabled_ok": "⛔️ <b>{title}</b> QR o‘chirildi.",
+        "qr_enabled_ok": "✅ <b>{title}</b> QR yoqildi.",
+        "qr_deleted_ok": "🗑 <b>{title}</b> QR o‘chirildi.",
+        "user_not_found": "❌ Foydalanuvchi topilmadi.",
+        "add_points_ok": "✅ <code>{user_id}</code> foydalanuvchiga <b>+{added}</b> ball qo‘shildi\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>",
+        "remove_points_ok": "➖ <code>{user_id}</code> foydalanuvchidan <b>{removed}</b> ball yechildi\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>",
+        "notify_add": "🎁 Sizga <b>+{added}</b> ball qo‘shildi.\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>",
+        "notify_remove": "➖ Sizdan <b>{removed}</b> ball yechildi.\nBalans: <b>{points}</b>\nDaraja: <b>{level}</b>",
+        "find_user_title": "👤 <b>Foydalanuvchi</b>\n",
+        "last_scans": "<b>Oxirgi skanlar:</b>",
+        "history_none": "Tarix bo‘sh.",
+        "export_users_done": "📤 users eksport tayyor.",
+        "export_scans_done": "📤 scans eksport tayyor.",
+        "myid": "Sizning Telegram ID: <code>{id}</code>\nAdmin access: <b>{admin}</b>\nADMIN_ID env: <code>{admin_id}</code>\nADMIN_IDS env: <code>{admin_ids}</code>",
+        "lang_saved": "✅ Til saqlandi: O‘zbekcha"
+    },
+    "tj": {
+        "choose_lang": "Выберите язык / Tilni tanlang / Забонро интихоб кунед / Choose language",
+        "welcome": "✨ <b>Lux Aristokrat</b>\n\nСалом, {name}!\nБа системаи бонусӣ хуш омадед.\n\nДар ин ҷо шумо метавонед:\n• QR-кодҳоро скан кунед\n• баллҳои бонусӣ гиред\n• таърихро бинед\n• сатҳи худро назорат кунед\n{admin}\n\nТугмаи <b>«📷 QR-ро скан кардан»</b>-ро пахш кунед.",
+        "admin_note": "\n\n<b>Шумо ҳамчун администратор ворид шудед.</b> Ба шумо боркунӣ ва идоракунии QR дастрас аст.",
+        "my_points": "💎 Баланси шумо: <b>{points}</b>\n🏆 Сатҳи шумо: <b>{level}</b>",
+        "my_level": "🏆 Сатҳи шумо: <b>{level}</b>\nБаллҳо: <b>{points}</b>\n\nСатҳҳо:\n• Silver: 0–299\n• Gold: 300–999\n• VIP: 1000+",
+        "history_empty": "📜 Таърих ҳоло холӣ аст.",
+        "history_title": "📜 <b>Таърихи шумо</b>\n",
+        "how": "ℹ️ <b>Чӣ тавр балл гирифтан мумкин</b>\n\n1. Тугмаи «📷 QR-ро скан кардан»-ро пахш кунед\n2. Mini app бо камера кушода мешавад\n3. Камераро ба QR равона кунед\n4. Баллҳо худкор илова мешаванд\n\nЯк QR-код барои як корбар танҳо як бор ҳисоб карда мешавад.",
+        "unknown_menu": "Аз меню амалро интихоб кунед.",
+        "webapp_bad": "❌ Хатогии маълумоти WebApp.",
+        "webapp_unknown": "⚠️ Амали номаълуми WebApp.",
+        "bad_code": "❌ QR-коди холӣ ё нодуруст.",
+        "qr_not_found": "❌ Чунин QR-код ёфт нашуд.",
+        "qr_disabled": "⚠️ QR-коди <b>{title}</b> хомӯш аст.",
+        "already_scanned": "⚠️ Шумо ин QR-кодро аллакай скан кардаед.\n\nQR: <b>{title}</b>\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>",
+        "points_added": "✅ <b>Баллҳо илова шуданд!</b>\n\nQR: <b>{title}</b>\nКод: <code>{code}</code>\nИлова шуд: <b>+{added}</b>\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>",
+        "add_qr_prompt": "➕ <b>Иловаи QR</b>\n\nФиристед:\n<code>Ном|Балл</code>\nё\n<code>CODE|Ном|Балл</code>",
+        "bulk_prompt": "📥 <b>Иловаи гурӯҳии QR</b>\n\nЯк паём бо чанд сатр фиристед.\n\nФорматҳо:\n<code>CODE</code>\n<code>CODE|Балл</code>\n<code>CODE|Ном|Балл</code>",
+        "qr_list_empty": "Рӯйхати QR холӣ аст.",
+        "qr_list_title": "📋 <b>Рӯйхати QR</b>\n",
+        "disable_prompt": "<b>ID QR</b>-ро барои хомӯш кардан фиристед.",
+        "enable_prompt": "<b>ID QR</b>-ро барои фаъол кардан фиристед.",
+        "delete_prompt": "<b>ID QR</b>-ро барои ҳазф кардан фиристед.",
+        "png_prompt": "<b>ID QR</b>-ро фиристед, PNG сохта мешавад.",
+        "add_points_prompt": "Фиристед:\n<code>user_id|балл</code>",
+        "remove_points_prompt": "Фиристед:\n<code>user_id|балл</code>",
+        "find_user_prompt": "<b>ID корбар</b>-ро фиристед.",
+        "stats_title": "📊 <b>Омор</b>\n",
+        "top_title": "🥇 <b>Беҳтарин корбарон</b>\n",
+        "users_none": "Ҳоло корбарон нестанд.",
+        "cancelled": "Бекор карда шуд.",
+        "bulk_done": "📥 <b>Bulk QR анҷом ёфт</b>",
+        "bulk_created": "✅ Сохта шуд: <b>{n}</b>",
+        "bulk_skipped": "⚠️ Гузаронида шуд: <b>{n}</b>",
+        "bulk_created_title": "<b>QR-ҳои сохташуда:</b>",
+        "bulk_skipped_title": "<b>Сатрҳои гузаронидашуда:</b>",
+        "wrong_format": "❌ Формати нодуруст.",
+        "code_exists": "❌ Чунин код аллакай ҳаст.",
+        "points_number": "❌ Балл бояд рақам ва аз 0 зиёд бошад.",
+        "id_number": "❌ ID бояд рақам бошад.",
+        "qr_missing": "❌ QR ёфт нашуд.",
+        "qr_disabled_ok": "⛔️ QR <b>{title}</b> хомӯш шуд.",
+        "qr_enabled_ok": "✅ QR <b>{title}</b> фаъол шуд.",
+        "qr_deleted_ok": "🗑 QR <b>{title}</b> ҳазф шуд.",
+        "user_not_found": "❌ Корбар ёфт нашуд.",
+        "add_points_ok": "✅ Ба корбар <code>{user_id}</code> <b>+{added}</b> балл илова шуд\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>",
+        "remove_points_ok": "➖ Аз корбар <code>{user_id}</code> <b>{removed}</b> балл кам шуд\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>",
+        "notify_add": "🎁 Ба шумо <b>+{added}</b> балл илова шуд.\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>",
+        "notify_remove": "➖ Аз шумо <b>{removed}</b> балл кам шуд.\nБаланс: <b>{points}</b>\nСатҳ: <b>{level}</b>",
+        "find_user_title": "👤 <b>Корбар</b>\n",
+        "last_scans": "<b>Сканҳои охирин:</b>",
+        "history_none": "Таърих холӣ аст.",
+        "export_users_done": "📤 users экспорт тайёр.",
+        "export_scans_done": "📤 scans экспорт тайёр.",
+        "myid": "Telegram ID-и шумо: <code>{id}</code>\nAdmin access: <b>{admin}</b>\nADMIN_ID env: <code>{admin_id}</code>\nADMIN_IDS env: <code>{admin_ids}</code>",
+        "lang_saved": "✅ Забон нигоҳ дошта шуд: Тоҷикӣ"
+    },
+    "en": {
+        "choose_lang": "Выберите язык / Tilni tanlang / Забонро интихоб кунед / Choose language",
+        "welcome": "✨ <b>Lux Aristokrat</b>\n\nHello, {name}!\nWelcome to the bonus system.\n\nHere you can:\n• scan QR codes\n• receive bonus points\n• view your history\n• track your level\n{admin}\n\nPress <b>“📷 Scan QR”</b>.",
+        "admin_note": "\n\n<b>You are logged in as administrator.</b> QR upload and management are available.",
+        "my_points": "💎 Your balance: <b>{points}</b>\n🏆 Your level: <b>{level}</b>",
+        "my_level": "🏆 Your level: <b>{level}</b>\nPoints: <b>{points}</b>\n\nLevels:\n• Silver: 0–299\n• Gold: 300–999\n• VIP: 1000+",
+        "history_empty": "📜 History is empty.",
+        "history_title": "📜 <b>Your History</b>\n",
+        "how": "ℹ️ <b>How to Get Points</b>\n\n1. Press “📷 Scan QR”\n2. A mini app with camera will open\n3. Point the camera at the code\n4. Points will be credited automatically\n\nThe same QR code is counted only once per user.",
+        "unknown_menu": "Choose an action from the menu.",
+        "webapp_bad": "❌ WebApp data error.",
+        "webapp_unknown": "⚠️ Unknown WebApp action.",
+        "bad_code": "❌ Empty or invalid QR code.",
+        "qr_not_found": "❌ QR code not found.",
+        "qr_disabled": "⚠️ QR code <b>{title}</b> is disabled.",
+        "already_scanned": "⚠️ You have already scanned this QR code.\n\nQR: <b>{title}</b>\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>",
+        "points_added": "✅ <b>Points credited!</b>\n\nQR: <b>{title}</b>\nCode: <code>{code}</code>\nAdded: <b>+{added}</b>\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>",
+        "add_qr_prompt": "➕ <b>Add QR</b>\n\nSend:\n<code>Title|Points</code>\nor\n<code>CODE|Title|Points</code>",
+        "bulk_prompt": "📥 <b>Bulk QR upload</b>\n\nSend multiple lines in one message.\n\nFormats:\n<code>CODE</code>\n<code>CODE|Points</code>\n<code>CODE|Title|Points</code>",
+        "qr_list_empty": "QR list is empty.",
+        "qr_list_title": "📋 <b>QR List</b>\n",
+        "disable_prompt": "Send the <b>QR ID</b> to disable.",
+        "enable_prompt": "Send the <b>QR ID</b> to enable.",
+        "delete_prompt": "Send the <b>QR ID</b> to delete.",
+        "png_prompt": "Send the <b>QR ID</b> to generate PNG.",
+        "add_points_prompt": "Send:\n<code>user_id|points</code>",
+        "remove_points_prompt": "Send:\n<code>user_id|points</code>",
+        "find_user_prompt": "Send the <b>user ID</b>.",
+        "stats_title": "📊 <b>Statistics</b>\n",
+        "top_title": "🥇 <b>Top Users</b>\n",
+        "users_none": "No users yet.",
+        "cancelled": "Cancelled.",
+        "bulk_done": "📥 <b>Bulk QR completed</b>",
+        "bulk_created": "✅ Created: <b>{n}</b>",
+        "bulk_skipped": "⚠️ Skipped: <b>{n}</b>",
+        "bulk_created_title": "<b>Created QR codes:</b>",
+        "bulk_skipped_title": "<b>Skipped lines:</b>",
+        "wrong_format": "❌ Wrong format.",
+        "code_exists": "❌ This code already exists.",
+        "points_number": "❌ Points must be a number greater than 0.",
+        "id_number": "❌ ID must be a number.",
+        "qr_missing": "❌ QR not found.",
+        "qr_disabled_ok": "⛔️ QR <b>{title}</b> disabled.",
+        "qr_enabled_ok": "✅ QR <b>{title}</b> enabled.",
+        "qr_deleted_ok": "🗑 QR <b>{title}</b> deleted.",
+        "user_not_found": "❌ User not found.",
+        "add_points_ok": "✅ Added <b>+{added}</b> points to user <code>{user_id}</code>\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>",
+        "remove_points_ok": "➖ Removed <b>{removed}</b> points from user <code>{user_id}</code>\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>",
+        "notify_add": "🎁 <b>+{added}</b> points have been added to your account.\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>",
+        "notify_remove": "➖ <b>{removed}</b> points have been removed from your account.\nBalance: <b>{points}</b>\nLevel: <b>{level}</b>",
+        "find_user_title": "👤 <b>User</b>\n",
+        "last_scans": "<b>Last scans:</b>",
+        "history_none": "History is empty.",
+        "export_users_done": "📤 users export is ready.",
+        "export_scans_done": "📤 scans export is ready.",
+        "myid": "Your Telegram ID: <code>{id}</code>\nAdmin access: <b>{admin}</b>\nADMIN_ID env: <code>{admin_id}</code>\nADMIN_IDS env: <code>{admin_ids}</code>",
+        "lang_saved": "✅ Language saved: English"
+    },
 }
+
 
 def now_str() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
 
 def esc(value) -> str:
     if value is None:
         return ""
     return str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
+
 def is_admin(user_id: int) -> bool:
     return user_id in ADMIN_IDS
+
 
 def tg_label(user) -> str:
     if user.username:
         return f"@{user.username}"
     return user.full_name or str(user.id)
 
+
 def normalize_code(raw: str) -> str:
     raw = (raw or "").strip().upper()
     raw = re.sub(r"[^A-Z0-9_-]+", "", raw)
     return raw
 
+
 def normalize_bulk_code(raw: str) -> str:
     raw = (raw or "").strip()
-    replacements = {">":"_","<":"_","!":"_","&":"_","'":"_","\"":"_",".":"_",",":"_"," ":"_","/":"_","\\":"_",":":"_",";":"_","?":"_","=":"_","+":"_","#":"_","%":"_","@":"_","*":"_","(":"_",")":"_","[":"_","]":"_","{":"_","}":"_"}
+    replacements = {
+        ">": "_", "<": "_", "!": "_", "&": "_", "'": "_", "\"": "_",
+        ".": "_", ",": "_", " ": "_", "/": "_", "\\": "_", ":": "_",
+        ";": "_", "?": "_", "=": "_", "+": "_", "#": "_", "%": "_",
+        "@": "_", "*": "_", "(": "_", ")": "_", "[": "_", "]": "_",
+        "{": "_", "}": "_"
+    }
     for old, new in replacements.items():
         raw = raw.replace(old, new)
     raw = re.sub(r"_+", "_", raw)
     raw = raw.strip("_")
     return normalize_code(raw)
 
+
 def build_qr_link(code: str) -> str:
     return f"https://t.me/{BOT_USERNAME}?start={quote('qr_' + code)}"
+
 
 def get_conn() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
     return conn
 
+
+def column_exists(conn: sqlite3.Connection, table_name: str, column_name: str) -> bool:
+    cur = conn.cursor()
+    cur.execute(f"PRAGMA table_info({table_name})")
+    rows = cur.fetchall()
+    for row in rows:
+        try:
+            if row["name"] == column_name:
+                return True
+        except Exception:
+            if len(row) > 1 and row[1] == column_name:
+                return True
+    return False
+
+
+def add_column_if_missing(conn: sqlite3.Connection, table_name: str, column_name: str, column_sql: str):
+    if not column_exists(conn, table_name, column_name):
+        conn.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_sql}")
+
+
 def init_db():
     conn = get_conn()
     cur = conn.cursor()
+
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY,
@@ -238,6 +444,7 @@ def init_db():
             updated_at TEXT NOT NULL
         )
     """)
+
     cur.execute("""
         CREATE TABLE IF NOT EXISTS qr_codes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -249,6 +456,7 @@ def init_db():
             created_at TEXT NOT NULL
         )
     """)
+
     cur.execute("""
         CREATE TABLE IF NOT EXISTS scans (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -258,8 +466,33 @@ def init_db():
             UNIQUE(user_id, qr_code_id)
         )
     """)
+
+    # Миграции для старых баз
+    add_column_if_missing(conn, "users", "username", "TEXT")
+    add_column_if_missing(conn, "users", "full_name", "TEXT")
+    add_column_if_missing(conn, "users", "phone", "TEXT")
+    add_column_if_missing(conn, "users", "points", "INTEGER NOT NULL DEFAULT 0")
+    add_column_if_missing(conn, "users", "language", "TEXT DEFAULT 'ru'")
+    add_column_if_missing(conn, "users", "created_at", "TEXT NOT NULL DEFAULT ''")
+    add_column_if_missing(conn, "users", "updated_at", "TEXT NOT NULL DEFAULT ''")
+
+    add_column_if_missing(conn, "qr_codes", "is_active", "INTEGER NOT NULL DEFAULT 1")
+    add_column_if_missing(conn, "qr_codes", "created_by", "INTEGER")
+    add_column_if_missing(conn, "qr_codes", "created_at", "TEXT NOT NULL DEFAULT ''")
+
+    # Чиним пустые значения в старых строках
+    ts = now_str()
+    cur.execute("UPDATE users SET language = 'ru' WHERE language IS NULL OR TRIM(language) = ''")
+    cur.execute("UPDATE users SET points = 0 WHERE points IS NULL")
+    cur.execute("UPDATE users SET created_at = ? WHERE created_at IS NULL OR TRIM(created_at) = ''", (ts,))
+    cur.execute("UPDATE users SET updated_at = ? WHERE updated_at IS NULL OR TRIM(updated_at) = ''", (ts,))
+    cur.execute("UPDATE qr_codes SET is_active = 1 WHERE is_active IS NULL")
+    cur.execute("UPDATE qr_codes SET created_at = ? WHERE created_at IS NULL OR TRIM(created_at) = ''", (ts,))
+    cur.execute("UPDATE scans SET scanned_at = ? WHERE scanned_at IS NULL OR TRIM(scanned_at) = ''", (ts,))
+
     conn.commit()
     conn.close()
+
 
 def get_level(points: int) -> str:
     if points >= 1000:
@@ -267,6 +500,7 @@ def get_level(points: int) -> str:
     if points >= 300:
         return "Gold"
     return "Silver"
+
 
 def ensure_user_in_db(user):
     conn = get_conn()
@@ -276,6 +510,7 @@ def ensure_user_in_db(user):
     row = cur.fetchone()
     username = user.username or ""
     full_name = user.full_name or ""
+
     if row:
         cur.execute("""
             UPDATE users
@@ -287,8 +522,10 @@ def ensure_user_in_db(user):
             INSERT INTO users (user_id, username, full_name, phone, points, language, created_at, updated_at)
             VALUES (?, ?, ?, ?, 0, 'ru', ?, ?)
         """, (user.id, username, full_name, "", ts, ts))
+
     conn.commit()
     conn.close()
+
 
 def get_user_by_id(user_id: int):
     conn = get_conn()
@@ -298,13 +535,23 @@ def get_user_by_id(user_id: int):
     conn.close()
     return row
 
+
 def get_lang(user_id: int) -> str:
     row = get_user_by_id(user_id)
-    if row and row["language"] in ("ru", "uz", "tj", "en"):
-        return row["language"]
+    if not row:
+        return "ru"
+    try:
+        lang = row["language"]
+    except (IndexError, KeyError, TypeError):
+        return "ru"
+    if lang in ("ru", "uz", "tj", "en"):
+        return lang
     return "ru"
 
+
 def set_lang(user_id: int, language: str):
+    if language not in ("ru", "uz", "tj", "en"):
+        language = "ru"
     conn = get_conn()
     cur = conn.cursor()
     cur.execute("""
@@ -315,14 +562,17 @@ def set_lang(user_id: int, language: str):
     conn.commit()
     conn.close()
 
+
 def t(user_id: int, key: str, **kwargs) -> str:
     lang = get_lang(user_id)
     text = UI.get(lang, UI["ru"]).get(key, "")
     return text.format(**kwargs)
 
+
 def get_user_points(user_id: int) -> int:
     row = get_user_by_id(user_id)
     return int(row["points"]) if row else 0
+
 
 def change_user_points(user_id: int, delta: int):
     conn = get_conn()
@@ -339,6 +589,7 @@ def change_user_points(user_id: int, delta: int):
     conn.commit()
     conn.close()
 
+
 def get_user_history(user_id: int, limit: int = 20):
     conn = get_conn()
     cur = conn.cursor()
@@ -354,12 +605,14 @@ def get_user_history(user_id: int, limit: int = 20):
     conn.close()
     return rows
 
+
 def create_qr(title: str, points: int, created_by: int, custom_code: str | None = None) -> str:
     code = normalize_code(custom_code) if custom_code else f"LUX{secrets.token_hex(4).upper()}"
     if not code:
         raise ValueError("Некорректный код")
     if points <= 0:
         raise ValueError("Баллы должны быть больше 0")
+
     conn = get_conn()
     cur = conn.cursor()
     cur.execute("""
@@ -370,6 +623,7 @@ def create_qr(title: str, points: int, created_by: int, custom_code: str | None 
     conn.close()
     return code
 
+
 def get_qr_by_code(code: str):
     conn = get_conn()
     cur = conn.cursor()
@@ -377,6 +631,7 @@ def get_qr_by_code(code: str):
     row = cur.fetchone()
     conn.close()
     return row
+
 
 def get_qr_by_id(qr_id: int):
     conn = get_conn()
@@ -386,6 +641,7 @@ def get_qr_by_id(qr_id: int):
     conn.close()
     return row
 
+
 def list_qr(limit: int = 50):
     conn = get_conn()
     cur = conn.cursor()
@@ -394,12 +650,14 @@ def list_qr(limit: int = 50):
     conn.close()
     return rows
 
+
 def set_qr_active(qr_id: int, active: bool):
     conn = get_conn()
     cur = conn.cursor()
     cur.execute("UPDATE qr_codes SET is_active = ? WHERE id = ?", (1 if active else 0, qr_id))
     conn.commit()
     conn.close()
+
 
 def delete_qr(qr_id: int):
     conn = get_conn()
@@ -409,6 +667,7 @@ def delete_qr(qr_id: int):
     conn.commit()
     conn.close()
 
+
 def has_scan(user_id: int, qr_code_id: int) -> bool:
     conn = get_conn()
     cur = conn.cursor()
@@ -417,18 +676,24 @@ def has_scan(user_id: int, qr_code_id: int) -> bool:
     conn.close()
     return row is not None
 
+
 def register_scan(user_id: int, qr_code_id: int):
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("INSERT INTO scans (user_id, qr_code_id, scanned_at) VALUES (?, ?, ?)", (user_id, qr_code_id, now_str()))
+    cur.execute(
+        "INSERT INTO scans (user_id, qr_code_id, scanned_at) VALUES (?, ?, ?)",
+        (user_id, qr_code_id, now_str())
+    )
     conn.commit()
     conn.close()
+
 
 def save_qr_png(code: str) -> str:
     img = qrcode.make(build_qr_link(code))
     path = os.path.join(QR_DIR, f"{code}.png")
     img.save(path)
     return path
+
 
 def get_total_users() -> int:
     conn = get_conn()
@@ -438,6 +703,7 @@ def get_total_users() -> int:
     conn.close()
     return int(row["c"])
 
+
 def get_total_qr() -> int:
     conn = get_conn()
     cur = conn.cursor()
@@ -445,6 +711,7 @@ def get_total_qr() -> int:
     row = cur.fetchone()
     conn.close()
     return int(row["c"])
+
 
 def get_total_scans() -> int:
     conn = get_conn()
@@ -454,6 +721,7 @@ def get_total_scans() -> int:
     conn.close()
     return int(row["c"])
 
+
 def get_top_users(limit: int = 10):
     conn = get_conn()
     cur = conn.cursor()
@@ -462,20 +730,30 @@ def get_top_users(limit: int = 10):
     conn.close()
     return rows
 
+
 def export_users_csv() -> str:
     path = os.path.join(EXPORT_DIR, f"users_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT user_id, username, full_name, phone, points, language, created_at, updated_at FROM users ORDER BY points DESC, updated_at DESC")
+    cur.execute("""
+        SELECT user_id, username, full_name, phone, points, language, created_at, updated_at
+        FROM users
+        ORDER BY points DESC, updated_at DESC
+    """)
     rows = cur.fetchall()
     conn.close()
+
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.writer(f, delimiter=";")
         writer.writerow(["user_id", "username", "full_name", "phone", "points", "level", "language", "created_at", "updated_at"])
         for row in rows:
             points = int(row["points"])
-            writer.writerow([row["user_id"], row["username"], row["full_name"], row["phone"], points, get_level(points), row["language"], row["created_at"], row["updated_at"]])
+            writer.writerow([
+                row["user_id"], row["username"], row["full_name"], row["phone"],
+                points, get_level(points), row["language"], row["created_at"], row["updated_at"]
+            ])
     return path
+
 
 def export_scans_csv() -> str:
     path = os.path.join(EXPORT_DIR, f"scans_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
@@ -490,12 +768,17 @@ def export_scans_csv() -> str:
     """)
     rows = cur.fetchall()
     conn.close()
+
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.writer(f, delimiter=";")
         writer.writerow(["scan_id", "user_id", "username", "full_name", "qr_code", "qr_title", "points", "scanned_at"])
         for row in rows:
-            writer.writerow([row["id"], row["user_id"], row["username"], row["full_name"], row["code"], row["title"], row["points"], row["scanned_at"]])
+            writer.writerow([
+                row["id"], row["user_id"], row["username"], row["full_name"],
+                row["code"], row["title"], row["points"], row["scanned_at"]
+            ])
     return path
+
 
 def lang_kb() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
@@ -506,9 +789,11 @@ def lang_kb() -> ReplyKeyboardMarkup:
         resize_keyboard=True
     )
 
+
 def main_kb(user_id: int) -> ReplyKeyboardMarkup:
     lang = get_lang(user_id)
     rows = [[KeyboardButton(text=SCAN_TEXT[lang], web_app=WebAppInfo(url=WEBAPP_URL))]]
+
     if is_admin(user_id):
         rows.extend([
             [KeyboardButton(text=ADD_QR_TEXT[lang]), KeyboardButton(text=BULK_QR_TEXT[lang])],
@@ -519,6 +804,7 @@ def main_kb(user_id: int) -> ReplyKeyboardMarkup:
             [KeyboardButton(text=STATS_TEXT[lang]), KeyboardButton(text=TOP_TEXT[lang])],
             [KeyboardButton(text=EXPORT_USERS_TEXT[lang]), KeyboardButton(text=EXPORT_SCANS_TEXT[lang])],
         ])
+
     rows.extend([
         [KeyboardButton(text=POINTS_TEXT[lang]), KeyboardButton(text=HISTORY_TEXT[lang])],
         [KeyboardButton(text=LEVEL_TEXT[lang]), KeyboardButton(text=HOW_TEXT[lang])],
@@ -526,10 +812,12 @@ def main_kb(user_id: int) -> ReplyKeyboardMarkup:
     ])
     return ReplyKeyboardMarkup(keyboard=rows, resize_keyboard=True)
 
+
 def qr_link_kb(code: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[[InlineKeyboardButton(text="🔗 Open QR Link", url=build_qr_link(code))]]
     )
+
 
 async def setup_menu_button():
     try:
@@ -543,13 +831,18 @@ async def setup_menu_button():
     except Exception as e:
         logging.warning("Menu button setup failed: %s", e)
 
+
 @dp.message(CommandStart())
 async def start_handler(message: Message, command: CommandStart):
     ensure_user_in_db(message.from_user)
+
     try:
         await bot.set_chat_menu_button(
             chat_id=message.chat.id,
-            menu_button=MenuButtonWebApp(text="Сканер QR", web_app=WebAppInfo(url=WEBAPP_URL))
+            menu_button=MenuButtonWebApp(
+                text="Сканер QR",
+                web_app=WebAppInfo(url=WEBAPP_URL)
+            )
         )
     except Exception as e:
         logging.warning("Per-chat menu button setup failed: %s", e)
@@ -562,6 +855,7 @@ async def start_handler(message: Message, command: CommandStart):
 
     await message.answer(t(message.from_user.id, "choose_lang"), reply_markup=lang_kb())
 
+
 @dp.message(F.text.in_(list(LANG_BUTTONS.keys())))
 async def choose_language_handler(message: Message):
     ensure_user_in_db(message.from_user)
@@ -572,25 +866,34 @@ async def choose_language_handler(message: Message):
     await message.answer(UI[language]["lang_saved"])
     await message.answer(welcome, reply_markup=main_kb(message.from_user.id))
 
+
 @dp.message(F.text == "🌐 Language")
 async def language_change_handler(message: Message):
+    ensure_user_in_db(message.from_user)
     await message.answer(t(message.from_user.id, "choose_lang"), reply_markup=lang_kb())
+
 
 @dp.message(Command("myid"))
 async def myid_handler(message: Message):
+    ensure_user_in_db(message.from_user)
     await message.answer(
-        t(message.from_user.id, "myid",
-          id=message.from_user.id,
-          admin="YES" if is_admin(message.from_user.id) else "NO",
-          admin_id=ADMIN_ID,
-          admin_ids=",".join(str(x) for x in sorted(ADMIN_IDS)) or "EMPTY")
+        t(
+            message.from_user.id,
+            "myid",
+            id=message.from_user.id,
+            admin="YES" if is_admin(message.from_user.id) else "NO",
+            admin_id=ADMIN_ID,
+            admin_ids=",".join(str(x) for x in sorted(ADMIN_IDS)) or "EMPTY"
+        )
     )
+
 
 @dp.message(F.web_app_data)
 async def webapp_data_handler(message: Message):
     ensure_user_in_db(message.from_user)
     raw = message.web_app_data.data
     logging.info("WEB_APP_DATA RAW: %s", raw)
+
     try:
         data = json.loads(raw)
     except Exception:
@@ -608,19 +911,32 @@ async def webapp_data_handler(message: Message):
 
     await message.answer(t(message.from_user.id, "webapp_unknown"), reply_markup=main_kb(message.from_user.id))
 
+
 async def process_qr_scan(message: Message, code: str):
     ensure_user_in_db(message.from_user)
     qr_row = get_qr_by_code(code)
+
     if not qr_row:
         await message.answer(t(message.from_user.id, "qr_not_found"), reply_markup=main_kb(message.from_user.id))
         return
+
     if int(qr_row["is_active"]) != 1:
-        await message.answer(t(message.from_user.id, "qr_disabled", title=esc(qr_row["title"])), reply_markup=main_kb(message.from_user.id))
+        await message.answer(
+            t(message.from_user.id, "qr_disabled", title=esc(qr_row["title"])),
+            reply_markup=main_kb(message.from_user.id)
+        )
         return
+
     if has_scan(message.from_user.id, qr_row["id"]):
         points = get_user_points(message.from_user.id)
         await message.answer(
-            t(message.from_user.id, "already_scanned", title=esc(qr_row["title"]), points=points, level=get_level(points)),
+            t(
+                message.from_user.id,
+                "already_scanned",
+                title=esc(qr_row["title"]),
+                points=points,
+                level=get_level(points)
+            ),
             reply_markup=main_kb(message.from_user.id)
         )
         return
@@ -631,167 +947,247 @@ async def process_qr_scan(message: Message, code: str):
     level = get_level(new_points)
 
     await message.answer(
-        t(message.from_user.id, "points_added", title=esc(qr_row["title"]), code=esc(qr_row["code"]), added=int(qr_row["points"]), points=new_points, level=level),
+        t(
+            message.from_user.id,
+            "points_added",
+            title=esc(qr_row["title"]),
+            code=esc(qr_row["code"]),
+            added=int(qr_row["points"]),
+            points=new_points,
+            level=level
+        ),
         reply_markup=main_kb(message.from_user.id)
     )
+
 
 @dp.message(F.text.in_(set(POINTS_TEXT.values())))
 async def my_points_handler(message: Message):
     ensure_user_in_db(message.from_user)
     points = get_user_points(message.from_user.id)
-    await message.answer(t(message.from_user.id, "my_points", points=points, level=get_level(points)), reply_markup=main_kb(message.from_user.id))
+    await message.answer(
+        t(message.from_user.id, "my_points", points=points, level=get_level(points)),
+        reply_markup=main_kb(message.from_user.id)
+    )
+
 
 @dp.message(F.text.in_(set(LEVEL_TEXT.values())))
 async def my_level_handler(message: Message):
     ensure_user_in_db(message.from_user)
     points = get_user_points(message.from_user.id)
-    await message.answer(t(message.from_user.id, "my_level", points=points, level=get_level(points)), reply_markup=main_kb(message.from_user.id))
+    await message.answer(
+        t(message.from_user.id, "my_level", points=points, level=get_level(points)),
+        reply_markup=main_kb(message.from_user.id)
+    )
+
 
 @dp.message(F.text.in_(set(HISTORY_TEXT.values())))
 async def history_handler(message: Message):
     ensure_user_in_db(message.from_user)
     rows = get_user_history(message.from_user.id, 20)
+
     if not rows:
         await message.answer(t(message.from_user.id, "history_empty"), reply_markup=main_kb(message.from_user.id))
         return
+
     lines = [t(message.from_user.id, "history_title")]
     for row in rows:
-        lines.append(f"• <b>{esc(row['title'])}</b>\n  Код: <code>{esc(row['code'])}</code>\n  Баллы: +{int(row['points'])}\n  Дата: {esc(row['scanned_at'])}\n")
+        lines.append(
+            f"• <b>{esc(row['title'])}</b>\n"
+            f"  Код: <code>{esc(row['code'])}</code>\n"
+            f"  Баллы: +{int(row['points'])}\n"
+            f"  Дата: {esc(row['scanned_at'])}\n"
+        )
     await message.answer("\n".join(lines), reply_markup=main_kb(message.from_user.id))
+
 
 @dp.message(F.text.in_(set(HOW_TEXT.values())))
 async def how_to_get_handler(message: Message):
+    ensure_user_in_db(message.from_user)
     await message.answer(t(message.from_user.id, "how"), reply_markup=main_kb(message.from_user.id))
+
 
 @dp.message(F.text.in_(set(ADD_QR_TEXT.values())))
 @dp.message(Command("add_qr"))
 async def add_qr_enter(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "add_qr"}
     await message.answer(t(message.from_user.id, "add_qr_prompt"))
 
+
 @dp.message(F.text.in_(set(BULK_QR_TEXT.values())))
 @dp.message(Command("bulk_qr"))
 async def bulk_qr_enter(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "bulk_qr"}
     await message.answer(t(message.from_user.id, "bulk_prompt"))
 
+
 @dp.message(F.text.in_(set(LIST_QR_TEXT.values())))
 @dp.message(Command("list_qr"))
 async def list_qr_handler(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
+
     rows = list_qr(50)
     if not rows:
         await message.answer(t(message.from_user.id, "qr_list_empty"))
         return
+
     lines = [t(message.from_user.id, "qr_list_title")]
     for row in rows:
         status = "✅" if int(row["is_active"]) == 1 else "⛔️"
-        lines.append(f"{status} ID: <code>{row['id']}</code>\nНазвание: <b>{esc(row['title'])}</b>\nКод: <code>{esc(row['code'])}</code>\nБаллы: <b>{int(row['points'])}</b>\n")
+        lines.append(
+            f"{status} ID: <code>{row['id']}</code>\n"
+            f"Название: <b>{esc(row['title'])}</b>\n"
+            f"Код: <code>{esc(row['code'])}</code>\n"
+            f"Баллы: <b>{int(row['points'])}</b>\n"
+        )
     await message.answer("\n".join(lines))
+
 
 @dp.message(F.text.in_(set(DISABLE_QR_TEXT.values())))
 async def disable_qr_enter(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "disable_qr"}
     await message.answer(t(message.from_user.id, "disable_prompt"))
 
+
 @dp.message(F.text.in_(set(ENABLE_QR_TEXT.values())))
 async def enable_qr_enter(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "enable_qr"}
     await message.answer(t(message.from_user.id, "enable_prompt"))
 
+
 @dp.message(F.text.in_(set(DELETE_QR_TEXT.values())))
 async def delete_qr_enter(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "delete_qr"}
     await message.answer(t(message.from_user.id, "delete_prompt"))
 
+
 @dp.message(F.text.in_(set(PNG_QR_TEXT.values())))
 async def png_qr_enter(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "make_png"}
     await message.answer(t(message.from_user.id, "png_prompt"))
 
+
 @dp.message(F.text.in_(set(ADD_POINTS_TEXT.values())))
 async def add_points_enter(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "add_points"}
     await message.answer(t(message.from_user.id, "add_points_prompt"))
 
+
 @dp.message(F.text.in_(set(REMOVE_POINTS_TEXT.values())))
 async def remove_points_enter(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "remove_points"}
     await message.answer(t(message.from_user.id, "remove_points_prompt"))
 
+
 @dp.message(F.text.in_(set(FIND_USER_TEXT.values())))
 async def find_user_enter(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     admin_states[message.from_user.id] = {"mode": "find_user"}
     await message.answer(t(message.from_user.id, "find_user_prompt"))
 
+
 @dp.message(F.text.in_(set(STATS_TEXT.values())))
 async def stats_handler(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
+
     top = get_top_users(5)
-    lines = [t(message.from_user.id, "stats_title"), f"Пользователей: <b>{get_total_users()}</b>", f"QR-кодов: <b>{get_total_qr()}</b>", f"Сканов: <b>{get_total_scans()}</b>", "", "<b>Топ 5 пользователей:</b>"]
+    lines = [
+        t(message.from_user.id, "stats_title"),
+        f"Пользователей: <b>{get_total_users()}</b>",
+        f"QR-кодов: <b>{get_total_qr()}</b>",
+        f"Сканов: <b>{get_total_scans()}</b>",
+        "",
+        "<b>Топ 5 пользователей:</b>"
+    ]
     if top:
         for i, row in enumerate(top, start=1):
             name = row["full_name"] or row["username"] or row["user_id"]
             lines.append(f"{i}. {esc(name)} — <b>{int(row['points'])}</b> ({get_level(int(row['points']))})")
     await message.answer("\n".join(lines))
 
+
 @dp.message(F.text.in_(set(EXPORT_USERS_TEXT.values())))
 async def export_users_handler(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     path = export_users_csv()
     await message.answer_document(FSInputFile(path), caption=t(message.from_user.id, "export_users_done"))
 
+
 @dp.message(F.text.in_(set(EXPORT_SCANS_TEXT.values())))
 async def export_scans_handler(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
     path = export_scans_csv()
     await message.answer_document(FSInputFile(path), caption=t(message.from_user.id, "export_scans_done"))
 
+
 @dp.message(F.text.in_(set(TOP_TEXT.values())))
 async def top_users_handler(message: Message):
+    ensure_user_in_db(message.from_user)
     if not is_admin(message.from_user.id):
         return
+
     rows = get_top_users(20)
     if not rows:
         await message.answer(t(message.from_user.id, "users_none"))
         return
+
     lines = [t(message.from_user.id, "top_title")]
     for i, row in enumerate(rows, start=1):
         name = row["full_name"] or row["username"] or row["user_id"]
         points = int(row["points"])
-        lines.append(f"{i}. {esc(name)}\n   ID: <code>{row['user_id']}</code>\n   Баллы: <b>{points}</b>\n   Уровень: <b>{get_level(points)}</b>\n")
+        lines.append(
+            f"{i}. {esc(name)}\n"
+            f"   ID: <code>{row['user_id']}</code>\n"
+            f"   Баллы: <b>{points}</b>\n"
+            f"   Уровень: <b>{get_level(points)}</b>\n"
+        )
     await message.answer("\n".join(lines))
+
 
 @dp.message(Command("cancel"))
 async def cancel_handler(message: Message):
+    ensure_user_in_db(message.from_user)
     admin_states.pop(message.from_user.id, None)
     await message.answer(t(message.from_user.id, "cancelled"), reply_markup=main_kb(message.from_user.id))
+
 
 @dp.message(F.text)
 async def text_router(message: Message):
     ensure_user_in_db(message.from_user)
+
     if not is_admin(message.from_user.id):
         await message.answer(t(message.from_user.id, "unknown_menu"), reply_markup=main_kb(message.from_user.id))
         return
@@ -808,9 +1204,11 @@ async def text_router(message: Message):
         raw_lines = [line.strip() for line in text.splitlines() if line.strip()]
         created = []
         skipped = []
+
         for idx, line in enumerate(raw_lines, start=1):
             try:
                 parts = [p.strip() for p in line.split("|")]
+
                 if len(parts) == 1:
                     raw_code = parts[0]
                     code = normalize_bulk_code(raw_code)
@@ -828,25 +1226,37 @@ async def text_router(message: Message):
                 else:
                     skipped.append(f"{idx}. {esc(line)}")
                     continue
+
                 if not code or points <= 0:
                     skipped.append(f"{idx}. {esc(line)}")
                     continue
+
                 create_qr(title=title, points=points, created_by=message.from_user.id, custom_code=code)
                 created.append((code, title, points))
             except Exception:
                 skipped.append(f"{idx}. {esc(line)}")
+
         admin_states.pop(message.from_user.id, None)
-        lines = [t(message.from_user.id, "bulk_done"), "", t(message.from_user.id, "bulk_created", n=len(created)), t(message.from_user.id, "bulk_skipped", n=len(skipped))]
+
+        lines = [
+            t(message.from_user.id, "bulk_done"),
+            "",
+            t(message.from_user.id, "bulk_created", n=len(created)),
+            t(message.from_user.id, "bulk_skipped", n=len(skipped))
+        ]
+
         if created:
             lines.append("")
             lines.append(t(message.from_user.id, "bulk_created_title"))
             for i, (code, title, points) in enumerate(created[:20], start=1):
                 lines.append(f"{i}. <code>{esc(code)}</code> — {esc(title)} — <b>{points}</b>")
+
         if skipped:
             lines.append("")
             lines.append(t(message.from_user.id, "bulk_skipped_title"))
             for item in skipped[:20]:
                 lines.append(item)
+
         await message.answer("\n".join(lines))
         return
 
@@ -862,19 +1272,28 @@ async def text_router(message: Message):
             else:
                 await message.answer(t(message.from_user.id, "wrong_format"))
                 return
+
             row = get_qr_by_code(code)
             png = save_qr_png(code)
             admin_states.pop(message.from_user.id, None)
+
             await message.answer_photo(
                 photo=FSInputFile(png),
-                caption=f"✅ <b>QR created</b>\n\nID: <code>{row['id']}</code>\nTitle: <b>{esc(row['title'])}</b>\nCode: <code>{esc(row['code'])}</code>\nPoints: <b>{int(row['points'])}</b>\nLink:\n<code>{esc(build_qr_link(code))}</code>",
+                caption=(
+                    f"✅ <b>QR created</b>\n\n"
+                    f"ID: <code>{row['id']}</code>\n"
+                    f"Title: <b>{esc(row['title'])}</b>\n"
+                    f"Code: <code>{esc(row['code'])}</code>\n"
+                    f"Points: <b>{int(row['points'])}</b>\n"
+                    f"Link:\n<code>{esc(build_qr_link(code))}</code>"
+                ),
                 reply_markup=qr_link_kb(code)
             )
             return
         except sqlite3.IntegrityError:
             await message.answer(t(message.from_user.id, "code_exists"))
             return
-        except ValueError:
+        except (ValueError, TypeError):
             await message.answer(t(message.from_user.id, "points_number"))
             return
 
@@ -925,61 +1344,118 @@ async def text_router(message: Message):
         if not row:
             await message.answer(t(message.from_user.id, "qr_missing"))
             return
+
         png = save_qr_png(row["code"])
         admin_states.pop(message.from_user.id, None)
+
         await message.answer_photo(
             photo=FSInputFile(png),
-            caption=f"🧾 <b>QR PNG</b>\n\nID: <code>{row['id']}</code>\nTitle: <b>{esc(row['title'])}</b>\nCode: <code>{esc(row['code'])}</code>\nPoints: <b>{int(row['points'])}</b>\nLink:\n<code>{esc(build_qr_link(row['code']))}</code>",
+            caption=(
+                f"🧾 <b>QR PNG</b>\n\n"
+                f"ID: <code>{row['id']}</code>\n"
+                f"Title: <b>{esc(row['title'])}</b>\n"
+                f"Code: <code>{esc(row['code'])}</code>\n"
+                f"Points: <b>{int(row['points'])}</b>\n"
+                f"Link:\n<code>{esc(build_qr_link(row['code']))}</code>"
+            ),
             reply_markup=qr_link_kb(row["code"])
         )
         return
 
     if mode == "add_points":
         parts = [p.strip() for p in text.split("|")]
-        if len(parts) != 2 or not parts[0].isdigit():
+        try:
+            if len(parts) != 2 or not parts[0].isdigit():
+                await message.answer(t(message.from_user.id, "wrong_format"))
+                return
+
+            user_id = int(parts[0])
+            points = int(parts[1])
+
+            if points <= 0:
+                await message.answer(t(message.from_user.id, "points_number"))
+                return
+
+            user_row = get_user_by_id(user_id)
+            if not user_row:
+                await message.answer(t(message.from_user.id, "user_not_found"))
+                return
+
+            change_user_points(user_id, points)
+            new_points = get_user_points(user_id)
+            admin_states.pop(message.from_user.id, None)
+
+            await message.answer(
+                t(message.from_user.id, "add_points_ok", user_id=user_id, added=points, points=new_points, level=get_level(new_points))
+            )
+            try:
+                await bot.send_message(
+                    user_id,
+                    t(user_id, "notify_add", added=points, points=new_points, level=get_level(new_points))
+                )
+            except Exception:
+                pass
+            return
+        except (ValueError, TypeError):
             await message.answer(t(message.from_user.id, "wrong_format"))
             return
-        user_id = int(parts[0]); points = int(parts[1])
-        user_row = get_user_by_id(user_id)
-        if not user_row:
-            await message.answer(t(message.from_user.id, "user_not_found"))
-            return
-        change_user_points(user_id, points)
-        new_points = get_user_points(user_id)
-        admin_states.pop(message.from_user.id, None)
-        await message.answer(t(message.from_user.id, "add_points_ok", user_id=user_id, added=points, points=new_points, level=get_level(new_points)))
-        return
 
     if mode == "remove_points":
         parts = [p.strip() for p in text.split("|")]
-        if len(parts) != 2 or not parts[0].isdigit():
+        try:
+            if len(parts) != 2 or not parts[0].isdigit():
+                await message.answer(t(message.from_user.id, "wrong_format"))
+                return
+
+            user_id = int(parts[0])
+            points = int(parts[1])
+
+            if points <= 0:
+                await message.answer(t(message.from_user.id, "points_number"))
+                return
+
+            user_row = get_user_by_id(user_id)
+            if not user_row:
+                await message.answer(t(message.from_user.id, "user_not_found"))
+                return
+
+            change_user_points(user_id, -points)
+            new_points = get_user_points(user_id)
+            admin_states.pop(message.from_user.id, None)
+
+            await message.answer(
+                t(message.from_user.id, "remove_points_ok", user_id=user_id, removed=points, points=new_points, level=get_level(new_points))
+            )
+            try:
+                await bot.send_message(
+                    user_id,
+                    t(user_id, "notify_remove", removed=points, points=new_points, level=get_level(new_points))
+                )
+            except Exception:
+                pass
+            return
+        except (ValueError, TypeError):
             await message.answer(t(message.from_user.id, "wrong_format"))
             return
-        user_id = int(parts[0]); points = int(parts[1])
-        user_row = get_user_by_id(user_id)
-        if not user_row:
-            await message.answer(t(message.from_user.id, "user_not_found"))
-            return
-        change_user_points(user_id, -points)
-        new_points = get_user_points(user_id)
-        admin_states.pop(message.from_user.id, None)
-        await message.answer(t(message.from_user.id, "remove_points_ok", user_id=user_id, removed=points, points=new_points, level=get_level(new_points)))
-        return
 
     if mode == "find_user":
         if not text.isdigit():
             await message.answer(t(message.from_user.id, "id_number"))
             return
+
         user_row = get_user_by_id(int(text))
         if not user_row:
             await message.answer(t(message.from_user.id, "user_not_found"))
             return
+
         history = get_user_history(int(text), 5)
         points = int(user_row["points"])
+        username_text = f"@{esc(user_row['username'])}" if user_row["username"] else "—"
+
         lines = [
             t(message.from_user.id, "find_user_title"),
             f"ID: <code>{user_row['user_id']}</code>",
-            f"Username: @{esc(user_row['username']) if user_row['username'] else '—'}",
+            f"Username: {username_text}",
             f"Name: <b>{esc(user_row['full_name']) or '—'}</b>",
             f"Phone: <b>{esc(user_row['phone']) or '—'}</b>",
             f"Points: <b>{points}</b>",
@@ -987,16 +1463,19 @@ async def text_router(message: Message):
             "",
             t(message.from_user.id, "last_scans")
         ]
+
         if history:
             for h in history:
                 lines.append(f"• {esc(h['title'])} | +{int(h['points'])} | {esc(h['scanned_at'])}")
         else:
             lines.append(t(message.from_user.id, "history_none"))
+
         admin_states.pop(message.from_user.id, None)
         await message.answer("\n".join(lines))
         return
 
     await message.answer(t(message.from_user.id, "unknown_menu"), reply_markup=main_kb(message.from_user.id))
+
 
 async def main():
     init_db()
@@ -1004,6 +1483,7 @@ async def main():
     logging.info("Bot started successfully")
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
