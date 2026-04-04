@@ -91,7 +91,7 @@
 
     .topbar{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
       gap:12px;
       margin-bottom:14px;
@@ -116,7 +116,7 @@
       align-items:center;
       gap:12px;
       position:relative;
-      overflow:hidden;
+      overflow:visible;
     }
 
     .profile-card::before{
@@ -127,6 +127,7 @@
         radial-gradient(circle at 10% 20%, rgba(244,223,154,.18), transparent 26%),
         radial-gradient(circle at 90% 0%, rgba(212,175,55,.12), transparent 30%);
       pointer-events:none;
+      border-radius:24px;
     }
 
     .avatar{
@@ -162,6 +163,18 @@
       margin-bottom:4px;
       letter-spacing:.9px;
       text-transform:uppercase;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .brand-logo{
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background: radial-gradient(circle at 35% 35%, var(--gold-soft), var(--gold));
+      box-shadow:0 0 14px rgba(212,175,55,.25);
+      flex:0 0 18px;
     }
 
     .name{
@@ -183,6 +196,16 @@
       text-overflow:ellipsis;
     }
 
+    .profile-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      position:relative;
+      z-index:2;
+      margin-top:2px;
+    }
+
+    .lang-btn,
     .burger-btn{
       width:56px;
       height:56px;
@@ -200,6 +223,13 @@
       box-shadow:var(--shadow);
       backdrop-filter:blur(16px);
       -webkit-backdrop-filter:blur(16px);
+      position:relative;
+    }
+
+    .lang-btn{
+      font-size:13px;
+      font-weight:900;
+      letter-spacing:.5px;
     }
 
     .burger-icon{
@@ -221,6 +251,49 @@
     .burger-icon span:nth-child(1){ top:0; }
     .burger-icon span:nth-child(2){ top:6.5px; }
     .burger-icon span:nth-child(3){ bottom:0; }
+
+    .lang-menu{
+      position:absolute;
+      top:66px;
+      right:64px;
+      width:120px;
+      border-radius:16px;
+      overflow:hidden;
+      z-index:30;
+      display:none;
+      background:
+        linear-gradient(180deg, rgba(18,18,20,.96), rgba(10,10,11,.98));
+      border:1px solid var(--line);
+      box-shadow:0 18px 40px rgba(0,0,0,.42);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+    }
+
+    .lang-menu.show{
+      display:block;
+    }
+
+    .lang-option{
+      width:100%;
+      border:none;
+      background:transparent;
+      color:var(--text);
+      text-align:left;
+      padding:12px 14px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      border-bottom:1px solid rgba(212,175,55,.08);
+    }
+
+    .lang-option:last-child{
+      border-bottom:none;
+    }
+
+    .lang-option.active{
+      color:#241903;
+      background:linear-gradient(180deg, var(--gold-soft), var(--gold));
+    }
 
     .card{
       border-radius:var(--radius);
@@ -480,7 +553,7 @@
       top:0;
       right:0;
       bottom:0;
-      width:min(88vw, 370px);
+      width:min(88vw, 390px);
       transform:translateX(100%);
       transition:.25s ease;
       z-index:60;
@@ -492,6 +565,7 @@
       box-shadow:-18px 0 40px rgba(0,0,0,.42);
       backdrop-filter:blur(18px);
       -webkit-backdrop-filter:blur(18px);
+      overflow:auto;
     }
 
     .drawer.show{
@@ -507,6 +581,9 @@
       gap:10px;
       background:
         linear-gradient(180deg, rgba(212,175,55,.09), rgba(212,175,55,0));
+      position:sticky;
+      top:0;
+      z-index:2;
     }
 
     .drawer-title{
@@ -534,9 +611,10 @@
       gap:10px;
     }
 
-    .menu-link{
+    .menu-link,
+    .info-card{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       gap:12px;
       text-decoration:none;
       color:var(--text);
@@ -578,7 +656,7 @@
     .menu-sub{
       font-size:13px;
       color:var(--muted);
-      line-height:1.35;
+      line-height:1.4;
       word-break:break-word;
     }
 
@@ -601,6 +679,13 @@
       .scanner-title{
         font-size:18px;
       }
+      .lang-menu{
+        right:0;
+        top:66px;
+      }
+      .topbar{
+        align-items:flex-start;
+      }
     }
   </style>
 </head>
@@ -610,25 +695,39 @@
       <div class="profile-card glass">
         <div class="avatar" id="avatar">L</div>
         <div class="profile-text">
-          <div class="brand">Lux Aristokrat</div>
+          <div class="brand">
+            <span class="brand-logo"></span>
+            <span id="brandText">Lux Aristokrat</span>
+          </div>
           <div class="name" id="userName">Гость</div>
           <div class="sub" id="userSub">Premium QR bonus system</div>
         </div>
       </div>
 
-      <button class="burger-btn" id="burgerBtn" aria-label="Меню">
-        <div class="burger-icon">
-          <span></span>
-          <span></span>
-          <span></span>
+      <div class="profile-actions">
+        <button class="lang-btn" id="langBtn" type="button">RU</button>
+
+        <button class="burger-btn" id="burgerBtn" aria-label="Меню" type="button">
+          <div class="burger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
+
+        <div class="lang-menu" id="langMenu">
+          <button class="lang-option" data-lang="ru">🇷🇺 RU</button>
+          <button class="lang-option" data-lang="uz">🇺🇿 UZ</button>
+          <button class="lang-option" data-lang="tj">🇹🇯 TJ</button>
+          <button class="lang-option" data-lang="en">🇬🇧 EN</button>
         </div>
-      </button>
+      </div>
     </div>
 
     <div class="card scanner-card glass">
       <div class="scanner-head">
-        <h1 class="scanner-title">📷 Сканировать QR</h1>
-        <p class="scanner-subtitle">
+        <h1 class="scanner-title" id="scannerTitle">📷 Сканировать QR</h1>
+        <p class="scanner-subtitle" id="scannerSubtitle">
           Наведите камеру на QR-код. После распознавания код автоматически отправится в бота.
         </p>
       </div>
@@ -656,7 +755,7 @@
     </div>
 
     <div class="manual-card glass">
-      <h2 class="manual-title">Ручной ввод кода</h2>
+      <h2 class="manual-title" id="manualTitle">Ручной ввод кода</h2>
       <div class="manual-row">
         <input
           id="manualCode"
@@ -673,7 +772,7 @@
       </div>
     </div>
 
-    <div class="footer-note">
+    <div class="footer-note" id="footerNote">
       Lux Aristokrat • Premium QR Scanner
     </div>
   </div>
@@ -682,7 +781,7 @@
 
   <aside class="drawer" id="drawer">
     <div class="drawer-head">
-      <h3 class="drawer-title">Меню</h3>
+      <h3 class="drawer-title" id="drawerTitle">Меню</h3>
       <button class="drawer-close" id="drawerClose" type="button">✕</button>
     </div>
 
@@ -695,8 +794,8 @@
       >
         <div class="menu-emoji">📍</div>
         <div class="menu-text">
-          <div class="menu-title">Как проехать</div>
-          <div class="menu-sub">Открыть адрес в Яндекс Картах</div>
+          <div class="menu-title" id="routeTitle">Как проехать</div>
+          <div class="menu-sub" id="routeSub">Открыть адрес в Яндекс Картах</div>
         </div>
       </a>
 
@@ -712,6 +811,22 @@
           <div class="menu-sub">@aristokrat.hookah_shop_</div>
         </div>
       </a>
+
+      <div class="info-card">
+        <div class="menu-emoji">🏢</div>
+        <div class="menu-text">
+          <div class="menu-title" id="legalTitle">Для юридических лиц</div>
+          <div class="menu-sub">
+            <span id="legalPhoneLabel">Тел</span>:
+            <a
+              href="tel:+998915580599"
+              style="color:#f4df9a;text-decoration:none;font-weight:800;"
+            >
+              +998 91 558 05 99
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </aside>
 
@@ -726,6 +841,124 @@
 
     const user = tg?.initDataUnsafe?.user || null;
 
+    const i18n = {
+      ru: {
+        langCode: "RU",
+        guest: "Гость",
+        sub: "Premium QR bonus system",
+        scannerTitle: "📷 Сканировать QR",
+        scannerSubtitle: "Наведите камеру на QR-код. После распознавания код автоматически отправится в бота.",
+        manualTitle: "Ручной ввод кода",
+        manualPlaceholder: "Введите код вручную",
+        send: "Отправить",
+        restart: "Перезапустить камеру",
+        close: "Закрыть",
+        drawerTitle: "Меню",
+        routeTitle: "Как проехать",
+        routeSub: "Открыть адрес в Яндекс Картах",
+        legalTitle: "Для юридических лиц",
+        legalPhoneLabel: "Тел",
+        footer: "Lux Aristokrat • Premium QR Scanner",
+        statusInit: "Инициализация камеры...",
+        statusLoading: "Загрузка сканера...",
+        statusReady: "Камера активна. Наведите её на QR-код.",
+        statusCodeSent: "Код распознан. Отправляем в бота...",
+        statusNeedCode: "Введите или отсканируйте корректный код.",
+        statusNoTelegram: "Telegram WebApp недоступен. Откройте страницу из Telegram.",
+        statusSendError: "Не удалось отправить код в бота.",
+        statusCameraNotFound: "Камера не найдена на устройстве.",
+        statusCameraError: "Не удалось запустить камеру. Разрешите доступ к камере.",
+        statusSentReturn: "Код отправлен. Вернитесь в Telegram."
+      },
+      uz: {
+        langCode: "UZ",
+        guest: "Mehmon",
+        sub: "Premium QR bonus tizimi",
+        scannerTitle: "📷 QR skanerlash",
+        scannerSubtitle: "Kamerani QR-kodga yo‘naltiring. Kod aniqlangach, u avtomatik ravishda botga yuboriladi.",
+        manualTitle: "Kodni qo‘lda kiritish",
+        manualPlaceholder: "Kodni qo‘lda kiriting",
+        send: "Yuborish",
+        restart: "Kamerani qayta ishga tushirish",
+        close: "Yopish",
+        drawerTitle: "Menyu",
+        routeTitle: "Qanday borish mumkin",
+        routeSub: "Yandex Xaritalarda manzilni ochish",
+        legalTitle: "Yuridik shaxslar uchun",
+        legalPhoneLabel: "Tel",
+        footer: "Lux Aristokrat • Premium QR Scanner",
+        statusInit: "Kamera ishga tushirilmoqda...",
+        statusLoading: "Skaner yuklanmoqda...",
+        statusReady: "Kamera faol. Uni QR-kodga yo‘naltiring.",
+        statusCodeSent: "Kod aniqlandi. Botga yuborilmoqda...",
+        statusNeedCode: "To‘g‘ri kodni kiriting yoki skaner qiling.",
+        statusNoTelegram: "Telegram WebApp mavjud emas. Sahifani Telegram ichida oching.",
+        statusSendError: "Kod botga yuborilmadi.",
+        statusCameraNotFound: "Qurilmada kamera topilmadi.",
+        statusCameraError: "Kamerani ishga tushirib bo‘lmadi. Kameraga ruxsat bering.",
+        statusSentReturn: "Kod yuborildi. Telegramga qayting."
+      },
+      tj: {
+        langCode: "TJ",
+        guest: "Меҳмон",
+        sub: "Системаи бонусии Premium QR",
+        scannerTitle: "📷 QR-ро скан кардан",
+        scannerSubtitle: "Камераро ба QR-код равона кунед. Пас аз шинохтан, код худкор ба бот фиристода мешавад.",
+        manualTitle: "Ворид кардани код дастӣ",
+        manualPlaceholder: "Кодро дастӣ ворид кунед",
+        send: "Фиристодан",
+        restart: "Бозоғозии камера",
+        close: "Пӯшидан",
+        drawerTitle: "Меню",
+        routeTitle: "Чӣ гуна расидан",
+        routeSub: "Кушодани суроға дар Яндекс Харитаҳо",
+        legalTitle: "Барои шахсони ҳуқуқӣ",
+        legalPhoneLabel: "Тел",
+        footer: "Lux Aristokrat • Premium QR Scanner",
+        statusInit: "Омодасозии камера...",
+        statusLoading: "Сканер бор шуда истодааст...",
+        statusReady: "Камера фаъол аст. Онро ба QR-код равона кунед.",
+        statusCodeSent: "Код шинохта шуд. Ба бот фиристода мешавад...",
+        statusNeedCode: "Коди дурустро ворид кунед ё скан намоед.",
+        statusNoTelegram: "Telegram WebApp дастрас нест. Саҳифаро дар Telegram кушоед.",
+        statusSendError: "Фиристодани код ба бот муяссар нашуд.",
+        statusCameraNotFound: "Дар дастгоҳ камера ёфт нашуд.",
+        statusCameraError: "Камераро оғоз кардан нашуд. Иҷозати дастрасӣ диҳед.",
+        statusSentReturn: "Код фиристода шуд. Ба Telegram баргардед."
+      },
+      en: {
+        langCode: "EN",
+        guest: "Guest",
+        sub: "Premium QR bonus system",
+        scannerTitle: "📷 Scan QR",
+        scannerSubtitle: "Point the camera at the QR code. After detection, the code will be sent to the bot automatically.",
+        manualTitle: "Manual code entry",
+        manualPlaceholder: "Enter code manually",
+        send: "Send",
+        restart: "Restart camera",
+        close: "Close",
+        drawerTitle: "Menu",
+        routeTitle: "How to get there",
+        routeSub: "Open address in Yandex Maps",
+        legalTitle: "For legal entities",
+        legalPhoneLabel: "Phone",
+        footer: "Lux Aristokrat • Premium QR Scanner",
+        statusInit: "Initializing camera...",
+        statusLoading: "Loading scanner...",
+        statusReady: "Camera is active. Point it at the QR code.",
+        statusCodeSent: "Code detected. Sending to bot...",
+        statusNeedCode: "Enter or scan a valid code.",
+        statusNoTelegram: "Telegram WebApp is unavailable. Open this page from Telegram.",
+        statusSendError: "Failed to send code to the bot.",
+        statusCameraNotFound: "Camera not found on this device.",
+        statusCameraError: "Could not start the camera. Please allow camera access.",
+        statusSentReturn: "Code sent. Return to Telegram."
+      }
+    };
+
+    let currentLang = localStorage.getItem("lux_lang") || "ru";
+    if (!i18n[currentLang]) currentLang = "ru";
+
     const userNameEl = document.getElementById("userName");
     const userSubEl = document.getElementById("userSub");
     const avatarEl = document.getElementById("avatar");
@@ -736,23 +969,76 @@
     const manualCodeEl = document.getElementById("manualCode");
     const sendManualBtn = document.getElementById("sendManualBtn");
 
+    const scannerTitleEl = document.getElementById("scannerTitle");
+    const scannerSubtitleEl = document.getElementById("scannerSubtitle");
+    const manualTitleEl = document.getElementById("manualTitle");
+    const footerNoteEl = document.getElementById("footerNote");
+    const drawerTitleEl = document.getElementById("drawerTitle");
+    const routeTitleEl = document.getElementById("routeTitle");
+    const routeSubEl = document.getElementById("routeSub");
+    const legalTitleEl = document.getElementById("legalTitle");
+    const legalPhoneLabelEl = document.getElementById("legalPhoneLabel");
+
     const burgerBtn = document.getElementById("burgerBtn");
     const drawer = document.getElementById("drawer");
     const drawerBackdrop = document.getElementById("drawerBackdrop");
     const drawerClose = document.getElementById("drawerClose");
 
+    const langBtn = document.getElementById("langBtn");
+    const langMenu = document.getElementById("langMenu");
+    const langOptions = Array.from(document.querySelectorAll(".lang-option"));
+
     let html5QrCode = null;
     let scannerStarted = false;
     let sendingNow = false;
+    let currentStatusKey = "statusInit";
+    let currentStatusType = "info";
+
+    function tr(key) {
+      return i18n[currentLang][key] || i18n.ru[key] || key;
+    }
+
+    function applyLanguage() {
+      localStorage.setItem("lux_lang", currentLang);
+      langBtn.textContent = tr("langCode");
+
+      scannerTitleEl.textContent = tr("scannerTitle");
+      scannerSubtitleEl.textContent = tr("scannerSubtitle");
+      manualTitleEl.textContent = tr("manualTitle");
+      manualCodeEl.placeholder = tr("manualPlaceholder");
+      sendManualBtn.textContent = tr("send");
+      restartBtn.textContent = tr("restart");
+      closeBtn.textContent = tr("close");
+      drawerTitleEl.textContent = tr("drawerTitle");
+      routeTitleEl.textContent = tr("routeTitle");
+      routeSubEl.textContent = tr("routeSub");
+      legalTitleEl.textContent = tr("legalTitle");
+      legalPhoneLabelEl.textContent = tr("legalPhoneLabel");
+      footerNoteEl.textContent = tr("footer");
+
+      const fullName = user
+        ? [user.first_name, user.last_name].filter(Boolean).join(" ").trim()
+        : tr("guest");
+
+      const username = user?.username ? "@" + user.username : tr("sub");
+      userNameEl.textContent = fullName || tr("guest");
+      userSubEl.textContent = username;
+
+      langOptions.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.lang === currentLang);
+      });
+
+      setStatusByKey(currentStatusKey, currentStatusType);
+    }
 
     function setUserProfile() {
       const fullName = user
         ? [user.first_name, user.last_name].filter(Boolean).join(" ").trim()
-        : "Гость";
+        : tr("guest");
 
-      const username = user?.username ? "@" + user.username : "Premium QR bonus system";
+      const username = user?.username ? "@" + user.username : tr("sub");
 
-      userNameEl.textContent = fullName || "Гость";
+      userNameEl.textContent = fullName || tr("guest");
       userSubEl.textContent = username;
 
       const initial = (fullName || "L").trim().charAt(0).toUpperCase();
@@ -764,9 +1050,16 @@
       statusEl.textContent = text;
     }
 
+    function setStatusByKey(key, type = "info") {
+      currentStatusKey = key;
+      currentStatusType = type;
+      setStatus(tr(key), type);
+    }
+
     function openDrawer() {
       drawer.classList.add("show");
       drawerBackdrop.classList.add("show");
+      closeLangMenu();
     }
 
     function closeDrawer() {
@@ -774,9 +1067,40 @@
       drawerBackdrop.classList.remove("show");
     }
 
+    function toggleLangMenu() {
+      langMenu.classList.toggle("show");
+      closeDrawer();
+    }
+
+    function closeLangMenu() {
+      langMenu.classList.remove("show");
+    }
+
     burgerBtn.addEventListener("click", openDrawer);
     drawerClose.addEventListener("click", closeDrawer);
-    drawerBackdrop.addEventListener("click", closeDrawer);
+    drawerBackdrop.addEventListener("click", () => {
+      closeDrawer();
+      closeLangMenu();
+    });
+
+    langBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleLangMenu();
+    });
+
+    langOptions.forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentLang = btn.dataset.lang;
+        applyLanguage();
+        closeLangMenu();
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!langMenu.contains(e.target) && !langBtn.contains(e.target)) {
+        closeLangMenu();
+      }
+    });
 
     function normalizeCode(raw) {
       return String(raw || "").trim().toUpperCase();
@@ -786,14 +1110,14 @@
       const normalized = normalizeCode(code);
 
       if (!normalized) {
-        setStatus("Введите или отсканируйте корректный код.", "error");
+        setStatusByKey("statusNeedCode", "error");
         return;
       }
 
       if (sendingNow) return;
       sendingNow = true;
 
-      setStatus("Код распознан. Отправляем в бота...", "success");
+      setStatusByKey("statusCodeSent", "success");
 
       const payload = {
         action: "scan_qr",
@@ -809,16 +1133,16 @@
             if (tg && typeof tg.close === "function") {
               tg.close();
             } else {
-              setStatus("Код отправлен. Вернитесь в Telegram.", "success");
+              setStatusByKey("statusSentReturn", "success");
             }
           }, 500);
         } else {
           sendingNow = false;
-          setStatus("Telegram WebApp недоступен. Откройте страницу из Telegram.", "error");
+          setStatusByKey("statusNoTelegram", "error");
         }
       } catch (e) {
         sendingNow = false;
-        setStatus("Не удалось отправить код в бота.", "error");
+        setStatusByKey("statusSendError", "error");
       }
     }
 
@@ -844,12 +1168,47 @@
       } finally {
         scannerStarted = false;
       }
+
+      try {
+        const stream = videoEl.srcObject;
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        videoEl.srcObject = null;
+      } catch (e) {}
+    }
+
+    async function requestCameraPermission() {
+      try {
+        if (navigator.permissions && navigator.permissions.query) {
+          try {
+            const result = await navigator.permissions.query({ name: "camera" });
+            if (result.state === "granted") return true;
+          } catch (e) {}
+        }
+
+        const tempStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+          audio: false
+        });
+
+        tempStream.getTracks().forEach(track => track.stop());
+        return true;
+      } catch (e) {
+        return false;
+      }
     }
 
     async function startScanner() {
       try {
-        setStatus("Загрузка сканера...", "info");
+        setStatusByKey("statusLoading", "info");
         await loadHtml5QrcodeLib();
+
+        const permissionGranted = await requestCameraPermission();
+        if (!permissionGranted) {
+          setStatusByKey("statusCameraError", "error");
+          return;
+        }
 
         await stopScanner();
 
@@ -871,7 +1230,7 @@
 
         const cameras = await Html5Qrcode.getCameras();
         if (!cameras || !cameras.length) {
-          setStatus("Камера не найдена на устройстве.", "error");
+          setStatusByKey("statusCameraNotFound", "error");
           return;
         }
 
@@ -896,12 +1255,7 @@
         );
 
         scannerStarted = true;
-        setStatus("Камера активна. Наведите её на QR-код.", "info");
-
-        const stream = videoEl.srcObject;
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-        }
+        setStatusByKey("statusReady", "info");
 
         const media = await navigator.mediaDevices.getUserMedia({
           video: {
@@ -913,7 +1267,7 @@
         videoEl.srcObject = media;
         await videoEl.play().catch(() => {});
       } catch (e) {
-        setStatus("Не удалось запустить камеру. Разрешите доступ к камере.", "error");
+        setStatusByKey("statusCameraError", "error");
       }
     }
 
@@ -925,6 +1279,7 @@
       try {
         await stopScanner();
       } catch (e) {}
+
       if (tg && typeof tg.close === "function") {
         tg.close();
       } else {
@@ -957,6 +1312,7 @@
     });
 
     setUserProfile();
+    applyLanguage();
     startScanner();
   </script>
 </body>
