@@ -1,4 +1,4 @@
-print("=== LUX ARISTOKRAT FINAL MAIN.PY ===")
+print("=== LUX ARISTOKRAT FINAL MAIN.PY WITH BULK QR ===")
 
 import asyncio
 import csv
@@ -52,7 +52,6 @@ except ModuleNotFoundError:
     ])
     import qrcode
 
-
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN not found")
@@ -99,6 +98,46 @@ def normalize_code(raw: str) -> str:
     raw = (raw or "").strip().upper()
     raw = re.sub(r"[^A-Z0-9_-]+", "", raw)
     return raw
+
+
+def normalize_bulk_code(raw: str) -> str:
+    raw = (raw or "").strip()
+
+    replacements = {
+        ">": "_",
+        "<": "_",
+        "!": "_",
+        "&": "_",
+        "'": "_",
+        '"': "_",
+        ".": "_",
+        ",": "_",
+        " ": "_",
+        "/": "_",
+        "\\": "_",
+        ":": "_",
+        ";": "_",
+        "?": "_",
+        "=": "_",
+        "+": "_",
+        "#": "_",
+        "%": "_",
+        "@": "_",
+        "*": "_",
+        "(": "_",
+        ")": "_",
+        "[": "_",
+        "]": "_",
+        "{": "_",
+        "}": "_",
+    }
+
+    for old, new in replacements.items():
+        raw = raw.replace(old, new)
+
+    raw = re.sub(r"_+", "_", raw)
+    raw = raw.strip("_")
+    return normalize_code(raw)
 
 
 def build_qr_link(code: str) -> str:
@@ -442,13 +481,13 @@ def main_kb(user_id: int) -> ReplyKeyboardMarkup:
 
     if is_admin(user_id):
         rows.extend([
-            [KeyboardButton(text="➕ Добавить QR"), KeyboardButton(text="📋 Список QR")],
+            [KeyboardButton(text="➕ Добавить QR"), KeyboardButton(text="📥 Bulk QR")],
+            [KeyboardButton(text="📋 Список QR"), KeyboardButton(text="🧾 Сделать QR PNG")],
             [KeyboardButton(text="⛔️ Отключить QR"), KeyboardButton(text="✅ Включить QR")],
-            [KeyboardButton(text="🗑 Удалить QR"), KeyboardButton(text="🧾 Сделать QR PNG")],
+            [KeyboardButton(text="🗑 Удалить QR"), KeyboardButton(text="👤 Найти пользователя")],
             [KeyboardButton(text="🎁 Начислить баллы"), KeyboardButton(text="➖ Списать баллы")],
-            [KeyboardButton(text="👤 Найти пользователя"), KeyboardButton(text="📊 Статистика")],
+            [KeyboardButton(text="📊 Статистика"), KeyboardButton(text="🥇 Топ пользователей")],
             [KeyboardButton(text="📤 Экспорт users"), KeyboardButton(text="📤 Экспорт scans")],
-            [KeyboardButton(text="🥇 Топ пользователей")],
         ])
 
     return ReplyKeyboardMarkup(keyboard=rows, resize_keyboard=True)
@@ -619,6 +658,29 @@ async def add_qr_enter(message: Message):
     )
 
 
+@dp.message(F.text == "📥 Bulk QR")
+@dp.message(Command("bulk_qr"))
+async def bulk_qr_enter(message: Message):
+    if not is_admin(message.from_user.id):
+        return
+
+    admin_states[message.from_user.id] = {"mode": "bulk_qr"}
+    await message.answer(
+        "📥 <b>Массовое добавление QR</b>\n\n"
+        "Отправьте много строк одним сообщением.\n\n"
+        "Форматы строк:\n"
+        "<code>CODE</code>\n"
+        "<code>CODE|Баллы</code>\n"
+        "<code>CODE|Название|Баллы</code>\n\n"
+        "Если указать только CODE — будет название <b>QR CODE</b> и 10 баллов.\n"
+        "Если указать CODE|Баллы — название будет <b>QR CODE</b>.\n\n"
+        "Пример:\n"
+        "<code>ABC123</code>\n"
+        "<code>ABC124|15</code>\n"
+        "<code>ABC125|Подарочный QR|25</code>"
+    )
+
+
 @dp.message(F.text == "📋 Список QR")
 @dp.message(Command("list_qr"))
 async def list_qr_handler(message: Message):
@@ -785,6 +847,93 @@ async def text_router(message: Message):
 
     mode = state.get("mode")
     text = (message.text or "").strip()
+
+    if mode == "bulk_qr":
+        raw_lines = [line.strip() for line in text.splitlines() if line.strip()]
+        if not raw_lines:
+            await message.answer("❌ Пустой список.")
+            return
+
+        created = []
+        skipped = []
+
+        for idx, line in enumerate(raw_lines, start=1):
+            try:
+                parts = [p.strip() for p in line.split("|")]
+
+                if len(parts) == 1:
+                    raw_code = parts[0]
+                    code = normalize_bulk_code(raw_code)
+                    title = f"QR {code}"
+                    points = 10
+
+                elif len(parts) == 2:
+                    raw_code, points_str = parts
+                    code = normalize_bulk_code(raw_code)
+                    title = f"QR {code}"
+                    points = int(points_str)
+
+                elif len(parts) == 3:
+                    raw_code, title, points_str = parts
+                    code = normalize_bulk_code(raw_code)
+                    points = int(points_str)
+
+                else:
+                    skipped.append(f"{idx}. Неверный формат: {esc(line)}")
+                    continue
+
+                if not code:
+                    skipped.append(f"{idx}. Пустой код после очистки: {esc(line)}")
+                    continue
+
+                if points <= 0:
+                    skipped.append(f"{idx}. Баллы должны быть > 0: {esc(line)}")
+                    continue
+
+                create_qr(
+                    title=title,
+                    points=points,
+                    created_by=message.from_user.id,
+                    custom_code=code
+                )
+                created.append((code, title, points))
+
+            except sqlite3.IntegrityError:
+                skipped.append(f"{idx}. Уже существует: {esc(line)}")
+            except ValueError:
+                skipped.append(f"{idx}. Ошибка в баллах: {esc(line)}")
+            except Exception as e:
+                skipped.append(f"{idx}. Ошибка: {esc(str(e))}")
+
+        admin_states.pop(message.from_user.id, None)
+
+        lines = [
+            "📥 <b>Bulk QR завершён</b>",
+            "",
+            f"✅ Создано: <b>{len(created)}</b>",
+            f"⚠️ Пропущено: <b>{len(skipped)}</b>",
+        ]
+
+        if created:
+            lines.append("")
+            lines.append("<b>Созданные QR:</b>")
+            for i, (code, title, points) in enumerate(created[:20], start=1):
+                lines.append(
+                    f"{i}. <code>{esc(code)}</code> — {esc(title)} — <b>{points}</b>"
+                )
+            if len(created) > 20:
+                lines.append(f"... и ещё {len(created) - 20}")
+
+        if skipped:
+            lines.append("")
+            lines.append("<b>Пропущенные строки:</b>")
+            for item in skipped[:20]:
+                lines.append(item)
+            if len(skipped) > 20:
+                lines.append(f"... и ещё {len(skipped) - 20}")
+
+        await message.answer("\n".join(lines))
+        return
 
     if mode == "add_qr":
         parts = [p.strip() for p in text.split("|")]
