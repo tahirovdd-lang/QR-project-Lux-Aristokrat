@@ -3,7 +3,7 @@ import logging
 import os
 
 from aiogram import Bot, Dispatcher
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import Command, CommandStart
 from aiogram.types import Message
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -19,7 +19,12 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def start_handler(message: Message):
-    await message.answer("Бот работает ✅")
+    await message.answer(
+        "Бот работает ✅\n\n"
+        "Команды:\n"
+        "/start — запуск\n"
+        "/id — ваш Telegram ID"
+    )
 
 
 @dp.message(Command("id"))
@@ -29,7 +34,8 @@ async def id_handler(message: Message):
 
 @dp.message()
 async def echo_handler(message: Message):
-    await message.answer(f"Вы написали: {message.text}")
+    if message.text:
+        await message.answer(f"Вы написали: {message.text}")
 
 
 async def main():
