@@ -13,7 +13,7 @@ import sys
 import time
 from contextlib import contextmanager
 from datetime import datetime
-from urllib.parse import quote
+from urllib.parse import quote, unquote, urlparse, parse_qs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -21,6 +21,7 @@ try:
     from aiogram import Bot, Dispatcher, F
     from aiogram.client.default import DefaultBotProperties
     from aiogram.filters import CommandStart, Command
+    from aiogram.filters.command import CommandObject
     from aiogram.types import (
         Message,
         ReplyKeyboardMarkup,
@@ -38,6 +39,7 @@ except ModuleNotFoundError:
     from aiogram import Bot, Dispatcher, F
     from aiogram.client.default import DefaultBotProperties
     from aiogram.filters import CommandStart, Command
+    from aiogram.filters.command import CommandObject
     from aiogram.types import (
         Message,
         ReplyKeyboardMarkup,
@@ -63,7 +65,7 @@ if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN not found")
 
 BOT_USERNAME = os.getenv("BOT_USERNAME", "QR_Lux_Aristokrat_bot").replace("@", "").strip()
-WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/QR-project-Lux-Aristokrat/?v=1").strip()
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/QR-project-Lux-Aristokrat/?v=2").strip()
 DB_PATH = os.getenv("DB_PATH", "lux_aristokrat.db")
 DATA_DIR = os.getenv("DATA_DIR", "/app/data")
 
@@ -417,6 +419,53 @@ def build_qr_link(code: str) -> str:
     return f"https://t.me/{BOT_USERNAME}?start={quote('qr_' + code)}"
 
 
+def extract_qr_code_from_text(raw: str) -> str:
+    """
+    Поддержка:
+    - LUX123ABC
+    - qr_LUX123ABC
+    - https://t.me/BotName?start=qr_LUX123ABC
+    - tg://resolve?domain=BotName&start=qr_LUX123ABC
+    - URL-encoded значения
+    """
+    value = (raw or "").strip()
+    if not value:
+        return ""
+
+    value = unquote(value).strip()
+
+    if value.lower().startswith("qr_") and len(value) > 3:
+        return normalize_code(value[3:])
+
+    if value.lower().startswith("http://") or value.lower().startswith("https://") or value.lower().startswith("tg://"):
+        try:
+            parsed = urlparse(value)
+            qs = parse_qs(parsed.query)
+
+            start_values = qs.get("start") or qs.get("startapp") or []
+            for item in start_values:
+                item = unquote(item).strip()
+                if item.lower().startswith("qr_") and len(item) > 3:
+                    return normalize_code(item[3:])
+                if item:
+                    return normalize_code(item)
+
+            match = re.search(r"(?:\?|&)(?:start|startapp)=([^&]+)", value, flags=re.IGNORECASE)
+            if match:
+                start_value = unquote(match.group(1)).strip()
+                if start_value.lower().startswith("qr_") and len(start_value) > 3:
+                    return normalize_code(start_value[3:])
+                return normalize_code(start_value)
+        except Exception:
+            pass
+
+    match = re.search(r"\bQR[_\-:]?([A-Z0-9_]+)\b", value.upper())
+    if match:
+        return normalize_code(match.group(1))
+
+    return normalize_code(value)
+
+
 def get_conn() -> sqlite3.Connection:
     conn = sqlite3.connect(
         DB_FILE,
@@ -700,7 +749,7 @@ async def create_qr(title: str, points: int, created_by: int, custom_code: str |
 
 
 def get_qr_by_code(code: str):
-    return db_fetchone("SELECT * FROM qr_codes WHERE code = ?", (code,))
+    return db_fetchone("SELECT * FROM qr_codes WHERE UPPER(code) = UPPER(?)", (code,))
 
 
 def get_qr_by_id(qr_id: int):
@@ -731,7 +780,12 @@ async def delete_qr(qr_id: int):
 
 
 def save_qr_png(code: str) -> str:
-    img = qrcode.make(build_qr_link(code))
+    """
+    ВАЖНО:
+    Генерируем PNG с самим кодом, а не с telegram deep-link.
+    Иначе mini app часто открывает ссылку вместо отправки кода в бота.
+    """
+    img = qrcode.make(code)
     path = os.path.join(QR_DIR, f"{code}.png")
     img.save(path)
     return path
@@ -841,7 +895,7 @@ def menu_kb(user_id: int) -> ReplyKeyboardMarkup:
 
 def qr_link_kb(code: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
-        inline_keyboard=[[InlineKeyboardButton(text="🔗 Open QR Link", url=build_qr_link(code))]]
+        inline_keyboard=[[InlineKeyboardButton(text="🔗 Open Bot Link", url=build_qr_link(code))]]
     )
 
 
@@ -858,23 +912,29 @@ async def setup_menu_button():
         logging.warning("Menu button setup failed: %s", e)
 
 
-def find_qr_match(raw_code: str):
-    raw_code = (raw_code or "").strip()
-    if not raw_code:
-        return None, None, None
+def find_qr_match(raw_code: str, conn: sqlite3.Connection):
+    source = (raw_code or "").strip()
+    if not source:
+        return None, None, None, ""
 
-    exact_raw = raw_code.upper()
-    normalized = normalize_bulk_code(raw_code)
+    extracted = extract_qr_code_from_text(source)
+    normalized = normalize_bulk_code(extracted)
 
-    row = db_fetchone("SELECT * FROM qr_codes WHERE UPPER(code) = ?", (exact_raw,))
-    if row:
-        return row, exact_raw, "exact"
+    cur = conn.cursor()
 
-    row = db_fetchone("SELECT * FROM qr_codes WHERE UPPER(code) = ?", (normalized,))
-    if row:
-        return row, normalized, "normalized"
+    if extracted:
+        cur.execute("SELECT * FROM qr_codes WHERE UPPER(code) = UPPER(?)", (extracted,))
+        row = cur.fetchone()
+        if row:
+            return row, extracted, "exact", normalized
 
-    return None, normalized, "not_found"
+    if normalized:
+        cur.execute("SELECT * FROM qr_codes WHERE UPPER(code) = UPPER(?)", (normalized,))
+        row = cur.fetchone()
+        if row:
+            return row, normalized, "normalized", normalized
+
+    return None, extracted, "not_found", normalized
 
 
 async def process_qr_scan_atomic(user_id: int, incoming_code: str):
@@ -882,13 +942,14 @@ async def process_qr_scan_atomic(user_id: int, incoming_code: str):
         def _process(conn: sqlite3.Connection):
             cur = conn.cursor()
 
-            qr_row, matched_code, match_type = find_qr_match(incoming_code)
+            qr_row, matched_code, match_type, normalized = find_qr_match(incoming_code, conn)
 
             if not qr_row:
                 return {
                     "status": "not_found",
                     "incoming_code": incoming_code,
-                    "normalized_code": normalize_bulk_code(incoming_code)
+                    "extracted_code": extract_qr_code_from_text(incoming_code),
+                    "normalized_code": normalized
                 }
 
             if int(qr_row["is_active"]) != 1:
@@ -946,7 +1007,7 @@ async def process_qr_scan_atomic(user_id: int, incoming_code: str):
 
 
 @dp.message(CommandStart())
-async def start_handler(message: Message, command: CommandStart):
+async def start_handler(message: Message, command: CommandObject):
     try:
         await ensure_user_in_db(message.from_user)
     except Exception as e:
@@ -965,11 +1026,13 @@ async def start_handler(message: Message, command: CommandStart):
     except Exception as e:
         logging.warning("Per-chat menu button setup failed: %s", e)
 
-    deep_arg = command.args
-    if deep_arg and deep_arg.startswith("qr_"):
-        code = deep_arg[3:]
-        await process_qr_scan(message, code)
-        return
+    deep_arg = command.args if command else None
+    if deep_arg:
+        deep_arg = unquote(deep_arg).strip()
+        if deep_arg.startswith("qr_"):
+            code = deep_arg[3:]
+            await process_qr_scan(message, code)
+            return
 
     await message.answer(t(message.from_user.id, "choose_lang"), reply_markup=lang_kb())
 
@@ -1059,10 +1122,12 @@ async def process_qr_scan(message: Message, code: str):
 
     if status == "not_found":
         incoming_code = esc(result.get("incoming_code", ""))
+        extracted_code = esc(result.get("extracted_code", ""))
         normalized_code = esc(result.get("normalized_code", ""))
         await message.answer(
             f"{t(message.from_user.id, 'qr_not_found')}\n\n"
             f"RAW: <code>{incoming_code}</code>\n"
+            f"EXTRACTED: <code>{extracted_code}</code>\n"
             f"NORMALIZED: <code>{normalized_code}</code>",
             reply_markup=menu_kb(message.from_user.id)
         )
@@ -1459,7 +1524,8 @@ async def text_router(message: Message):
                     f"Title: <b>{esc(row['title'])}</b>\n"
                     f"Code: <code>{esc(row['code'])}</code>\n"
                     f"Points: <b>{int(row['points'])}</b>\n"
-                    f"Link:\n<code>{esc(build_qr_link(code))}</code>"
+                    f"Bot link:\n<code>{esc(build_qr_link(code))}</code>\n\n"
+                    f"<b>Важно:</b> PNG содержит сам код для корректного сканирования в mini app."
                 ),
                 reply_markup=qr_link_kb(code)
             )
@@ -1531,7 +1597,8 @@ async def text_router(message: Message):
                 f"Title: <b>{esc(row['title'])}</b>\n"
                 f"Code: <code>{esc(row['code'])}</code>\n"
                 f"Points: <b>{int(row['points'])}</b>\n"
-                f"Link:\n<code>{esc(build_qr_link(row['code']))}</code>"
+                f"Bot link:\n<code>{esc(build_qr_link(row['code']))}</code>\n\n"
+                f"<b>PNG содержит сам код, не ссылку.</b>"
             ),
             reply_markup=qr_link_kb(row["code"])
         )
