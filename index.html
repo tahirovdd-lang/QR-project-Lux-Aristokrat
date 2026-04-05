@@ -14,19 +14,13 @@
   <style>
     :root{
       --bg:#080809;
-      --bg-2:#101012;
       --card:rgba(18,18,20,.62);
-      --card-strong:rgba(20,20,22,.82);
       --text:#f6ecd1;
       --muted:#c6b083;
       --line:rgba(212,175,55,.18);
-      --line-strong:rgba(212,175,55,.28);
       --gold:#d4af37;
       --gold-soft:#f4df9a;
-      --gold-deep:#9f7b19;
       --shadow:0 18px 50px rgba(0,0,0,.38);
-      --radius:24px;
-      --radius-sm:18px;
     }
 
     *{box-sizing:border-box}
@@ -42,9 +36,7 @@
       overflow-x:hidden;
     }
 
-    body{
-      padding:18px 14px 20px;
-    }
+    body{ padding:18px 14px 20px; }
 
     .wrap{
       width:100%;
@@ -53,28 +45,11 @@
     }
 
     .hero{
-      position:relative;
       border:1px solid var(--line);
       background:linear-gradient(180deg, rgba(22,22,24,.92), rgba(11,11,12,.96));
       border-radius:30px;
       padding:20px 18px 18px;
       box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-
-    .hero::before{
-      content:"";
-      position:absolute;
-      inset:-1px;
-      border-radius:30px;
-      padding:1px;
-      background:linear-gradient(135deg, rgba(244,223,154,.28), rgba(212,175,55,.04), rgba(244,223,154,.18));
-      -webkit-mask:
-        linear-gradient(#fff 0 0) content-box,
-        linear-gradient(#fff 0 0);
-      -webkit-mask-composite:xor;
-      mask-composite:exclude;
-      pointer-events:none;
     }
 
     .brand{
@@ -89,21 +64,17 @@
       height:46px;
       border-radius:16px;
       border:1px solid rgba(244,223,154,.25);
-      background:
-        radial-gradient(circle at 30% 30%, rgba(244,223,154,.22), transparent 45%),
-        linear-gradient(180deg, #171719, #0f0f11);
+      background:linear-gradient(180deg, #171719, #0f0f11);
       display:flex;
       align-items:center;
       justify-content:center;
       color:var(--gold-soft);
-      box-shadow:inset 0 0 22px rgba(212,175,55,.08);
       font-size:20px;
     }
 
     .brand-title{
       font-size:20px;
       font-weight:800;
-      letter-spacing:.3px;
       line-height:1.15;
     }
 
@@ -177,26 +148,16 @@
       position:relative;
     }
 
-    .scan-frame::before,
-    .scan-frame::after{
+    .scan-frame::before{
       content:"";
       position:absolute;
       left:12px;
       right:12px;
+      top:18px;
       height:2px;
       background:linear-gradient(90deg, transparent, var(--gold-soft), transparent);
       box-shadow:0 0 14px rgba(244,223,154,.45);
       animation:scanMove 2.3s linear infinite;
-    }
-
-    .scan-frame::before{
-      top:18px;
-    }
-
-    .scan-frame::after{
-      top:calc(100% - 20px);
-      opacity:.35;
-      animation-delay:1.15s;
     }
 
     @keyframes scanMove{
@@ -208,24 +169,21 @@
     .status{
       margin-top:14px;
       border-radius:20px;
-      padding:14px 14px;
+      padding:14px;
       background:rgba(212,175,55,.08);
       border:1px solid rgba(212,175,55,.14);
       color:var(--text);
       font-size:14px;
       line-height:1.45;
+      word-break:break-word;
     }
 
-    .status.muted{
-      color:var(--muted);
-    }
-
+    .status.muted{ color:var(--muted); }
     .status.success{
       background:rgba(64, 180, 100, .12);
       border-color:rgba(64,180,100,.22);
       color:#dcffe6;
     }
-
     .status.error{
       background:rgba(210, 70, 70, .12);
       border-color:rgba(210,70,70,.22);
@@ -240,7 +198,6 @@
     }
 
     button{
-      appearance:none;
       border:none;
       outline:none;
       cursor:pointer;
@@ -262,10 +219,6 @@
       color:var(--text);
       background:linear-gradient(180deg, rgba(27,27,29,.95), rgba(17,17,18,.95));
       border:1px solid rgba(244,223,154,.14);
-    }
-
-    button:active{
-      transform:scale(.985);
     }
 
     .tips{
@@ -291,10 +244,6 @@
       line-height:1.55;
     }
 
-    .hidden{
-      display:none !important;
-    }
-
     @media (max-width:480px){
       .title{font-size:20px}
       .brand-title{font-size:18px}
@@ -318,15 +267,13 @@
 
       <div class="title">Сканируйте код для начисления баллов</div>
       <p class="subtitle">
-        Наведите камеру на QR-код или Data Matrix. После распознавания данные
-        сразу отправятся в бот, и бонусы начислятся автоматически.
+        После распознавания код сразу отправится в бота, и бонусы начислятся автоматически.
       </p>
     </div>
 
     <div class="card">
       <div class="scanner-shell">
         <div id="reader"></div>
-
         <div class="scanner-overlay">
           <div class="scan-frame"></div>
         </div>
@@ -342,12 +289,11 @@
       </div>
 
       <div class="tips">
-        <div class="tips-title">Советы</div>
+        <div class="tips-title">Важно</div>
         <ul>
-          <li>Держите телефон ровно и не трясите камеру.</li>
-          <li>Код должен полностью помещаться в рамке.</li>
-          <li>Сканер поддерживает обычный QR и Data Matrix.</li>
-          <li>Если код уже использовался, бот покажет уведомление о повторном сканировании.</li>
+          <li>Сканер поддерживает QR и Data Matrix.</li>
+          <li>Один и тот же код повторно одному пользователю не начисляется.</li>
+          <li>После сканирования mini app сам закроется.</li>
         </ul>
       </div>
     </div>
@@ -358,9 +304,7 @@
     if (tg) {
       tg.ready();
       tg.expand();
-      try {
-        tg.disableVerticalSwipes();
-      } catch (e) {}
+      try { tg.disableVerticalSwipes(); } catch (e) {}
       try {
         tg.setHeaderColor("#080809");
         tg.setBackgroundColor("#080809");
@@ -374,6 +318,7 @@
     let scanner = null;
     let isSending = false;
     let isStarted = false;
+    let lastSentCode = "";
 
     function setStatus(text, type = "muted") {
       statusEl.className = `status ${type}`;
@@ -381,35 +326,41 @@
     }
 
     function normalizeScannedText(value) {
-      if (!value) return "";
-      return String(value).trim();
+      return String(value || "").trim();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
     }
 
     async function stopScanner() {
       if (!scanner || !isStarted) return;
-      try {
-        await scanner.stop();
-      } catch (e) {}
-      try {
-        await scanner.clear();
-      } catch (e) {}
+      try { await scanner.stop(); } catch (e) {}
+      try { await scanner.clear(); } catch (e) {}
       isStarted = false;
     }
 
     async function sendScanToBot(decodedText) {
       if (isSending) return;
-      isSending = true;
 
       const code = normalizeScannedText(decodedText);
-
       if (!code) {
         setStatus("Не удалось прочитать код.", "error");
-        isSending = false;
         return;
       }
 
+      if (lastSentCode === code) {
+        return;
+      }
+
+      lastSentCode = code;
+      isSending = true;
+
       setStatus(
-        `Код распознан:<br><code>${escapeHtml(code)}</code><br><br>Отправка данных в бот...`,
+        `Код распознан:<br><code>${escapeHtml(code)}</code><br><br>Отправка в бот...`,
         "success"
       );
 
@@ -435,25 +386,21 @@
         } else {
           setStatus("Ошибка: Telegram WebApp API недоступен.", "error");
           isSending = false;
+          lastSentCode = "";
         }
       } catch (e) {
         console.error(e);
         setStatus("Ошибка при отправке данных в бот.", "error");
         isSending = false;
+        lastSentCode = "";
       }
-    }
-
-    function escapeHtml(value) {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;");
     }
 
     async function startScanner() {
       await stopScanner();
 
       isSending = false;
+      lastSentCode = "";
       scanner = new Html5Qrcode("reader");
 
       setStatus("Запуск камеры...", "muted");
@@ -475,35 +422,22 @@
         }
       };
 
-      try {
-        await scanner.start(
-          { facingMode: "environment" },
-          config,
-          async (decodedText) => {
-            if (isSending) return;
-            await sendScanToBot(decodedText);
-          },
-          (errorMessage) => {
-            // лишний шум не показываем
-          }
-        );
+      const onSuccess = async (decodedText) => {
+        if (isSending) return;
+        await sendScanToBot(decodedText);
+      };
 
+      const onError = () => {};
+
+      try {
+        await scanner.start({ facingMode: "environment" }, config, onSuccess, onError);
         isStarted = true;
         setStatus("Камера активна. Наведите её на QR-код или Data Matrix.", "muted");
       } catch (err1) {
         console.warn("Back camera failed:", err1);
 
         try {
-          await scanner.start(
-            { facingMode: "user" },
-            config,
-            async (decodedText) => {
-              if (isSending) return;
-              await sendScanToBot(decodedText);
-            },
-            (errorMessage) => {}
-          );
-
+          await scanner.start({ facingMode: "user" }, config, onSuccess, onError);
           isStarted = true;
           setStatus("Камера активна. Наведите её на QR-код или Data Matrix.", "muted");
         } catch (err2) {
@@ -523,11 +457,8 @@
 
     closeBtn.addEventListener("click", async () => {
       await stopScanner();
-      if (tg) {
-        tg.close();
-      } else {
-        window.close();
-      }
+      if (tg) tg.close();
+      else window.close();
     });
 
     window.addEventListener("beforeunload", async () => {
