@@ -1,4 +1,4 @@
-print("=== LUX FINAL BUILD 2026-04-04 FULL FIX DATAMATRIX ASYNC ===")
+print("=== LUX FINAL BUILD 2026-04-05 FULL FIX QR AUTOBONUS ===")
 
 import asyncio
 import csv
@@ -65,7 +65,7 @@ if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN not found")
 
 BOT_USERNAME = os.getenv("BOT_USERNAME", "QR_Lux_Aristokrat_bot").replace("@", "").strip()
-WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/QR-project-Lux-Aristokrat/?v=2").strip()
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://example.com/index.html").strip()
 DB_PATH = os.getenv("DB_PATH", "lux_aristokrat.db")
 DATA_DIR = os.getenv("DATA_DIR", "/app/data")
 
@@ -392,13 +392,11 @@ def is_admin(user_id: int) -> bool:
 
 
 def normalize_code(raw: str) -> str:
-    raw = (raw or "").strip().upper()
-    return raw
+    return (raw or "").strip().upper()
 
 
 def normalize_bulk_code(raw: str) -> str:
     raw = (raw or "").strip().upper()
-
     replacements = {
         ">": "_", "<": "_", "!": "_", "&": "_", "'": "_", "\"": "_",
         ".": "_", ",": "_", " ": "_", "/": "_", "\\": "_", ":": "_",
@@ -406,10 +404,8 @@ def normalize_bulk_code(raw: str) -> str:
         "@": "_", "*": "_", "(": "_", ")": "_", "[": "_", "]": "_",
         "{": "_", "}": "_"
     }
-
     for old, new in replacements.items():
         raw = raw.replace(old, new)
-
     raw = re.sub(r"_+", "_", raw)
     raw = raw.strip("_")
     return raw
@@ -420,14 +416,6 @@ def build_qr_link(code: str) -> str:
 
 
 def extract_qr_code_from_text(raw: str) -> str:
-    """
-    Поддержка:
-    - LUX123ABC
-    - qr_LUX123ABC
-    - https://t.me/BotName?start=qr_LUX123ABC
-    - tg://resolve?domain=BotName&start=qr_LUX123ABC
-    - URL-encoded значения
-    """
     value = (raw or "").strip()
     if not value:
         return ""
@@ -441,7 +429,6 @@ def extract_qr_code_from_text(raw: str) -> str:
         try:
             parsed = urlparse(value)
             qs = parse_qs(parsed.query)
-
             start_values = qs.get("start") or qs.get("startapp") or []
             for item in start_values:
                 item = unquote(item).strip()
@@ -458,10 +445,6 @@ def extract_qr_code_from_text(raw: str) -> str:
                 return normalize_code(start_value)
         except Exception:
             pass
-
-    match = re.search(r"\bQR[_\-:]?([A-Z0-9_]+)\b", value.upper())
-    if match:
-        return normalize_code(match.group(1))
 
     return normalize_code(value)
 
@@ -679,8 +662,7 @@ async def set_lang(user_id: int, language: str):
 
     async with db_lock:
         def _set(conn: sqlite3.Connection):
-            cur = conn.cursor()
-            cur.execute("""
+            conn.execute("""
                 UPDATE users
                 SET language = ?, updated_at = ?
                 WHERE user_id = ?
@@ -703,8 +685,7 @@ def get_user_points(user_id: int) -> int:
 async def change_user_points(user_id: int, delta: int):
     async with db_lock:
         def _change(conn: sqlite3.Connection):
-            cur = conn.cursor()
-            cur.execute("""
+            conn.execute("""
                 UPDATE users
                 SET points = CASE
                     WHEN points + ? < 0 THEN 0
@@ -737,8 +718,7 @@ async def create_qr(title: str, points: int, created_by: int, custom_code: str |
 
     async with db_lock:
         def _create(conn: sqlite3.Connection):
-            cur = conn.cursor()
-            cur.execute("""
+            conn.execute("""
                 INSERT INTO qr_codes (code, title, points, is_active, created_by, created_at)
                 VALUES (?, ?, ?, 1, ?, ?)
             """, (code, title.strip(), points, created_by, now_str()))
@@ -763,28 +743,19 @@ def list_qr(limit: int = 50):
 async def set_qr_active(qr_id: int, active: bool):
     async with db_lock:
         def _set(conn: sqlite3.Connection):
-            cur = conn.cursor()
-            cur.execute("UPDATE qr_codes SET is_active = ? WHERE id = ?", (1 if active else 0, qr_id))
-
+            conn.execute("UPDATE qr_codes SET is_active = ? WHERE id = ?", (1 if active else 0, qr_id))
         db_run_write(_set)
 
 
 async def delete_qr(qr_id: int):
     async with db_lock:
         def _delete(conn: sqlite3.Connection):
-            cur = conn.cursor()
-            cur.execute("DELETE FROM scans WHERE qr_code_id = ?", (qr_id,))
-            cur.execute("DELETE FROM qr_codes WHERE id = ?", (qr_id,))
-
+            conn.execute("DELETE FROM scans WHERE qr_code_id = ?", (qr_id,))
+            conn.execute("DELETE FROM qr_codes WHERE id = ?", (qr_id,))
         db_run_write(_delete)
 
 
 def save_qr_png(code: str) -> str:
-    """
-    ВАЖНО:
-    Генерируем PNG с самим кодом, а не с telegram deep-link.
-    Иначе mini app часто открывает ссылку вместо отправки кода в бота.
-    """
     img = qrcode.make(code)
     path = os.path.join(QR_DIR, f"{code}.png")
     img.save(path)
@@ -817,7 +788,6 @@ def export_users_csv() -> str:
         FROM users
         ORDER BY points DESC, updated_at DESC
     """)
-
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.writer(f, delimiter=";")
         writer.writerow(["user_id", "username", "full_name", "phone", "points", "level", "language", "created_at", "updated_at"])
@@ -839,7 +809,6 @@ def export_scans_csv() -> str:
         LEFT JOIN qr_codes q ON q.id = s.qr_code_id
         ORDER BY s.id DESC
     """)
-
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.writer(f, delimiter=";")
         writer.writerow(["scan_id", "user_id", "username", "full_name", "qr_code", "qr_title", "points", "scanned_at"])
@@ -919,7 +888,6 @@ def find_qr_match(raw_code: str, conn: sqlite3.Connection):
 
     extracted = extract_qr_code_from_text(source)
     normalized = normalize_bulk_code(extracted)
-
     cur = conn.cursor()
 
     if extracted:
@@ -1073,6 +1041,7 @@ async def myid_handler(message: Message):
 @dp.message(F.web_app_data)
 async def webapp_data_handler(message: Message):
     await ensure_user_in_db(message.from_user)
+
     raw = message.web_app_data.data
     logging.info("WEB_APP_DATA RAW: %s", raw)
 
@@ -1524,8 +1493,7 @@ async def text_router(message: Message):
                     f"Title: <b>{esc(row['title'])}</b>\n"
                     f"Code: <code>{esc(row['code'])}</code>\n"
                     f"Points: <b>{int(row['points'])}</b>\n"
-                    f"Bot link:\n<code>{esc(build_qr_link(code))}</code>\n\n"
-                    f"<b>Важно:</b> PNG содержит сам код для корректного сканирования в mini app."
+                    f"Bot link:\n<code>{esc(build_qr_link(code))}</code>"
                 ),
                 reply_markup=qr_link_kb(code)
             )
@@ -1597,8 +1565,7 @@ async def text_router(message: Message):
                 f"Title: <b>{esc(row['title'])}</b>\n"
                 f"Code: <code>{esc(row['code'])}</code>\n"
                 f"Points: <b>{int(row['points'])}</b>\n"
-                f"Bot link:\n<code>{esc(build_qr_link(row['code']))}</code>\n\n"
-                f"<b>PNG содержит сам код, не ссылку.</b>"
+                f"Bot link:\n<code>{esc(build_qr_link(row['code']))}</code>"
             ),
             reply_markup=qr_link_kb(row["code"])
         )
