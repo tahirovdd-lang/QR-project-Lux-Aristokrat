@@ -1,4 +1,4 @@
-print("=== LUX FINAL BUILD 2026-04-05 FULL FIX QR AUTOBONUS ===")
+print("=== LUX FINAL BUILD 2026-04-05 FULL FIX QR AUTOBONUS JSON SAFE ===")
 
 import asyncio
 import csv
@@ -421,14 +421,16 @@ def extract_qr_code_from_text(raw: str) -> str:
         return ""
 
     value = unquote(value).strip()
+    value = value.strip('"').strip("'").strip()
 
     if value.lower().startswith("qr_") and len(value) > 3:
         return normalize_code(value[3:])
 
-    if value.lower().startswith("http://") or value.lower().startswith("https://") or value.lower().startswith("tg://"):
+    if value.lower().startswith(("http://", "https://", "tg://")):
         try:
             parsed = urlparse(value)
             qs = parse_qs(parsed.query)
+
             start_values = qs.get("start") or qs.get("startapp") or []
             for item in start_values:
                 item = unquote(item).strip()
@@ -445,6 +447,11 @@ def extract_qr_code_from_text(raw: str) -> str:
                 return normalize_code(start_value)
         except Exception:
             pass
+
+    if "|" in value:
+        parts = [x.strip() for x in value.split("|", 1)]
+        if len(parts) == 2 and parts[0].lower() == "scan_qr":
+            return normalize_code(parts[1])
 
     return normalize_code(value)
 
@@ -1042,36 +1049,47 @@ async def myid_handler(message: Message):
 async def webapp_data_handler(message: Message):
     await ensure_user_in_db(message.from_user)
 
-    raw = message.web_app_data.data
-    logging.info("WEB_APP_DATA RAW: %s", raw)
+    raw = message.web_app_data.data or ""
+    raw = raw.strip()
+    logging.info("WEB_APP_DATA RAW EXACT: %r", raw)
+
+    action = ""
+    raw_code = ""
 
     try:
         data = json.loads(raw)
-    except Exception:
+        if isinstance(data, dict):
+            action = str(data.get("action", "")).strip().lower()
+            raw_code = str(data.get("code", "")).strip()
+    except Exception as e:
+        logging.warning("web_app_data json parse failed: %s | raw=%r", e, raw)
+
+    if not action and not raw_code:
+        if "|" in raw:
+            parts = [x.strip() for x in raw.split("|", 1)]
+            if len(parts) == 2:
+                action = parts[0].lower()
+                raw_code = parts[1]
+
+        if not raw_code:
+            action = "scan_qr"
+            raw_code = raw
+
+    if action != "scan_qr":
         await message.answer(
-            t(message.from_user.id, "webapp_bad"),
+            t(message.from_user.id, "webapp_unknown"),
             reply_markup=menu_kb(message.from_user.id)
         )
         return
 
-    action = str(data.get("action", "")).strip().lower()
-
-    if action == "scan_qr":
-        raw_code = str(data.get("code", "")).strip()
-        if not raw_code:
-            await message.answer(
-                t(message.from_user.id, "bad_code"),
-                reply_markup=menu_kb(message.from_user.id)
-            )
-            return
-
-        await process_qr_scan(message, raw_code)
+    if not raw_code:
+        await message.answer(
+            t(message.from_user.id, "bad_code"),
+            reply_markup=menu_kb(message.from_user.id)
+        )
         return
 
-    await message.answer(
-        t(message.from_user.id, "webapp_unknown"),
-        reply_markup=menu_kb(message.from_user.id)
-    )
+    await process_qr_scan(message, raw_code)
 
 
 async def process_qr_scan(message: Message, code: str):
