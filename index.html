@@ -68,24 +68,34 @@
     .brand{
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:14px;
       min-width:0;
       flex:1;
     }
 
     .brand-mark{
-      width:46px;
-      height:46px;
-      border-radius:16px;
+      width:62px;
+      height:62px;
+      border-radius:18px;
       border:1px solid rgba(244,223,154,.25);
       background:linear-gradient(180deg, #171719, #0f0f11);
       display:flex;
       align-items:center;
       justify-content:center;
       color:var(--gold-soft);
-      font-size:20px;
+      font-size:24px;
       flex-shrink:0;
       box-shadow:inset 0 0 24px rgba(212,175,55,.06);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .brand-mark img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      border-radius:18px;
     }
 
     .brand-title{
@@ -289,9 +299,12 @@
 
     .title{
       margin:14px 0 8px;
-      font-size:22px;
+      font-size:18px;
       font-weight:800;
       line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .subtitle{
@@ -566,6 +579,15 @@
       font-size:22px;
       flex-shrink:0;
       box-shadow:inset 0 0 24px rgba(212,175,55,.06);
+      overflow:hidden;
+    }
+
+    .drawer-brand-mark img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      border-radius:18px;
     }
 
     .drawer-brand-title{
@@ -609,7 +631,35 @@
       font-size:14px;
       font-weight:800;
       color:var(--gold-soft);
-      margin-bottom:6px;
+      margin-bottom:8px;
+    }
+
+    .hours-list{
+      display:grid;
+      gap:7px;
+      margin-top:8px;
+    }
+
+    .hours-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.4;
+    }
+
+    .hours-day{
+      color:var(--text);
+      font-weight:700;
+      flex:1;
+    }
+
+    .hours-time{
+      color:var(--gold-soft);
+      font-weight:800;
+      white-space:nowrap;
     }
 
     .mini-actions{
@@ -749,8 +799,16 @@
     }
 
     @media (max-width:480px){
-      .title{font-size:20px}
-      .brand-title{font-size:21px}
+      .title{
+        font-size:16px;
+      }
+      .brand-title{
+        font-size:21px;
+      }
+      .brand-mark{
+        width:56px;
+        height:56px;
+      }
       .scan-frame{
         width:min(78vw, 250px);
         height:min(78vw, 250px);
@@ -762,6 +820,9 @@
       .drawer-brand-title{
         font-size:18px;
       }
+      .hours-row{
+        font-size:12px;
+      }
     }
   </style>
 </head>
@@ -770,7 +831,10 @@
     <div class="hero">
       <div class="topbar">
         <div class="brand">
-          <div class="brand-mark">◆</div>
+          <div class="brand-mark">
+            <img id="brandLogo" src="logo.png" alt="Lux Aristokrat logo" style="display:none;">
+            <span id="brandFallback">◆</span>
+          </div>
           <div>
             <div class="brand-title">Lux Aristokrat</div>
             <div id="brandSub" class="brand-sub">Новые возможности с Lux Aristokrat</div>
@@ -874,7 +938,10 @@
     <div class="drawer-body">
       <div class="drawer-brand">
         <div class="drawer-brand-top">
-          <div class="drawer-brand-mark">◆</div>
+          <div class="drawer-brand-mark">
+            <img id="drawerBrandLogo" src="logo.png" alt="Lux Aristokrat logo" style="display:none;">
+            <span id="drawerBrandFallback">◆</span>
+          </div>
           <div>
             <div class="drawer-brand-title">Lux Aristokrat</div>
             <div id="drawerBrandSub" class="drawer-brand-sub">Новые возможности с Lux Aristokrat</div>
@@ -934,6 +1001,19 @@
       </div>
 
       <div class="menu-card">
+        <div id="menuHoursTitle" class="menu-card-title">График работы</div>
+        <div class="hours-list">
+          <div class="hours-row"><span id="hoursMon" class="hours-day">Понедельник</span><span class="hours-time">07:00-21:00</span></div>
+          <div class="hours-row"><span id="hoursTue" class="hours-day">Вторник</span><span class="hours-time">07:00-21:00</span></div>
+          <div class="hours-row"><span id="hoursWed" class="hours-day">Среда</span><span class="hours-time">07:00-21:00</span></div>
+          <div class="hours-row"><span id="hoursThu" class="hours-day">Четверг</span><span class="hours-time">07:00-21:00</span></div>
+          <div class="hours-row"><span id="hoursFri" class="hours-day">Пятница</span><span class="hours-time">07:00-21:00</span></div>
+          <div class="hours-row"><span id="hoursSat" class="hours-day">Суббота</span><span class="hours-time">07:00-21:00</span></div>
+          <div class="hours-row"><span id="hoursSun" class="hours-day">Воскресенье</span><span class="hours-time">07:00-15:00</span></div>
+        </div>
+      </div>
+
+      <div class="menu-card">
         <div id="menuCard3Title" class="menu-card-title">Действия</div>
         <div class="mini-actions">
           <button id="drawerRestartBtn" class="menu-btn gold" type="button">Перезапустить сканер</button>
@@ -980,6 +1060,14 @@
         drawerBrandSub: "Новые возможности с Lux Aristokrat",
         drawerBrandNote: "Быстрый доступ к сканированию, контактам и навигации внутри mini app.",
         menuContactsTitle: "Контакты",
+        menuHoursTitle: "График работы",
+        hoursMon: "Понедельник",
+        hoursTue: "Вторник",
+        hoursWed: "Среда",
+        hoursThu: "Четверг",
+        hoursFri: "Пятница",
+        hoursSat: "Суббота",
+        hoursSun: "Воскресенье",
         routeText: "Схема проезда",
         routeSubText: "Yandex Maps",
         instagramText: "@aristokrat.hookah_shop_",
@@ -1019,6 +1107,14 @@
         drawerBrandSub: "Lux Aristokrat bilan yangi imkoniyatlar",
         drawerBrandNote: "Mini app ichida skanerlash, kontaktlar va navigatsiyaga tezkor kirish.",
         menuContactsTitle: "Kontaktlar",
+        menuHoursTitle: "Ish vaqti",
+        hoursMon: "Dushanba",
+        hoursTue: "Seshanba",
+        hoursWed: "Chorshanba",
+        hoursThu: "Payshanba",
+        hoursFri: "Juma",
+        hoursSat: "Shanba",
+        hoursSun: "Yakshanba",
         routeText: "Yo‘l xaritasi",
         routeSubText: "Yandex Maps",
         instagramText: "@aristokrat.hookah_shop_",
@@ -1058,6 +1154,14 @@
         drawerBrandSub: "New opportunities with Lux Aristokrat",
         drawerBrandNote: "Quick access to scanning, contacts, and navigation inside the mini app.",
         menuContactsTitle: "Contacts",
+        menuHoursTitle: "Working hours",
+        hoursMon: "Monday",
+        hoursTue: "Tuesday",
+        hoursWed: "Wednesday",
+        hoursThu: "Thursday",
+        hoursFri: "Friday",
+        hoursSat: "Saturday",
+        hoursSun: "Sunday",
         routeText: "Directions",
         routeSubText: "Yandex Maps",
         instagramText: "@aristokrat.hookah_shop_",
@@ -1097,6 +1201,14 @@
         drawerBrandSub: "Имкониятҳои нав бо Lux Aristokrat",
         drawerBrandNote: "Дастрасии зуд ба сканкунӣ, тамосҳо ва навигатсия дар дохили mini app.",
         menuContactsTitle: "Тамос",
+        menuHoursTitle: "Соатҳои корӣ",
+        hoursMon: "Душанбе",
+        hoursTue: "Сешанбе",
+        hoursWed: "Чоршанбе",
+        hoursThu: "Панҷшанбе",
+        hoursFri: "Ҷумъа",
+        hoursSat: "Шанбе",
+        hoursSun: "Якшанбе",
         routeText: "Нақшаи роҳ",
         routeSubText: "Yandex Maps",
         instagramText: "@aristokrat.hookah_shop_",
@@ -1140,6 +1252,11 @@
     const langDropdown = document.getElementById("langDropdown");
     const langOptions = Array.from(document.querySelectorAll(".lang-option"));
 
+    const brandLogo = document.getElementById("brandLogo");
+    const brandFallback = document.getElementById("brandFallback");
+    const drawerBrandLogo = document.getElementById("drawerBrandLogo");
+    const drawerBrandFallback = document.getElementById("drawerBrandFallback");
+
     let scanner = null;
     let isSending = false;
     let isStarted = false;
@@ -1151,6 +1268,21 @@
     let currentStatusKey = "statusInitializing";
     let currentStatusType = "muted";
     let currentStatusCode = "";
+
+    function initLogo(imgEl, fallbackEl) {
+      if (!imgEl || !fallbackEl) return;
+      imgEl.onload = () => {
+        imgEl.style.display = "block";
+        fallbackEl.style.display = "none";
+      };
+      imgEl.onerror = () => {
+        imgEl.style.display = "none";
+        fallbackEl.style.display = "inline";
+      };
+    }
+
+    initLogo(brandLogo, brandFallback);
+    initLogo(drawerBrandLogo, drawerBrandFallback);
 
     function escapeHtml(value) {
       return String(value)
@@ -1225,6 +1357,14 @@
 
       document.getElementById("drawerTitle").textContent = getText("drawerTitle");
       document.getElementById("menuContactsTitle").textContent = getText("menuContactsTitle");
+      document.getElementById("menuHoursTitle").textContent = getText("menuHoursTitle");
+      document.getElementById("hoursMon").textContent = getText("hoursMon");
+      document.getElementById("hoursTue").textContent = getText("hoursTue");
+      document.getElementById("hoursWed").textContent = getText("hoursWed");
+      document.getElementById("hoursThu").textContent = getText("hoursThu");
+      document.getElementById("hoursFri").textContent = getText("hoursFri");
+      document.getElementById("hoursSat").textContent = getText("hoursSat");
+      document.getElementById("hoursSun").textContent = getText("hoursSun");
       document.getElementById("routeText").textContent = getText("routeText");
       document.getElementById("routeSubText").textContent = getText("routeSubText");
       document.getElementById("instagramText").textContent = getText("instagramText");
