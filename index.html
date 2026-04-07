@@ -113,7 +113,7 @@
     }
 
     .lang-toggle{
-      min-width:68px;
+      min-width:86px;
       height:46px;
       border-radius:16px;
       border:1px solid rgba(244,223,154,.20);
@@ -122,7 +122,7 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      gap:6px;
+      gap:7px;
       padding:0 12px;
       font-size:13px;
       font-weight:800;
@@ -149,20 +149,36 @@
       z-index:1;
     }
 
-    .lang-toggle span:first-child{
+    .lang-toggle.open .arrow{
+      transform:translateY(1px) rotate(180deg);
+    }
+
+    .lang-toggle-content{
+      display:flex;
+      align-items:center;
+      gap:6px;
       position:relative;
       z-index:1;
     }
 
-    .lang-toggle.open .arrow{
-      transform:translateY(1px) rotate(180deg);
+    .lang-flag{
+      font-size:15px;
+      line-height:1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:16px;
+    }
+
+    .lang-label{
+      line-height:1;
     }
 
     .lang-dropdown{
       position:absolute;
       top:54px;
       right:0;
-      min-width:132px;
+      min-width:150px;
       padding:8px;
       border-radius:18px;
       border:1px solid rgba(244,223,154,.14);
@@ -209,6 +225,12 @@
       color:#201707;
       background:linear-gradient(180deg, #f4df9a, #d4af37);
       box-shadow:0 10px 22px rgba(212,175,55,.24);
+    }
+
+    .lang-option-left{
+      display:flex;
+      align-items:center;
+      gap:8px;
     }
 
     .lang-code{
@@ -584,12 +606,6 @@
       margin-bottom:6px;
     }
 
-    .menu-card-text{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.5;
-    }
-
     .mini-actions{
       display:grid;
       grid-template-columns:1fr;
@@ -734,7 +750,7 @@
         height:min(78vw, 250px);
       }
       .lang-toggle{
-        min-width:62px;
+        min-width:80px;
         padding:0 10px;
       }
     }
@@ -748,32 +764,47 @@
           <div class="brand-mark">◆</div>
           <div>
             <div class="brand-title">Lux Aristokrat</div>
-            <div id="brandSub" class="brand-sub">QR / Data Matrix Scanner</div>
+            <div id="brandSub" class="brand-sub">Новые возможности с Lux Aristokrat</div>
           </div>
         </div>
 
         <div class="top-actions">
           <div class="lang-menu-wrap">
             <button id="langToggle" class="lang-toggle" type="button" aria-label="language">
-              <span id="langToggleLabel">RU</span>
+              <div class="lang-toggle-content">
+                <span id="langToggleFlag" class="lang-flag">🇷🇺</span>
+                <span id="langToggleLabel" class="lang-label">RU</span>
+              </div>
               <span class="arrow">▾</span>
             </button>
 
             <div id="langDropdown" class="lang-dropdown">
-              <button class="lang-option active" type="button" data-lang="ru">
-                <span class="lang-code">RU</span>
+              <button class="lang-option active" type="button" data-lang="ru" data-flag="🇷🇺">
+                <div class="lang-option-left">
+                  <span class="lang-flag">🇷🇺</span>
+                  <span class="lang-code">RU</span>
+                </div>
                 <span class="lang-name">Русский</span>
               </button>
-              <button class="lang-option" type="button" data-lang="uz">
-                <span class="lang-code">UZ</span>
+              <button class="lang-option" type="button" data-lang="uz" data-flag="🇺🇿">
+                <div class="lang-option-left">
+                  <span class="lang-flag">🇺🇿</span>
+                  <span class="lang-code">UZ</span>
+                </div>
                 <span class="lang-name">O‘zbekcha</span>
               </button>
-              <button class="lang-option" type="button" data-lang="en">
-                <span class="lang-code">EN</span>
+              <button class="lang-option" type="button" data-lang="en" data-flag="🇬🇧">
+                <div class="lang-option-left">
+                  <span class="lang-flag">🇬🇧</span>
+                  <span class="lang-code">EN</span>
+                </div>
                 <span class="lang-name">English</span>
               </button>
-              <button class="lang-option" type="button" data-lang="tj">
-                <span class="lang-code">TJ</span>
+              <button class="lang-option" type="button" data-lang="tj" data-flag="🇹🇯">
+                <div class="lang-option-left">
+                  <span class="lang-flag">🇹🇯</span>
+                  <span class="lang-code">TJ</span>
+                </div>
                 <span class="lang-name">Тоҷикӣ</span>
               </button>
             </div>
@@ -837,18 +868,11 @@
           <div class="drawer-brand-mark">◆</div>
           <div>
             <div class="drawer-brand-title">Lux Aristokrat</div>
-            <div id="drawerBrandSub" class="drawer-brand-sub">Premium QR / Data Matrix Scanner</div>
+            <div id="drawerBrandSub" class="drawer-brand-sub">Новые возможности с Lux Aristokrat</div>
           </div>
         </div>
         <div id="drawerBrandNote" class="drawer-brand-note">
           Быстрый доступ к сканированию, контактам и навигации внутри mini app.
-        </div>
-      </div>
-
-      <div class="menu-card">
-        <div id="menuCard1Title" class="menu-card-title">О сканере</div>
-        <div id="menuCard1Text" class="menu-card-text">
-          Это mini app для считывания QR и Data Matrix кодов и автоматической отправки результата в Telegram-бот.
         </div>
       </div>
 
@@ -931,7 +955,8 @@
       ru: {
         htmlLang: "ru",
         langLabel: "RU",
-        brandSub: "QR / Data Matrix Scanner",
+        langFlag: "🇷🇺",
+        brandSub: "Новые возможности с Lux Aristokrat",
         title: "Сканируйте код для начисления баллов",
         subtitle: "После распознавания код сразу отправится в бота, и бонусы начислятся автоматически.",
         restart: "Перезапустить",
@@ -943,10 +968,8 @@
           "После сканирования mini app сам закроется."
         ],
         drawerTitle: "Меню",
-        drawerBrandSub: "Premium QR / Data Matrix Scanner",
+        drawerBrandSub: "Новые возможности с Lux Aristokrat",
         drawerBrandNote: "Быстрый доступ к сканированию, контактам и навигации внутри mini app.",
-        menuCard1Title: "О сканере",
-        menuCard1Text: "Это mini app для считывания QR и Data Matrix кодов и автоматической отправки результата в Telegram-бот.",
         menuContactsTitle: "Контакты",
         routeText: "Схема проезда",
         routeSubText: "Yandex Maps",
@@ -971,7 +994,8 @@
       uz: {
         htmlLang: "uz",
         langLabel: "UZ",
-        brandSub: "QR / Data Matrix skaneri",
+        langFlag: "🇺🇿",
+        brandSub: "Lux Aristokrat bilan yangi imkoniyatlar",
         title: "Ballarni hisoblash uchun kodni skaner qiling",
         subtitle: "Kod aniqlangandan so‘ng u darhol botga yuboriladi va bonuslar avtomatik tarzda hisoblanadi.",
         restart: "Qayta ishga tushirish",
@@ -983,10 +1007,8 @@
           "Skanerlashdan keyin mini app o‘zi yopiladi."
         ],
         drawerTitle: "Menyu",
-        drawerBrandSub: "Premium QR / Data Matrix skaneri",
+        drawerBrandSub: "Lux Aristokrat bilan yangi imkoniyatlar",
         drawerBrandNote: "Mini app ichida skanerlash, kontaktlar va navigatsiyaga tezkor kirish.",
-        menuCard1Title: "Skaner haqida",
-        menuCard1Text: "Bu QR va Data Matrix kodlarini o‘qib, natijani Telegram-botga avtomatik yuboradigan mini app.",
         menuContactsTitle: "Kontaktlar",
         routeText: "Yo‘l xaritasi",
         routeSubText: "Yandex Maps",
@@ -1011,7 +1033,8 @@
       en: {
         htmlLang: "en",
         langLabel: "EN",
-        brandSub: "QR / Data Matrix Scanner",
+        langFlag: "🇬🇧",
+        brandSub: "New opportunities with Lux Aristokrat",
         title: "Scan the code to add points",
         subtitle: "After recognition, the code will be sent to the bot immediately and bonuses will be credited automatically.",
         restart: "Restart",
@@ -1023,10 +1046,8 @@
           "After scanning, the mini app will close automatically."
         ],
         drawerTitle: "Menu",
-        drawerBrandSub: "Premium QR / Data Matrix Scanner",
+        drawerBrandSub: "New opportunities with Lux Aristokrat",
         drawerBrandNote: "Quick access to scanning, contacts, and navigation inside the mini app.",
-        menuCard1Title: "About scanner",
-        menuCard1Text: "This mini app reads QR and Data Matrix codes and automatically sends the result to the Telegram bot.",
         menuContactsTitle: "Contacts",
         routeText: "Directions",
         routeSubText: "Yandex Maps",
@@ -1051,7 +1072,8 @@
       tj: {
         htmlLang: "tg",
         langLabel: "TJ",
-        brandSub: "Сканери QR / Data Matrix",
+        langFlag: "🇹🇯",
+        brandSub: "Имкониятҳои нав бо Lux Aristokrat",
         title: "Барои ҳисоб кардани холҳо кодро скан кунед",
         subtitle: "Пас аз шинохтан, код фавран ба бот фиристода мешавад ва бонусҳо ба таври худкор ҳисоб карда мешаванд.",
         restart: "Аз нав оғоз кардан",
@@ -1063,10 +1085,8 @@
           "Пас аз сканкунӣ mini app худкор пӯшида мешавад."
         ],
         drawerTitle: "Меню",
-        drawerBrandSub: "Сканери премиум QR / Data Matrix",
+        drawerBrandSub: "Имкониятҳои нав бо Lux Aristokrat",
         drawerBrandNote: "Дастрасии зуд ба сканкунӣ, тамосҳо ва навигатсия дар дохили mini app.",
-        menuCard1Title: "Дар бораи сканер",
-        menuCard1Text: "Ин mini app барои хондани кодҳои QR ва Data Matrix ва фиристодани худкори натиҷа ба Telegram-бот аст.",
         menuContactsTitle: "Тамос",
         routeText: "Нақшаи роҳ",
         routeSubText: "Yandex Maps",
@@ -1107,6 +1127,7 @@
 
     const langToggle = document.getElementById("langToggle");
     const langToggleLabel = document.getElementById("langToggleLabel");
+    const langToggleFlag = document.getElementById("langToggleFlag");
     const langDropdown = document.getElementById("langDropdown");
     const langOptions = Array.from(document.querySelectorAll(".lang-option"));
 
@@ -1181,6 +1202,7 @@
       document.documentElement.lang = i18n[lang].htmlLang || "ru";
 
       langToggleLabel.textContent = i18n[lang].langLabel || lang.toUpperCase();
+      langToggleFlag.textContent = i18n[lang].langFlag || "🏳️";
 
       document.getElementById("brandSub").textContent = getText("brandSub");
       document.getElementById("title").textContent = getText("title");
@@ -1193,8 +1215,6 @@
       document.getElementById("tipsTitle").textContent = getText("tipsTitle");
 
       document.getElementById("drawerTitle").textContent = getText("drawerTitle");
-      document.getElementById("menuCard1Title").textContent = getText("menuCard1Title");
-      document.getElementById("menuCard1Text").textContent = getText("menuCard1Text");
       document.getElementById("menuContactsTitle").textContent = getText("menuContactsTitle");
       document.getElementById("routeText").textContent = getText("routeText");
       document.getElementById("routeSubText").textContent = getText("routeSubText");
@@ -1276,13 +1296,8 @@
 
       isStopping = true;
 
-      try {
-        await scanner.stop();
-      } catch (e) {}
-
-      try {
-        await scanner.clear();
-      } catch (e) {}
+      try { await scanner.stop(); } catch (e) {}
+      try { await scanner.clear(); } catch (e) {}
 
       isStarted = false;
       isStopping = false;
@@ -1294,11 +1309,8 @@
 
       setTimeout(() => {
         try {
-          if (tg && typeof tg.close === "function") {
-            tg.close();
-          } else {
-            window.close();
-          }
+          if (tg && typeof tg.close === "function") tg.close();
+          else window.close();
         } catch (e) {
           try { window.close(); } catch (_) {}
         }
@@ -1313,13 +1325,8 @@
         return;
       }
 
-      if (sendLocked || isSending || isStopping || closeTriggered) {
-        return;
-      }
-
-      if (lastSentCode === code) {
-        return;
-      }
+      if (sendLocked || isSending || isStopping || closeTriggered) return;
+      if (lastSentCode === code) return;
 
       sendLocked = true;
       isSending = true;
@@ -1428,17 +1435,9 @@
       });
     });
 
-    routeLinkBtn.addEventListener("click", () => {
-      openExternalLink(ROUTE_URL);
-    });
-
-    instagramLinkBtn.addEventListener("click", () => {
-      openExternalLink(INSTAGRAM_URL);
-    });
-
-    legalPhoneBtn.addEventListener("click", () => {
-      openPhone(LEGAL_PHONE);
-    });
+    routeLinkBtn.addEventListener("click", () => openExternalLink(ROUTE_URL));
+    instagramLinkBtn.addEventListener("click", () => openExternalLink(INSTAGRAM_URL));
+    legalPhoneBtn.addEventListener("click", () => openPhone(LEGAL_PHONE));
 
     restartBtn.addEventListener("click", async () => {
       renderStatusByKey("statusRestarting", "muted");
@@ -1465,17 +1464,13 @@
     });
 
     document.addEventListener("click", (e) => {
-      if (!e.target.closest(".lang-menu-wrap")) {
-        closeLangDropdown();
-      }
+      if (!e.target.closest(".lang-menu-wrap")) closeLangDropdown();
     });
 
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         closeLangDropdown();
-        if (drawer.classList.contains("open")) {
-          closeDrawer();
-        }
+        if (drawer.classList.contains("open")) closeDrawer();
       }
     });
 
