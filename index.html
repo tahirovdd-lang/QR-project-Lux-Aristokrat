@@ -24,6 +24,7 @@
     }
 
     *{box-sizing:border-box}
+
     html,body{
       margin:0;
       padding:0;
@@ -36,7 +37,9 @@
       overflow-x:hidden;
     }
 
-    body{ padding:18px 14px 20px; }
+    body{
+      padding:18px 14px 20px;
+    }
 
     .wrap{
       width:100%;
@@ -45,6 +48,7 @@
     }
 
     .hero{
+      position:relative;
       border:1px solid var(--line);
       background:linear-gradient(180deg, rgba(22,22,24,.92), rgba(11,11,12,.96));
       border-radius:30px;
@@ -52,11 +56,20 @@
       box-shadow:var(--shadow);
     }
 
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
     .brand{
       display:flex;
       align-items:center;
       gap:12px;
-      margin-bottom:10px;
+      min-width:0;
+      flex:1;
     }
 
     .brand-mark{
@@ -70,6 +83,7 @@
       justify-content:center;
       color:var(--gold-soft);
       font-size:20px;
+      flex-shrink:0;
     }
 
     .brand-title{
@@ -82,6 +96,62 @@
       color:var(--muted);
       font-size:12px;
       margin-top:4px;
+    }
+
+    .burger-btn{
+      width:46px;
+      height:46px;
+      border-radius:16px;
+      border:1px solid rgba(244,223,154,.20);
+      background:linear-gradient(180deg, rgba(27,27,29,.95), rgba(17,17,18,.95));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+    }
+
+    .burger-lines{
+      width:18px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .burger-lines span{
+      display:block;
+      height:2px;
+      width:100%;
+      border-radius:999px;
+      background:var(--gold-soft);
+      box-shadow:0 0 8px rgba(244,223,154,.16);
+    }
+
+    .lang-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:2px 0 10px;
+    }
+
+    .lang-btn{
+      min-height:36px;
+      padding:0 14px;
+      border-radius:14px;
+      border:1px solid rgba(244,223,154,.14);
+      background:linear-gradient(180deg, rgba(27,27,29,.95), rgba(17,17,18,.95));
+      color:var(--muted);
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:.2px;
+      box-shadow:none;
+    }
+
+    .lang-btn.active{
+      color:#201707;
+      background:linear-gradient(180deg, #f4df9a, #d4af37);
+      border-color:transparent;
+      box-shadow:0 10px 22px rgba(212,175,55,.24);
     }
 
     .title{
@@ -179,11 +249,13 @@
     }
 
     .status.muted{ color:var(--muted); }
+
     .status.success{
       background:rgba(64, 180, 100, .12);
       border-color:rgba(64,180,100,.22);
       color:#dcffe6;
     }
+
     .status.error{
       background:rgba(210, 70, 70, .12);
       border-color:rgba(210,70,70,.22);
@@ -244,6 +316,126 @@
       line-height:1.55;
     }
 
+    .drawer-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.52);
+      backdrop-filter:blur(4px);
+      z-index:999;
+      opacity:0;
+      visibility:hidden;
+      transition:.22s ease;
+    }
+
+    .drawer-backdrop.open{
+      opacity:1;
+      visibility:visible;
+    }
+
+    .drawer{
+      position:fixed;
+      top:0;
+      right:0;
+      width:min(88vw, 360px);
+      height:100%;
+      background:linear-gradient(180deg, rgba(16,16,18,.98), rgba(9,9,10,.99));
+      border-left:1px solid rgba(244,223,154,.12);
+      box-shadow:-18px 0 40px rgba(0,0,0,.42);
+      transform:translateX(100%);
+      transition:.24s ease;
+      z-index:1000;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .drawer.open{
+      transform:translateX(0);
+    }
+
+    .drawer-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:18px 16px 14px;
+      border-bottom:1px solid rgba(244,223,154,.10);
+    }
+
+    .drawer-title{
+      font-size:18px;
+      font-weight:800;
+      color:var(--gold-soft);
+    }
+
+    .drawer-close{
+      width:42px;
+      min-width:42px;
+      height:42px;
+      min-height:42px;
+      border-radius:14px;
+      padding:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--text);
+      background:linear-gradient(180deg, rgba(27,27,29,.95), rgba(17,17,18,.95));
+      border:1px solid rgba(244,223,154,.14);
+      font-size:20px;
+      font-weight:700;
+    }
+
+    .drawer-body{
+      padding:14px;
+      overflow:auto;
+    }
+
+    .menu-card{
+      border-radius:20px;
+      padding:14px;
+      margin-bottom:12px;
+      background:linear-gradient(180deg, rgba(22,22,24,.92), rgba(11,11,12,.96));
+      border:1px solid rgba(244,223,154,.10);
+      box-shadow:var(--shadow);
+    }
+
+    .menu-card-title{
+      font-size:14px;
+      font-weight:800;
+      color:var(--gold-soft);
+      margin-bottom:6px;
+    }
+
+    .menu-card-text{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .mini-actions{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .menu-btn{
+      width:100%;
+      min-height:46px;
+      border-radius:16px;
+      color:var(--text);
+      background:linear-gradient(180deg, rgba(27,27,29,.95), rgba(17,17,18,.95));
+      border:1px solid rgba(244,223,154,.14);
+      font-size:14px;
+      font-weight:800;
+    }
+
+    .menu-btn.gold{
+      color:#201707;
+      background:linear-gradient(180deg, #f4df9a, #d4af37);
+      box-shadow:0 10px 22px rgba(212,175,55,.24);
+      border:none;
+    }
+
     @media (max-width:480px){
       .title{font-size:20px}
       .brand-title{font-size:18px}
@@ -251,22 +443,45 @@
         width:min(78vw, 250px);
         height:min(78vw, 250px);
       }
+      .lang-row{
+        gap:6px;
+      }
+      .lang-btn{
+        padding:0 12px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="hero">
-      <div class="brand">
-        <div class="brand-mark">◆</div>
-        <div>
-          <div class="brand-title">Lux Aristokrat</div>
-          <div class="brand-sub">QR / Data Matrix Scanner</div>
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-mark">◆</div>
+          <div>
+            <div class="brand-title">Lux Aristokrat</div>
+            <div id="brandSub" class="brand-sub">QR / Data Matrix Scanner</div>
+          </div>
         </div>
+
+        <button id="burgerBtn" class="burger-btn" type="button" aria-label="menu">
+          <div class="burger-lines">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
       </div>
 
-      <div class="title">Сканируйте код для начисления баллов</div>
-      <p class="subtitle">
+      <div class="lang-row" id="langRow">
+        <button class="lang-btn active" type="button" data-lang="ru">RU</button>
+        <button class="lang-btn" type="button" data-lang="uz">UZ</button>
+        <button class="lang-btn" type="button" data-lang="en">EN</button>
+        <button class="lang-btn" type="button" data-lang="tj">TJ</button>
+      </div>
+
+      <div id="title" class="title">Сканируйте код для начисления баллов</div>
+      <p id="subtitle" class="subtitle">
         После распознавания код сразу отправится в бота, и бонусы начислятся автоматически.
       </p>
     </div>
@@ -289,8 +504,8 @@
       </div>
 
       <div class="tips">
-        <div class="tips-title">Важно</div>
-        <ul>
+        <div id="tipsTitle" class="tips-title">Важно</div>
+        <ul id="tipsList">
           <li>Сканер поддерживает QR и Data Matrix.</li>
           <li>Один и тот же код повторно одному пользователю не начисляется.</li>
           <li>После сканирования mini app сам закроется.</li>
@@ -299,8 +514,42 @@
     </div>
   </div>
 
+  <div id="drawerBackdrop" class="drawer-backdrop"></div>
+
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div id="drawerTitle" class="drawer-title">Меню</div>
+      <button id="drawerClose" class="drawer-close" type="button" aria-label="close">×</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="menu-card">
+        <div id="menuCard1Title" class="menu-card-title">О сканере</div>
+        <div id="menuCard1Text" class="menu-card-text">
+          Это mini app для считывания QR и Data Matrix кодов и автоматической отправки результата в Telegram-бот.
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div id="menuCard2Title" class="menu-card-title">Выбор языка</div>
+        <div id="menuCard2Text" class="menu-card-text">
+          Вы можете переключить язык интерфейса в верхней части экрана.
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div id="menuCard3Title" class="menu-card-title">Действия</div>
+        <div class="mini-actions">
+          <button id="drawerRestartBtn" class="menu-btn gold" type="button">Перезапустить сканер</button>
+          <button id="drawerCloseAppBtn" class="menu-btn" type="button">Закрыть mini app</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
   <script>
     const tg = window.Telegram?.WebApp;
+
     if (tg) {
       tg.ready();
       tg.expand();
@@ -311,29 +560,254 @@
       } catch (e) {}
     }
 
+    const i18n = {
+      ru: {
+        htmlLang: "ru",
+        brandSub: "QR / Data Matrix Scanner",
+        title: "Сканируйте код для начисления баллов",
+        subtitle: "После распознавания код сразу отправится в бота, и бонусы начислятся автоматически.",
+        restart: "Перезапустить",
+        close: "Закрыть",
+        tipsTitle: "Важно",
+        tips: [
+          "Сканер поддерживает QR и Data Matrix.",
+          "Один и тот же код повторно одному пользователю не начисляется.",
+          "После сканирования mini app сам закроется."
+        ],
+        drawerTitle: "Меню",
+        menuCard1Title: "О сканере",
+        menuCard1Text: "Это mini app для считывания QR и Data Matrix кодов и автоматической отправки результата в Telegram-бот.",
+        menuCard2Title: "Выбор языка",
+        menuCard2Text: "Вы можете переключить язык интерфейса в верхней части экрана.",
+        menuCard3Title: "Действия",
+        drawerRestartBtn: "Перезапустить сканер",
+        drawerCloseAppBtn: "Закрыть mini app",
+        statusInitializing: "Инициализация камеры...",
+        statusStarting: "Запуск камеры...",
+        statusActive: "Камера активна. Наведите её на QR-код или Data Matrix.",
+        statusReadError: "Не удалось прочитать код.",
+        statusRecognized: "Код распознан:<br><code>{code}</code><br><br>Отправка в бот...",
+        statusSent: "Данные отправлены. Возвращаемся в бот...",
+        statusNoApi: "Ошибка: Telegram WebApp API недоступен.",
+        statusSendError: "Ошибка при отправке данных в бот.",
+        statusRestarting: "Перезапуск сканера...",
+        statusCameraError: "Не удалось открыть камеру. Проверьте разрешение на доступ к камере в Telegram."
+      },
+      uz: {
+        htmlLang: "uz",
+        brandSub: "QR / Data Matrix skaneri",
+        title: "Ballarni hisoblash uchun kodni skaner qiling",
+        subtitle: "Kod aniqlangandan so‘ng u darhol botga yuboriladi va bonuslar avtomatik tarzda hisoblanadi.",
+        restart: "Qayta ishga tushirish",
+        close: "Yopish",
+        tipsTitle: "Muhim",
+        tips: [
+          "Skaner QR va Data Matrix kodlarini qo‘llab-quvvatlaydi.",
+          "Bir xil kod bir foydalanuvchiga qayta hisoblanmaydi.",
+          "Skanerlashdan keyin mini app o‘zi yopiladi."
+        ],
+        drawerTitle: "Menyu",
+        menuCard1Title: "Skaner haqida",
+        menuCard1Text: "Bu QR va Data Matrix kodlarini o‘qib, natijani Telegram-botga avtomatik yuboradigan mini app.",
+        menuCard2Title: "Til tanlash",
+        menuCard2Text: "Interfeys tilini ekranning yuqori qismida almashtirishingiz mumkin.",
+        menuCard3Title: "Amallar",
+        drawerRestartBtn: "Skanerni qayta ishga tushirish",
+        drawerCloseAppBtn: "Mini appni yopish",
+        statusInitializing: "Kamera ishga tayyorlanmoqda...",
+        statusStarting: "Kamera ishga tushirilmoqda...",
+        statusActive: "Kamera faol. Uni QR-kod yoki Data Matrix ga yo‘naltiring.",
+        statusReadError: "Kodni o‘qib bo‘lmadi.",
+        statusRecognized: "Kod aniqlandi:<br><code>{code}</code><br><br>Botga yuborilmoqda...",
+        statusSent: "Ma’lumotlar yuborildi. Botga qaytilmoqda...",
+        statusNoApi: "Xato: Telegram WebApp API mavjud emas.",
+        statusSendError: "Ma’lumotni botga yuborishda xatolik yuz berdi.",
+        statusRestarting: "Skaner qayta ishga tushirilmoqda...",
+        statusCameraError: "Kamerani ochib bo‘lmadi. Telegram ichida kameraga ruxsat berilganini tekshiring."
+      },
+      en: {
+        htmlLang: "en",
+        brandSub: "QR / Data Matrix Scanner",
+        title: "Scan the code to add points",
+        subtitle: "After recognition, the code will be sent to the bot immediately and bonuses will be credited automatically.",
+        restart: "Restart",
+        close: "Close",
+        tipsTitle: "Important",
+        tips: [
+          "The scanner supports QR and Data Matrix.",
+          "The same code is not credited twice to the same user.",
+          "After scanning, the mini app will close automatically."
+        ],
+        drawerTitle: "Menu",
+        menuCard1Title: "About scanner",
+        menuCard1Text: "This mini app reads QR and Data Matrix codes and automatically sends the result to the Telegram bot.",
+        menuCard2Title: "Language selection",
+        menuCard2Text: "You can switch the interface language at the top of the screen.",
+        menuCard3Title: "Actions",
+        drawerRestartBtn: "Restart scanner",
+        drawerCloseAppBtn: "Close mini app",
+        statusInitializing: "Initializing camera...",
+        statusStarting: "Starting camera...",
+        statusActive: "Camera is active. Point it at a QR code or Data Matrix.",
+        statusReadError: "Could not read the code.",
+        statusRecognized: "Code recognized:<br><code>{code}</code><br><br>Sending to bot...",
+        statusSent: "Data sent. Returning to the bot...",
+        statusNoApi: "Error: Telegram WebApp API is unavailable.",
+        statusSendError: "Error while sending data to the bot.",
+        statusRestarting: "Restarting scanner...",
+        statusCameraError: "Could not open the camera. Check camera permission inside Telegram."
+      },
+      tj: {
+        htmlLang: "tg",
+        brandSub: "Сканери QR / Data Matrix",
+        title: "Барои ҳисоб кардани холҳо кодро скан кунед",
+        subtitle: "Пас аз шинохтан, код фавран ба бот фиристода мешавад ва бонусҳо ба таври худкор ҳисоб карда мешаванд.",
+        restart: "Аз нав оғоз кардан",
+        close: "Пӯшидан",
+        tipsTitle: "Муҳим",
+        tips: [
+          "Сканер QR ва Data Matrix-ро дастгирӣ мекунад.",
+          "Ҳамон як код ба як корбар дубора ҳисоб карда намешавад.",
+          "Пас аз сканкунӣ mini app худкор пӯшида мешавад."
+        ],
+        drawerTitle: "Меню",
+        menuCard1Title: "Дар бораи сканер",
+        menuCard1Text: "Ин mini app барои хондани кодҳои QR ва Data Matrix ва фиристодани худкори натиҷа ба Telegram-бот аст.",
+        menuCard2Title: "Интихоби забон",
+        menuCard2Text: "Шумо метавонед забони интерфейсро дар қисми болоии экран иваз кунед.",
+        menuCard3Title: "Амалҳо",
+        drawerRestartBtn: "Сканерро аз нав оғоз кардан",
+        drawerCloseAppBtn: "Пӯшидани mini app",
+        statusInitializing: "Омодасозии камера...",
+        statusStarting: "Камера оғоз шуда истодааст...",
+        statusActive: "Камера фаъол аст. Онро ба QR-код ё Data Matrix равона кунед.",
+        statusReadError: "Код хонда нашуд.",
+        statusRecognized: "Код шинохта шуд:<br><code>{code}</code><br><br>Ба бот фиристода мешавад...",
+        statusSent: "Маълумот фиристода шуд. Ба бот бармегардем...",
+        statusNoApi: "Хато: Telegram WebApp API дастрас нест.",
+        statusSendError: "Ҳангоми фиристодани маълумот ба бот хато рӯй дод.",
+        statusRestarting: "Сканер аз нав оғоз шуда истодааст...",
+        statusCameraError: "Камераро кушода нашуд. Иҷозати камераро дар Telegram санҷед."
+      }
+    };
+
     const statusEl = document.getElementById("status");
     const restartBtn = document.getElementById("restartBtn");
     const closeBtn = document.getElementById("closeBtn");
+    const burgerBtn = document.getElementById("burgerBtn");
+    const drawer = document.getElementById("drawer");
+    const drawerBackdrop = document.getElementById("drawerBackdrop");
+    const drawerClose = document.getElementById("drawerClose");
+    const drawerRestartBtn = document.getElementById("drawerRestartBtn");
+    const drawerCloseAppBtn = document.getElementById("drawerCloseAppBtn");
+    const langButtons = Array.from(document.querySelectorAll(".lang-btn"));
 
     let scanner = null;
     let isSending = false;
     let isStarted = false;
     let lastSentCode = "";
-
-    function setStatus(text, type = "muted") {
-      statusEl.className = `status ${type}`;
-      statusEl.innerHTML = text;
-    }
-
-    function normalizeScannedText(value) {
-      return String(value || "").trim();
-    }
+    let currentLang = "ru";
+    let currentStatusKey = "statusInitializing";
+    let currentStatusType = "muted";
+    let currentStatusCode = "";
 
     function escapeHtml(value) {
       return String(value)
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;");
+    }
+
+    function normalizeScannedText(value) {
+      return String(value || "").trim();
+    }
+
+    function getTelegramLang() {
+      try {
+        const code = tg?.initDataUnsafe?.user?.language_code || "";
+        const normalized = String(code).toLowerCase();
+
+        if (normalized.startsWith("ru")) return "ru";
+        if (normalized.startsWith("uz")) return "uz";
+        if (normalized.startsWith("en")) return "en";
+        if (normalized.startsWith("tg") || normalized.startsWith("tj")) return "tj";
+      } catch (e) {}
+      return "ru";
+    }
+
+    function getText(key) {
+      return (i18n[currentLang] && i18n[currentLang][key]) || (i18n.ru[key] || "");
+    }
+
+    function renderTips() {
+      const tipsList = document.getElementById("tipsList");
+      const tips = getText("tips");
+      tipsList.innerHTML = tips.map(item => `<li>${escapeHtml(item)}</li>`).join("");
+    }
+
+    function renderStatusByKey(key, type = "muted", data = {}) {
+      currentStatusKey = key;
+      currentStatusType = type;
+      currentStatusCode = data.code || "";
+
+      let text = getText(key);
+      if (data.code) {
+        text = String(text).replace("{code}", escapeHtml(data.code));
+      }
+
+      statusEl.className = `status ${type}`;
+      statusEl.innerHTML = text;
+    }
+
+    function applyLanguage(lang) {
+      if (!i18n[lang]) lang = "ru";
+      currentLang = lang;
+
+      try {
+        localStorage.setItem("lux_scanner_lang", lang);
+      } catch (e) {}
+
+      document.documentElement.lang = i18n[lang].htmlLang || "ru";
+
+      document.getElementById("brandSub").textContent = getText("brandSub");
+      document.getElementById("title").textContent = getText("title");
+      document.getElementById("subtitle").textContent = getText("subtitle");
+      restartBtn.textContent = getText("restart");
+      closeBtn.textContent = getText("close");
+      document.getElementById("tipsTitle").textContent = getText("tipsTitle");
+
+      document.getElementById("drawerTitle").textContent = getText("drawerTitle");
+      document.getElementById("menuCard1Title").textContent = getText("menuCard1Title");
+      document.getElementById("menuCard1Text").textContent = getText("menuCard1Text");
+      document.getElementById("menuCard2Title").textContent = getText("menuCard2Title");
+      document.getElementById("menuCard2Text").textContent = getText("menuCard2Text");
+      document.getElementById("menuCard3Title").textContent = getText("menuCard3Title");
+      drawerRestartBtn.textContent = getText("drawerRestartBtn");
+      drawerCloseAppBtn.textContent = getText("drawerCloseAppBtn");
+
+      renderTips();
+
+      langButtons.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.lang === lang);
+      });
+
+      if (currentStatusKey === "statusRecognized") {
+        renderStatusByKey(currentStatusKey, currentStatusType, { code: currentStatusCode });
+      } else {
+        renderStatusByKey(currentStatusKey, currentStatusType);
+      }
+    }
+
+    function openDrawer() {
+      drawer.classList.add("open");
+      drawerBackdrop.classList.add("open");
+      drawer.setAttribute("aria-hidden", "false");
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove("open");
+      drawerBackdrop.classList.remove("open");
+      drawer.setAttribute("aria-hidden", "true");
     }
 
     async function stopScanner() {
@@ -347,34 +821,31 @@
       if (isSending) return;
 
       const code = normalizeScannedText(decodedText);
+
       if (!code) {
-        setStatus("Не удалось прочитать код.", "error");
+        renderStatusByKey("statusReadError", "error");
         return;
       }
 
-      if (lastSentCode === code) {
-        return;
-      }
+      if (lastSentCode === code) return;
 
       lastSentCode = code;
       isSending = true;
 
-      setStatus(
-        `Код распознан:<br><code>${escapeHtml(code)}</code><br><br>Отправка в бот...`,
-        "success"
-      );
+      renderStatusByKey("statusRecognized", "success", { code });
 
       try {
         await stopScanner();
 
         const payload = {
           action: "scan_qr",
-          code: code
+          code: code,
+          language: currentLang
         };
 
         if (tg && typeof tg.sendData === "function") {
           tg.sendData(JSON.stringify(payload));
-          setStatus("Данные отправлены. Возвращаемся в бот...", "success");
+          renderStatusByKey("statusSent", "success");
 
           setTimeout(() => {
             try {
@@ -384,13 +855,13 @@
             }
           }, 500);
         } else {
-          setStatus("Ошибка: Telegram WebApp API недоступен.", "error");
+          renderStatusByKey("statusNoApi", "error");
           isSending = false;
           lastSentCode = "";
         }
       } catch (e) {
         console.error(e);
-        setStatus("Ошибка при отправке данных в бот.", "error");
+        renderStatusByKey("statusSendError", "error");
         isSending = false;
         lastSentCode = "";
       }
@@ -403,7 +874,7 @@
       lastSentCode = "";
       scanner = new Html5Qrcode("reader");
 
-      setStatus("Запуск камеры...", "muted");
+      renderStatusByKey("statusStarting", "muted");
 
       const config = {
         fps: 10,
@@ -432,26 +903,33 @@
       try {
         await scanner.start({ facingMode: "environment" }, config, onSuccess, onError);
         isStarted = true;
-        setStatus("Камера активна. Наведите её на QR-код или Data Matrix.", "muted");
+        renderStatusByKey("statusActive", "muted");
       } catch (err1) {
         console.warn("Back camera failed:", err1);
 
         try {
           await scanner.start({ facingMode: "user" }, config, onSuccess, onError);
           isStarted = true;
-          setStatus("Камера активна. Наведите её на QR-код или Data Matrix.", "muted");
+          renderStatusByKey("statusActive", "muted");
         } catch (err2) {
           console.error("Camera start error:", err2);
-          setStatus(
-            "Не удалось открыть камеру. Проверьте разрешение на доступ к камере в Telegram.",
-            "error"
-          );
+          renderStatusByKey("statusCameraError", "error");
         }
       }
     }
 
+    burgerBtn.addEventListener("click", openDrawer);
+    drawerClose.addEventListener("click", closeDrawer);
+    drawerBackdrop.addEventListener("click", closeDrawer);
+
     restartBtn.addEventListener("click", async () => {
-      setStatus("Перезапуск сканера...", "muted");
+      renderStatusByKey("statusRestarting", "muted");
+      await startScanner();
+    });
+
+    drawerRestartBtn.addEventListener("click", async () => {
+      closeDrawer();
+      renderStatusByKey("statusRestarting", "muted");
       await startScanner();
     });
 
@@ -461,11 +939,42 @@
       else window.close();
     });
 
+    drawerCloseAppBtn.addEventListener("click", async () => {
+      closeDrawer();
+      await stopScanner();
+      if (tg) tg.close();
+      else window.close();
+    });
+
+    langButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        applyLanguage(btn.dataset.lang);
+      });
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (drawer.classList.contains("open")) {
+          closeDrawer();
+        }
+      }
+    });
+
     window.addEventListener("beforeunload", async () => {
       await stopScanner();
     });
 
-    startScanner();
+    (function initApp() {
+      let savedLang = "ru";
+      try {
+        savedLang = localStorage.getItem("lux_scanner_lang") || "";
+      } catch (e) {}
+
+      const initialLang = i18n[savedLang] ? savedLang : getTelegramLang();
+      applyLanguage(initialLang);
+      renderStatusByKey("statusInitializing", "muted");
+      startScanner();
+    })();
   </script>
 </body>
 </html>
