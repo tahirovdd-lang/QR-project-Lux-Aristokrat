@@ -5,7 +5,9 @@ import asyncio
 import logging
 from typing import List, Set
 
+from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from aiogram import Bot, Dispatcher, F
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
 from aiogram.types import (
@@ -20,10 +22,13 @@ from aiogram.types import (
 # LOGGING
 # ==========================================
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s:%(name)s:%(message)s"
+)
 logger = logging.getLogger(__name__)
 
-print("=== LUX ARISTOKRAT MULTILANG ADMIN VERSION FIXED ===")
+print("=== IMPACT / LUX STYLE BOT FIXED POLLING VERSION ===")
 
 # ==========================================
 # ENV
@@ -39,10 +44,15 @@ BOT_TOKEN = (
 
 WEBAPP_URL = os.getenv("WEBAPP_URL", "").strip()
 if not WEBAPP_URL:
-    WEBAPP_URL = "https://tahirovdd-lang.github.io/QR-project-Lux-Aristokrat/?v=1"
+    WEBAPP_URL = "https://tahirovdd-lang.github.io/Impact/index.html?v=10"
 
 ADMIN_ID_RAW = os.getenv("ADMIN_ID", "0").strip()
 ADMIN_IDS_RAW = os.getenv("ADMIN_IDS", "").strip()
+
+logging.info("WEBAPP_URL (effective) = %s", WEBAPP_URL)
+
+if not BOT_TOKEN:
+    raise RuntimeError("BOT_TOKEN / API_TOKEN / TELEGRAM_BOT_TOKEN is not set")
 
 
 def parse_admin_ids() -> List[int]:
@@ -71,18 +81,43 @@ def parse_admin_ids() -> List[int]:
 
 
 ADMIN_IDS = parse_admin_ids()
-
 logging.info("ADMIN_ID from env: %s", ADMIN_ID_RAW)
 logging.info("ADMIN_IDS from env: %s", ADMIN_IDS if ADMIN_IDS else "EMPTY")
 
-if not BOT_TOKEN:
-    raise RuntimeError("BOT_TOKEN / API_TOKEN / TELEGRAM_BOT_TOKEN is not set")
-
 # ==========================================
-# BOT / DP
+# NETWORK SESSION
 # ==========================================
 
-bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.HTML)
+def build_bot_session() -> AiohttpSession:
+    timeout = ClientTimeout(
+        total=75,
+        connect=20,
+        sock_connect=20,
+        sock_read=60,
+    )
+
+    connector = TCPConnector(
+        ssl=False,
+        limit=100,
+        ttl_dns_cache=300,
+        enable_cleanup_closed=True,
+    )
+
+    client_session = ClientSession(
+        timeout=timeout,
+        connector=connector,
+        trust_env=True,
+    )
+
+    return AiohttpSession(session=client_session)
+
+
+session = build_bot_session()
+bot = Bot(
+    token=BOT_TOKEN,
+    session=session,
+    parse_mode=ParseMode.HTML,
+)
 dp = Dispatcher()
 
 # ==========================================
@@ -102,7 +137,6 @@ def cleanup_recent_scans():
 
 def is_duplicate_scan(user_id: int, code: str) -> bool:
     cleanup_recent_scans()
-
     key = f"{user_id}:{code}"
     now = time.time()
 
@@ -119,7 +153,7 @@ def is_duplicate_scan(user_id: int, code: str) -> bool:
 TEXTS = {
     "ru": {
         "welcome": (
-            "Добро пожаловать в <b>Lux Aristokrat</b>\n\n"
+            "Добро пожаловать!\n\n"
             "Откройте mini app для сканирования QR / Data Matrix."
         ),
         "open_scanner": "Открыть сканер",
@@ -143,7 +177,7 @@ TEXTS = {
     },
     "uz": {
         "welcome": (
-            "<b>Lux Aristokrat</b> ga xush kelibsiz\n\n"
+            "Xush kelibsiz!\n\n"
             "QR / Data Matrix skanerlash uchun mini app ni oching."
         ),
         "open_scanner": "Skanerni ochish",
@@ -167,7 +201,7 @@ TEXTS = {
     },
     "en": {
         "welcome": (
-            "Welcome to <b>Lux Aristokrat</b>\n\n"
+            "Welcome!\n\n"
             "Open the mini app to scan QR / Data Matrix."
         ),
         "open_scanner": "Open scanner",
@@ -191,7 +225,7 @@ TEXTS = {
     },
     "tj": {
         "welcome": (
-            "Хуш омадед ба <b>Lux Aristokrat</b>\n\n"
+            "Хуш омадед!\n\n"
             "Барои скан кардани QR / Data Matrix mini app-ро кушоед."
         ),
         "open_scanner": "Кушодани сканер",
@@ -240,13 +274,8 @@ def get_user_lang(message: Message) -> str:
 def t(lang: str, key: str, **kwargs) -> str:
     pack = TEXTS.get(lang) or TEXTS["ru"]
     text = pack.get(key) or TEXTS["ru"].get(key) or key
-    if kwargs:
-        return text.format(**kwargs)
-    return text
+    return text.format(**kwargs) if kwargs else text
 
-# ==========================================
-# HELPERS
-# ==========================================
 
 def is_admin(user_id: int) -> bool:
     return user_id in ADMIN_IDS
@@ -266,20 +295,15 @@ def build_main_keyboard(lang: str) -> ReplyKeyboardMarkup:
     )
 
 # ==========================================
-# YOUR QR LOGIC PLACE
+# QR BUSINESS LOGIC
 # ==========================================
 
 async def process_scanned_qr_code(message: Message, code: str, language: str) -> None:
     """
-    СЮДА ВСТАВЬ СВОЮ ТЕКУЩУЮ ЛОГИКУ ОБРАБОТКИ QR,
-    ЕСЛИ ОНА У ТЕБЯ УЖЕ ЕСТЬ.
-
-    Сейчас стоит безопасная заглушка, которая ничего не ломает.
+    Здесь оставь свою текущую бизнес-логику начисления / проверки QR.
+    Сейчас стоит безопасная заглушка.
     """
-
-    await message.answer(
-        t(language, "scan_received", code=code)
-    )
+    await message.answer(t(language, "scan_received", code=code))
 
 # ==========================================
 # COMMANDS
@@ -381,7 +405,7 @@ async def handle_web_app_data(message: Message):
         await message.answer(t(language, "processing_error"))
 
 # ==========================================
-# SET MENU BUTTON
+# TELEGRAM MENU BUTTON
 # ==========================================
 
 async def set_menu_button():
@@ -397,17 +421,49 @@ async def set_menu_button():
         logging.exception("Failed to set menu button: %s", e)
 
 # ==========================================
+# STARTUP / SHUTDOWN
+# ==========================================
+
+async def on_startup():
+    try:
+        # Важно для polling: убираем возможный webhook
+        await bot.delete_webhook(drop_pending_updates=False)
+        logging.info("Webhook deleted successfully")
+    except Exception as e:
+        logging.exception("Failed to delete webhook: %s", e)
+
+    await set_menu_button()
+    logging.info("Bot started successfully")
+
+
+async def on_shutdown():
+    try:
+        await bot.session.close()
+    except Exception:
+        pass
+    logging.info("Bot stopped")
+
+# ==========================================
 # MAIN
 # ==========================================
 
 async def main():
-    await set_menu_button()
-    logging.info("Bot started successfully")
-    await dp.start_polling(bot)
+    await on_startup()
+
+    try:
+        await dp.start_polling(
+            bot,
+            polling_timeout=30,
+            allowed_updates=dp.resolve_used_update_types(),
+            handle_signals=True,
+            close_bot_session=False,
+        )
+    finally:
+        await on_shutdown()
 
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
-        logging.info("Bot stopped")
+        logging.info("Application interrupted")
