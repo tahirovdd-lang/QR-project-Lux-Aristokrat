@@ -28,7 +28,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-print("=== IMPACT / LUX STYLE BOT FIXED POLLING VERSION ===")
+print("=== LUX ARISTOKRAT MULTILANG ADMIN VERSION FIXED ===")
 
 # ==========================================
 # ENV
@@ -44,7 +44,7 @@ BOT_TOKEN = (
 
 WEBAPP_URL = os.getenv("WEBAPP_URL", "").strip()
 if not WEBAPP_URL:
-    WEBAPP_URL = "https://tahirovdd-lang.github.io/Impact/index.html?v=10"
+    WEBAPP_URL = "https://tahirovdd-lang.github.io/QR-project-Lux-Aristokrat/?v=1"
 
 ADMIN_ID_RAW = os.getenv("ADMIN_ID", "0").strip()
 ADMIN_IDS_RAW = os.getenv("ADMIN_IDS", "").strip()
@@ -81,6 +81,7 @@ def parse_admin_ids() -> List[int]:
 
 
 ADMIN_IDS = parse_admin_ids()
+
 logging.info("ADMIN_ID from env: %s", ADMIN_ID_RAW)
 logging.info("ADMIN_IDS from env: %s", ADMIN_IDS if ADMIN_IDS else "EMPTY")
 
@@ -137,6 +138,7 @@ def cleanup_recent_scans():
 
 def is_duplicate_scan(user_id: int, code: str) -> bool:
     cleanup_recent_scans()
+
     key = f"{user_id}:{code}"
     now = time.time()
 
@@ -153,7 +155,7 @@ def is_duplicate_scan(user_id: int, code: str) -> bool:
 TEXTS = {
     "ru": {
         "welcome": (
-            "Добро пожаловать!\n\n"
+            "Добро пожаловать в <b>Lux Aristokrat</b>\n\n"
             "Откройте mini app для сканирования QR / Data Matrix."
         ),
         "open_scanner": "Открыть сканер",
@@ -177,7 +179,7 @@ TEXTS = {
     },
     "uz": {
         "welcome": (
-            "Xush kelibsiz!\n\n"
+            "<b>Lux Aristokrat</b> ga xush kelibsiz\n\n"
             "QR / Data Matrix skanerlash uchun mini app ni oching."
         ),
         "open_scanner": "Skanerni ochish",
@@ -200,8 +202,8 @@ TEXTS = {
         "your_id": "Sizning Telegram ID: <code>{user_id}</code>\nAdmin access: <b>{admin}</b>",
     },
     "en": {
-        "welcome": (
-            "Welcome!\n\n"
+      "welcome": (
+            "Welcome to <b>Lux Aristokrat</b>\n\n"
             "Open the mini app to scan QR / Data Matrix."
         ),
         "open_scanner": "Open scanner",
@@ -225,7 +227,7 @@ TEXTS = {
     },
     "tj": {
         "welcome": (
-            "Хуш омадед!\n\n"
+            "Хуш омадед ба <b>Lux Aristokrat</b>\n\n"
             "Барои скан кардани QR / Data Matrix mini app-ро кушоед."
         ),
         "open_scanner": "Кушодани сканер",
@@ -274,8 +276,13 @@ def get_user_lang(message: Message) -> str:
 def t(lang: str, key: str, **kwargs) -> str:
     pack = TEXTS.get(lang) or TEXTS["ru"]
     text = pack.get(key) or TEXTS["ru"].get(key) or key
-    return text.format(**kwargs) if kwargs else text
+    if kwargs:
+        return text.format(**kwargs)
+    return text
 
+# ==========================================
+# HELPERS
+# ==========================================
 
 def is_admin(user_id: int) -> bool:
     return user_id in ADMIN_IDS
@@ -295,15 +302,19 @@ def build_main_keyboard(lang: str) -> ReplyKeyboardMarkup:
     )
 
 # ==========================================
-# QR BUSINESS LOGIC
+# YOUR QR LOGIC PLACE
 # ==========================================
 
 async def process_scanned_qr_code(message: Message, code: str, language: str) -> None:
     """
-    Здесь оставь свою текущую бизнес-логику начисления / проверки QR.
-    Сейчас стоит безопасная заглушка.
+    СЮДА ВСТАВЬ СВОЮ ТЕКУЩУЮ ЛОГИКУ ОБРАБОТКИ QR,
+    ЕСЛИ ОНА У ТЕБЯ УЖЕ ЕСТЬ.
+
+    Сейчас стоит безопасная заглушка, которая ничего не ломает.
     """
-    await message.answer(t(language, "scan_received", code=code))
+    await message.answer(
+        t(language, "scan_received", code=code)
+    )
 
 # ==========================================
 # COMMANDS
@@ -383,8 +394,11 @@ async def handle_web_app_data(message: Message):
     user_id = message.from_user.id if message.from_user else 0
 
     if is_duplicate_scan(user_id, code):
-        logging.info("Duplicate scan ignored: user_id=%s code=%s", user_id, code)
-        await message.answer(t(language, "scan_duplicate"))
+        logging.info(
+            "Duplicate scan ignored: user_id=%s code=%s",
+            user_id,
+            code
+        )
         return
 
     logging.info(
@@ -426,7 +440,6 @@ async def set_menu_button():
 
 async def on_startup():
     try:
-        # Важно для polling: убираем возможный webhook
         await bot.delete_webhook(drop_pending_updates=False)
         logging.info("Webhook deleted successfully")
     except Exception as e:
