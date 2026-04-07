@@ -1113,6 +1113,9 @@
     let scanner = null;
     let isSending = false;
     let isStarted = false;
+    let isStopping = false;
+    let sendLocked = false;
+    let closeTriggered = false;
     let lastSentCode = "";
     let currentLang = "ru";
     let currentStatusKey = "statusInitializing";
@@ -1269,15 +1272,40 @@
     }
 
     async function stopScanner() {
-      if (!scanner || !isStarted) return;
-      try { await scanner.stop(); } catch (e) {}
-      try { await scanner.clear(); } catch (e) {}
+      if (!scanner || !isStarted || isStopping) return;
+
+      isStopping = true;
+
+      try {
+        await scanner.stop();
+      } catch (e) {}
+
+      try {
+        await scanner.clear();
+      } catch (e) {}
+
       isStarted = false;
+      isStopping = false;
+    }
+
+    function safeCloseMiniApp() {
+      if (closeTriggered) return;
+      closeTriggered = true;
+
+      setTimeout(() => {
+        try {
+          if (tg && typeof tg.close === "function") {
+            tg.close();
+          } else {
+            window.close();
+          }
+        } catch (e) {
+          try { window.close(); } catch (_) {}
+        }
+      }, 500);
     }
 
     async function sendScanToBot(decodedText) {
-      if (isSending) return;
-
       const code = normalizeScannedText(decodedText);
 
       if (!code) {
@@ -1285,10 +1313,17 @@
         return;
       }
 
-      if (lastSentCode === code) return;
+      if (sendLocked || isSending || isStopping || closeTriggered) {
+        return;
+      }
 
-      lastSentCode = code;
+      if (lastSentCode === code) {
+        return;
+      }
+
+      sendLocked = true;
       isSending = true;
+      lastSentCode = code;
 
       renderStatusByKey("statusRecognized", "success", { code });
 
@@ -1304,32 +1339,30 @@
         if (tg && typeof tg.sendData === "function") {
           tg.sendData(JSON.stringify(payload));
           renderStatusByKey("statusSent", "success");
-
-          setTimeout(() => {
-            try {
-              tg.close();
-            } catch (e) {
-              window.close();
-            }
-          }, 500);
-        } else {
-          renderStatusByKey("statusNoApi", "error");
-          isSending = false;
-          lastSentCode = "";
+          safeCloseMiniApp();
+          return;
         }
+
+        renderStatusByKey("statusNoApi", "error");
       } catch (e) {
         console.error(e);
         renderStatusByKey("statusSendError", "error");
-        isSending = false;
-        lastSentCode = "";
       }
+
+      isSending = false;
+      sendLocked = false;
+      lastSentCode = "";
     }
 
     async function startScanner() {
       await stopScanner();
 
       isSending = false;
+      isStopping = false;
+      sendLocked = false;
+      closeTriggered = false;
       lastSentCode = "";
+
       scanner = new Html5Qrcode("reader");
 
       renderStatusByKey("statusStarting", "muted");
@@ -1351,9 +1384,8 @@
         }
       };
 
-      const onSuccess = async (decodedText) => {
-        if (isSending) return;
-        await sendScanToBot(decodedText);
+      const onSuccess = (decodedText) => {
+        sendScanToBot(decodedText);
       };
 
       const onError = () => {};
