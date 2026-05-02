@@ -468,6 +468,29 @@ def build_main_keyboard(lang: str) -> ReplyKeyboardMarkup:
         resize_keyboard=True
     )
 
+
+# ==========================================
+# DEFAULT DATA MATRIX / QR CODES
+# ==========================================
+
+DEFAULT_QR_CODES = [
+    ("047000280627027'CK:&Y", 3),
+    ('047000280627027;XKnbi', 3),
+    ('047000280614777Vn1fbn', 3),
+    ('047000280614777l;BmZq', 3),
+    ('047000280614777fGQ((R', 3),
+    ('047000280614777%2QEre', 3),
+    ('047000280614777WV(iR%', 3),
+    ('047000280614777Rk-,:E', 3),
+    ('047000280613787K5lHH&', 3),
+    ('047000280613787YZCr&M', 3),
+    ('047000280613787%UK+oF', 3),
+    ('047000280613787dphL6?', 3),
+    ('0470002806137872xwygi', 3),
+    ('047000280613787Pja<7m', 3),
+    ('047000280613787erRd&b', 3),
+]
+
 # ==========================================
 # DATABASE
 # ==========================================
@@ -545,6 +568,21 @@ def init_qr_bonus_tables():
 
         conn.commit()
 
+
+
+def seed_default_qr_codes():
+    """Adds required Data Matrix / QR codes and keeps their bonus value at 3 points."""
+    with closing(get_db_connection()) as conn:
+        cur = conn.cursor()
+        cur.executemany("""
+            INSERT INTO qr_codes (code, points, is_active)
+            VALUES (?, ?, 1)
+            ON CONFLICT(code) DO UPDATE SET
+                points = excluded.points,
+                is_active = 1
+        """, DEFAULT_QR_CODES)
+        conn.commit()
+        logging.info("Default QR/Data Matrix codes synced: %s", len(DEFAULT_QR_CODES))
 
 def ensure_loyalty_user(conn: sqlite3.Connection, user_id: int, language: str = "ru"):
     cur = conn.cursor()
