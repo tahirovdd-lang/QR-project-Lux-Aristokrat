@@ -25,7 +25,7 @@ from aiogram.types import (
 )
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
-print("=== LUX ARISTOKRAT QR BOT SAFE START VERSION ===")
+print("=== LUX ARISTOKRAT QR BOT NO DELETE WEBHOOK VERSION ===")
 
 BOT_TOKEN = (
     os.getenv("BOT_TOKEN")
@@ -1100,16 +1100,18 @@ async def set_menu_button():
 
 
 async def on_startup():
+    logging.info("Skipping delete_webhook to avoid Telegram timeout")
+
     try:
-        await bot.delete_webhook(drop_pending_updates=False, request_timeout=20)
-        logging.info("Webhook deleted successfully")
+        init_qr_bonus_tables()
+        seed_default_qr_codes()
     except Exception as e:
-        logging.warning("Webhook delete skipped: %s", e)
+        logging.exception("Database init error: %s", e)
 
-    init_qr_bonus_tables()
-    seed_default_qr_codes()
-
-    await set_menu_button()
+    try:
+        await set_menu_button()
+    except Exception as e:
+        logging.warning("Menu button setup failed: %s", e)
 
     logging.info("Bot started successfully")
 
