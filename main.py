@@ -25,8 +25,6 @@ from aiogram.types import (
 )
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
-logger = logging.getLogger(__name__)
-
 print("=== LUX ARISTOKRAT QR BOT SAFE START VERSION ===")
 
 BOT_TOKEN = (
@@ -104,24 +102,6 @@ dp = Dispatcher()
 
 RECENT_SCANS = {}
 SCAN_TTL_SECONDS = 8
-
-
-def cleanup_recent_scans():
-    now = time.time()
-    for k in [k for k, ts in RECENT_SCANS.items() if now - ts > SCAN_TTL_SECONDS]:
-        RECENT_SCANS.pop(k, None)
-
-
-def is_duplicate_scan(user_id: int, code: str) -> bool:
-    cleanup_recent_scans()
-    key = f"{user_id}:{code}"
-    now = time.time()
-
-    if key in RECENT_SCANS:
-        return True
-
-    RECENT_SCANS[key] = now
-    return False
 
 
 TEXTS = {
@@ -244,6 +224,25 @@ def build_main_keyboard(lang: str) -> ReplyKeyboardMarkup:
         ],
         resize_keyboard=True,
     )
+
+
+def cleanup_recent_scans():
+    now = time.time()
+    for k in [k for k, ts in RECENT_SCANS.items() if now - ts > SCAN_TTL_SECONDS]:
+        RECENT_SCANS.pop(k, None)
+
+
+def is_duplicate_scan(user_id: int, code: str) -> bool:
+    cleanup_recent_scans()
+
+    key = f"{user_id}:{code}"
+    now = time.time()
+
+    if key in RECENT_SCANS:
+        return True
+
+    RECENT_SCANS[key] = now
+    return False
 
 
 def ensure_qr_codes_folder():
