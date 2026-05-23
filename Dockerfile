@@ -14,6 +14,6 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY . /app
 
-RUN mkdir -p /app/data/generated_qr /app/data/exports
+RUN mkdir -p /app/data/generated_qr /app/data/exports /app/data/qr_codes
 
 CMD ["python", "main.py"]
