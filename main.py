@@ -9,6 +9,8 @@ from contextlib import closing
 from typing import List, Set
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
+from openpyxl import load_workbook
+
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
@@ -19,17 +21,29 @@ from aiogram.types import (
     MenuButtonWebApp,
     ReplyKeyboardMarkup,
     KeyboardButton,
+    Document,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
 logger = logging.getLogger(__name__)
 print("=== LUX ARISTOKRAT MULTILANG ADMIN VERSION FIXED ===")
 
-BOT_TOKEN = (os.getenv("BOT_TOKEN") or os.getenv("API_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_API_TOKEN") or "").strip()
+BOT_TOKEN = (
+    os.getenv("BOT_TOKEN")
+    or os.getenv("API_TOKEN")
+    or os.getenv("TELEGRAM_BOT_TOKEN")
+    or os.getenv("BOT_API_TOKEN")
+    or ""
+).strip()
+
 WEBAPP_URL = os.getenv("WEBAPP_URL", "").strip() or "https://tahirovdd-lang.github.io/QR-project-Lux-Aristokrat/?v=1"
 DB_PATH = os.getenv("DB_PATH", "lux_aristokrat.db").strip() or "lux_aristokrat.db"
+
 ADMIN_ID_RAW = os.getenv("ADMIN_ID", "0").strip()
 ADMIN_IDS_RAW = os.getenv("ADMIN_IDS", "").strip()
+
+QR_CODES_DIR = os.getenv("QR_CODES_DIR", "data/qr_codes").strip() or "data/qr_codes"
+QR_CODES_DEFAULT_FILE = os.path.join(QR_CODES_DIR, "default_qr_codes.txt")
 
 logging.info("WEBAPP_URL (effective) = %s", WEBAPP_URL)
 
@@ -70,8 +84,17 @@ logging.info("ADMIN_IDS from env: %s", ADMIN_IDS if ADMIN_IDS else "EMPTY")
 
 def build_bot_session() -> AiohttpSession:
     timeout = ClientTimeout(total=75, connect=20, sock_connect=20, sock_read=60)
-    connector = TCPConnector(ssl=False, limit=100, ttl_dns_cache=300, enable_cleanup_closed=True)
-    client_session = ClientSession(timeout=timeout, connector=connector, trust_env=True)
+    connector = TCPConnector(
+        ssl=False,
+        limit=100,
+        ttl_dns_cache=300,
+        enable_cleanup_closed=True,
+    )
+    client_session = ClientSession(
+        timeout=timeout,
+        connector=connector,
+        trust_env=True,
+    )
     return AiohttpSession(session=client_session)
 
 
@@ -91,6 +114,7 @@ def cleanup_recent_scans():
 
 def is_duplicate_scan(user_id: int, code: str) -> bool:
     cleanup_recent_scans()
+
     key = f"{user_id}:{code}"
     now = time.time()
 
@@ -113,7 +137,7 @@ TEXTS = {
         "unknown_action": "Неизвестное действие.",
         "admin_only": "Команда только для администратора.",
         "debug_url": "Текущий WEBAPP_URL:\n{url}",
-        "help": "Доступные команды:\n/start — старт\n/help — помощь\n/debug_url — показать WebApp URL (admin)\n/id — показать Telegram ID\n/addqr CODE 10 — добавить QR\n/delqr CODE — удалить QR\n/listqr — список QR\n/bonus USER_ID 50 — начислить бонусы\n/balance USER_ID — баланс пользователя",
+        "help": "Доступные команды:\n/start — старт\n/help — помощь\n/debug_url — показать WebApp URL (admin)\n/id — показать Telegram ID\n/addqr CODE 10 — добавить QR\n/delqr CODE — удалить QR\n/listqr — список QR\n/syncqr — обновить QR из папки data/qr_codes\n/importqr — инструкция импорта TXT/XLSX\n/bonus USER_ID 50 — начислить бонусы\n/balance USER_ID — баланс пользователя",
         "your_id": "Ваш Telegram ID: <code>{user_id}</code>\nAdmin access: <b>{admin}</b>",
         "cmd_usage_addqr": "Использование: <code>/addqr CODE 10</code>",
         "cmd_usage_delqr": "Использование: <code>/delqr CODE</code>",
@@ -224,19 +248,6 @@ def build_main_keyboard(lang: str) -> ReplyKeyboardMarkup:
     )
 
 
-# QR / DATA MATRIX
-# Все QR/Data Matrix коды теперь хранятся отдельно в папке репозитория:
-# data/qr_codes/
-#
-# Главный файл:
-# data/qr_codes/default_qr_codes.txt
-#
-# Можно добавлять новые .txt файлы в эту же папку.
-# Бот при запуске прочитает все .txt файлы из data/qr_codes.
-QR_CODES_DIR = os.getenv("QR_CODES_DIR", "data/qr_codes").strip() or "data/qr_codes"
-QR_CODES_DEFAULT_FILE = os.path.join(QR_CODES_DIR, "default_qr_codes.txt")
-
-
 def ensure_qr_codes_folder():
     os.makedirs(QR_CODES_DIR, exist_ok=True)
 
@@ -277,9 +288,6 @@ def load_qr_codes_raw_from_folder() -> str:
     return "\n".join(parts)
 
 
-DEFAULT_QR_CODES_RAW = load_qr_codes_raw_from_folder()
-
-
 def parse_default_qr_codes(raw: str):
     codes = []
     seen = set()
@@ -291,6 +299,9 @@ def parse_default_qr_codes(raw: str):
             continue
 
         m = re.match(r"^(.*?)\s+(\d+)\s+бал", line, flags=re.IGNORECASE)
+
+        if not m:
+            m = re.match(r"^(.*?)\s+(\d+)$", line, flags=re.IGNORECASE)
 
         if not m:
             logging.warning("Skipped QR line: %r", line)
@@ -306,6 +317,71 @@ def parse_default_qr_codes(raw: str):
     return codes
 
 
+def parse_qr_txt_content(content: str) -> list[tuple[str, int]]:
+    return parse_default_qr_codes(content)
+
+
+def parse_qr_xlsx_file(file_path: str) -> list[tuple[str, int]]:
+    codes = []
+    seen = set()
+
+    wb = load_workbook(file_path, read_only=True, data_only=True)
+
+    for ws in wb.worksheets:
+        for row in ws.iter_rows(values_only=True):
+            values = [v for v in row if v is not None]
+
+            if not values:
+                continue
+
+            code = None
+            points = None
+
+            if len(values) >= 2:
+                code = str(values[0]).strip()
+                raw_points = str(values[1]).strip()
+                m = re.search(r"\d+", raw_points)
+
+                if m:
+                    points = int(m.group(0))
+
+            if not code or points is None:
+                line = " ".join(str(v).strip() for v in values)
+                m = re.match(r"^(.*?)\s+(\d+)\s+бал", line, flags=re.IGNORECASE)
+
+                if m:
+                    code = m.group(1).strip()
+                    points = int(m.group(2))
+
+            if not code or points is None:
+                continue
+
+            if code.lower() in {
+                "код",
+                "qr",
+                "qr code",
+                "data matrix",
+                "балл",
+                "баллы",
+                "points",
+            }:
+                continue
+
+            if code and code not in seen and points > 0:
+                seen.add(code)
+                codes.append((code, points))
+
+    wb.close()
+    return codes
+
+
+def safe_file_name(name: str) -> str:
+    name = os.path.basename(name or "qr_upload")
+    name = re.sub(r"[^a-zA-Z0-9а-яА-ЯёЁ._-]+", "_", name)
+    return name.strip("._") or "qr_upload"
+
+
+DEFAULT_QR_CODES_RAW = load_qr_codes_raw_from_folder()
 DEFAULT_QR_CODES = parse_default_qr_codes(DEFAULT_QR_CODES_RAW)
 
 
@@ -372,24 +448,64 @@ def init_qr_bonus_tables():
         conn.commit()
 
 
-def seed_default_qr_codes():
+def upsert_qr_codes_to_db(codes: list[tuple[str, int]]) -> dict:
+    added = 0
+    updated = 0
+    skipped = 0
+
     with closing(get_db_connection()) as conn:
         cur = conn.cursor()
 
-        if not DEFAULT_QR_CODES:
-            logging.warning("No QR/Data Matrix codes found in %s", QR_CODES_DIR)
-            return
+        for code, points in codes:
+            code = str(code).strip()
+            points = int(points)
 
-        cur.executemany("""
-            INSERT INTO qr_codes (code, points, is_active)
-            VALUES (?, ?, 1)
-            ON CONFLICT(code) DO UPDATE SET
-                points = excluded.points,
-                is_active = 1
-        """, DEFAULT_QR_CODES)
+            if not code or points <= 0:
+                skipped += 1
+                continue
+
+            old = cur.execute(
+                "SELECT id FROM qr_codes WHERE code = ? LIMIT 1",
+                (code,),
+            ).fetchone()
+
+            cur.execute("""
+                INSERT INTO qr_codes (code, points, is_active)
+                VALUES (?, ?, 1)
+                ON CONFLICT(code) DO UPDATE SET
+                    points = excluded.points,
+                    is_active = 1
+            """, (code, points))
+
+            if old:
+                updated += 1
+            else:
+                added += 1
 
         conn.commit()
-        logging.info("Default QR/Data Matrix codes synced: %s", len(DEFAULT_QR_CODES))
+
+    return {
+        "added": added,
+        "updated": updated,
+        "skipped": skipped,
+        "total": len(codes),
+    }
+
+
+def seed_default_qr_codes():
+    if not DEFAULT_QR_CODES:
+        logging.warning("No QR/Data Matrix codes found in %s", QR_CODES_DIR)
+        return
+
+    result = upsert_qr_codes_to_db(DEFAULT_QR_CODES)
+
+    logging.info(
+        "Default QR/Data Matrix codes synced: total=%s added=%s updated=%s skipped=%s",
+        result["total"],
+        result["added"],
+        result["updated"],
+        result["skipped"],
+    )
 
 
 def ensure_loyalty_user(conn: sqlite3.Connection, user_id: int, language: str = "ru"):
@@ -614,6 +730,69 @@ async def process_scanned_qr_code(message: Message, code: str, language: str) ->
         await message.answer(t(language, "processing_error"))
 
 
+async def import_uploaded_qr_file(message: Message, document: Document):
+    user_id = message.from_user.id if message.from_user else 0
+    lang = get_user_lang(message)
+
+    if not is_admin(user_id):
+        await message.answer(t(lang, "admin_only"))
+        return
+
+    file_name = safe_file_name(document.file_name or "")
+    lower_name = file_name.lower()
+
+    if not lower_name.endswith((".txt", ".xlsx")):
+        await message.answer("❌ Можно загружать только файлы .txt или .xlsx")
+        return
+
+    ensure_qr_codes_folder()
+
+    uploads_dir = os.path.join(QR_CODES_DIR, "uploads")
+    os.makedirs(uploads_dir, exist_ok=True)
+
+    saved_path = os.path.join(uploads_dir, f"{int(time.time())}_{file_name}")
+
+    try:
+        file = await bot.get_file(document.file_id)
+        await bot.download_file(file.file_path, destination=saved_path)
+
+        if lower_name.endswith(".txt"):
+            with open(saved_path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            codes = parse_qr_txt_content(content)
+
+        else:
+            codes = parse_qr_xlsx_file(saved_path)
+
+        if not codes:
+            await message.answer(
+                "❌ В файле не найдены QR-коды.\n\n"
+                "TXT формат:\n"
+                "<code>КОД 5 баллов</code>\n\n"
+                "XLSX формат:\n"
+                "1 колонка — код\n"
+                "2 колонка — баллы"
+            )
+            return
+
+        result = upsert_qr_codes_to_db(codes)
+
+        await message.answer(
+            "✅ Импорт завершён\n\n"
+            f"Файл: <code>{file_name}</code>\n"
+            f"Всего строк: <b>{result['total']}</b>\n"
+            f"Добавлено: <b>{result['added']}</b>\n"
+            f"Обновлено: <b>{result['updated']}</b>\n"
+            f"Пропущено: <b>{result['skipped']}</b>\n\n"
+            "База обновлена без перезапуска бота."
+        )
+
+    except Exception as e:
+        logging.exception("QR file import error: %s", e)
+        await message.answer("❌ Ошибка импорта файла.")
+
+
 @dp.message(CommandStart())
 async def start_handler(message: Message):
     lang = get_user_lang(message)
@@ -765,6 +944,60 @@ async def listqr_handler(message: Message):
         await message.answer(t(lang, "internal_error"))
 
 
+@dp.message(Command("syncqr"))
+async def syncqr_handler(message: Message):
+    lang = get_user_lang(message)
+    user_id = message.from_user.id if message.from_user else 0
+
+    if not is_admin(user_id):
+        await message.answer(t(lang, "admin_only"))
+        return
+
+    try:
+        raw = load_qr_codes_raw_from_folder()
+        codes = parse_default_qr_codes(raw)
+
+        if not codes:
+            await message.answer("❌ В папке data/qr_codes не найдены QR-коды.")
+            return
+
+        result = upsert_qr_codes_to_db(codes)
+
+        await message.answer(
+            "✅ QR-коды обновлены из папки <code>data/qr_codes</code>\n\n"
+            f"Всего: <b>{result['total']}</b>\n"
+            f"Добавлено: <b>{result['added']}</b>\n"
+            f"Обновлено: <b>{result['updated']}</b>\n"
+            f"Пропущено: <b>{result['skipped']}</b>\n\n"
+            "Перезапуск бота не нужен."
+        )
+
+    except Exception as e:
+        logging.exception("syncqr error: %s", e)
+        await message.answer(t(lang, "internal_error"))
+
+
+@dp.message(Command("importqr"))
+async def importqr_handler(message: Message):
+    lang = get_user_lang(message)
+    user_id = message.from_user.id if message.from_user else 0
+
+    if not is_admin(user_id):
+        await message.answer(t(lang, "admin_only"))
+        return
+
+    await message.answer(
+        "📥 Импорт QR-кодов\n\n"
+        "Можно отправить боту файл <b>.txt</b> или <b>.xlsx</b>.\n\n"
+        "TXT формат:\n"
+        "<code>047000280627027ABC 5 баллов</code>\n\n"
+        "XLSX формат:\n"
+        "1 колонка — QR/Data Matrix код\n"
+        "2 колонка — количество баллов\n\n"
+        "После загрузки файла база обновится автоматически без перезапуска бота."
+    )
+
+
 @dp.message(Command("bonus"))
 async def bonus_handler(message: Message):
     lang = get_user_lang(message)
@@ -845,6 +1078,14 @@ async def balance_handler(message: Message):
     except Exception as e:
         logging.exception("balance error: %s", e)
         await message.answer(t(lang, "internal_error"))
+
+
+@dp.message(F.document)
+async def document_handler(message: Message):
+    if not message.document:
+        return
+
+    await import_uploaded_qr_file(message, message.document)
 
 
 @dp.message(F.web_app_data)
