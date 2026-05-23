@@ -26,7 +26,8 @@ from aiogram.types import (
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
 logger = logging.getLogger(__name__)
-print("=== LUX ARISTOKRAT MULTILANG ADMIN VERSION FIXED ===")
+
+print("=== LUX ARISTOKRAT QR BOT SAFE START VERSION ===")
 
 BOT_TOKEN = (
     os.getenv("BOT_TOKEN")
@@ -44,8 +45,6 @@ ADMIN_IDS_RAW = os.getenv("ADMIN_IDS", "").strip()
 
 QR_CODES_DIR = os.getenv("QR_CODES_DIR", "data/qr_codes").strip() or "data/qr_codes"
 QR_CODES_DEFAULT_FILE = os.path.join(QR_CODES_DIR, "default_qr_codes.txt")
-
-logging.info("WEBAPP_URL (effective) = %s", WEBAPP_URL)
 
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN / API_TOKEN / TELEGRAM_BOT_TOKEN is not set")
@@ -78,12 +77,13 @@ def parse_admin_ids() -> List[int]:
 
 ADMIN_IDS = parse_admin_ids()
 
+logging.info("WEBAPP_URL = %s", WEBAPP_URL)
 logging.info("ADMIN_ID from env: %s", ADMIN_ID_RAW)
 logging.info("ADMIN_IDS from env: %s", ADMIN_IDS if ADMIN_IDS else "EMPTY")
 
 
 def build_bot_session() -> AiohttpSession:
-    timeout = ClientTimeout(total=75, connect=20, sock_connect=20, sock_read=60)
+    timeout = ClientTimeout(total=120, connect=30, sock_connect=30, sock_read=90)
     connector = TCPConnector(
         ssl=False,
         limit=100,
@@ -114,7 +114,6 @@ def cleanup_recent_scans():
 
 def is_duplicate_scan(user_id: int, code: str) -> bool:
     cleanup_recent_scans()
-
     key = f"{user_id}:{code}"
     now = time.time()
 
@@ -132,12 +131,11 @@ TEXTS = {
         "menu_button": "Сканер QR",
         "empty_code": "Пустой код.",
         "bad_data": "Ошибка чтения данных.",
-        "scan_duplicate": "Этот код уже был только что обработан.",
         "processing_error": "Ошибка обработки QR-кода.",
         "unknown_action": "Неизвестное действие.",
         "admin_only": "Команда только для администратора.",
         "debug_url": "Текущий WEBAPP_URL:\n{url}",
-        "help": "Доступные команды:\n/start — старт\n/help — помощь\n/debug_url — показать WebApp URL (admin)\n/id — показать Telegram ID\n/addqr CODE 10 — добавить QR\n/delqr CODE — удалить QR\n/listqr — список QR\n/syncqr — обновить QR из папки data/qr_codes\n/importqr — инструкция импорта TXT/XLSX\n/bonus USER_ID 50 — начислить бонусы\n/balance USER_ID — баланс пользователя",
+        "help": "Доступные команды:\n/start — старт\n/help — помощь\n/debug_url — показать WebApp URL\n/id — показать Telegram ID\n/addqr CODE 10 — добавить QR\n/delqr CODE — удалить QR\n/listqr — список QR\n/syncqr — обновить QR из папки data/qr_codes\n/importqr — инструкция импорта TXT/XLSX\n/bonus USER_ID 50 — начислить бонусы\n/balance USER_ID — баланс пользователя",
         "your_id": "Ваш Telegram ID: <code>{user_id}</code>\nAdmin access: <b>{admin}</b>",
         "cmd_usage_addqr": "Использование: <code>/addqr CODE 10</code>",
         "cmd_usage_delqr": "Использование: <code>/delqr CODE</code>",
@@ -279,9 +277,8 @@ def load_qr_codes_raw_from_folder() -> str:
 
         try:
             with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
                 parts.append(f"\n# ===== FILE: {file_name} =====\n")
-                parts.append(content)
+                parts.append(f.read())
         except Exception as e:
             logging.exception("Cannot read QR file %s: %s", file_path, e)
 
@@ -317,11 +314,11 @@ def parse_default_qr_codes(raw: str):
     return codes
 
 
-def parse_qr_txt_content(content: str) -> list[tuple[str, int]]:
+def parse_qr_txt_content(content: str):
     return parse_default_qr_codes(content)
 
 
-def parse_qr_xlsx_file(file_path: str) -> list[tuple[str, int]]:
+def parse_qr_xlsx_file(file_path: str):
     codes = []
     seen = set()
 
@@ -341,14 +338,12 @@ def parse_qr_xlsx_file(file_path: str) -> list[tuple[str, int]]:
                 code = str(values[0]).strip()
                 raw_points = str(values[1]).strip()
                 m = re.search(r"\d+", raw_points)
-
                 if m:
                     points = int(m.group(0))
 
             if not code or points is None:
                 line = " ".join(str(v).strip() for v in values)
                 m = re.match(r"^(.*?)\s+(\d+)\s+бал", line, flags=re.IGNORECASE)
-
                 if m:
                     code = m.group(1).strip()
                     points = int(m.group(2))
@@ -356,15 +351,7 @@ def parse_qr_xlsx_file(file_path: str) -> list[tuple[str, int]]:
             if not code or points is None:
                 continue
 
-            if code.lower() in {
-                "код",
-                "qr",
-                "qr code",
-                "data matrix",
-                "балл",
-                "баллы",
-                "points",
-            }:
+            if code.lower() in {"код", "qr", "qr code", "data matrix", "балл", "баллы", "points"}:
                 continue
 
             if code and code not in seen and points > 0:
@@ -379,10 +366,6 @@ def safe_file_name(name: str) -> str:
     name = os.path.basename(name or "qr_upload")
     name = re.sub(r"[^a-zA-Z0-9а-яА-ЯёЁ._-]+", "_", name)
     return name.strip("._") or "qr_upload"
-
-
-DEFAULT_QR_CODES_RAW = load_qr_codes_raw_from_folder()
-DEFAULT_QR_CODES = parse_default_qr_codes(DEFAULT_QR_CODES_RAW)
 
 
 def get_db_connection():
@@ -493,14 +476,17 @@ def upsert_qr_codes_to_db(codes: list[tuple[str, int]]) -> dict:
 
 
 def seed_default_qr_codes():
-    if not DEFAULT_QR_CODES:
+    raw = load_qr_codes_raw_from_folder()
+    codes = parse_default_qr_codes(raw)
+
+    if not codes:
         logging.warning("No QR/Data Matrix codes found in %s", QR_CODES_DIR)
         return
 
-    result = upsert_qr_codes_to_db(DEFAULT_QR_CODES)
+    result = upsert_qr_codes_to_db(codes)
 
     logging.info(
-        "Default QR/Data Matrix codes synced: total=%s added=%s updated=%s skipped=%s",
+        "QR/Data Matrix codes synced: total=%s added=%s updated=%s skipped=%s",
         result["total"],
         result["added"],
         result["updated"],
@@ -692,37 +678,20 @@ async def process_scanned_qr_code(message: Message, code: str, language: str) ->
         if status == "ok":
             title = scan_t(language, "scan_ok_title")
             await message.answer(
-                scan_t(
-                    language,
-                    "scan_ok_text",
-                    title=title,
-                    code=code,
-                    points=points,
-                    balance=balance,
-                )
+                scan_t(language, "scan_ok_text", title=title, code=code, points=points, balance=balance)
             )
             return
 
         if status == "used":
             title = scan_t(language, "scan_used_title")
             await message.answer(
-                scan_t(
-                    language,
-                    "scan_used_text",
-                    title=title,
-                    code=code,
-                )
+                scan_t(language, "scan_used_text", title=title, code=code)
             )
             return
 
         title = scan_t(language, "scan_invalid_title")
         await message.answer(
-            scan_t(
-                language,
-                "scan_invalid_text",
-                title=title,
-                code=code,
-            )
+            scan_t(language, "scan_invalid_text", title=title, code=code)
         )
 
     except Exception as e:
@@ -761,7 +730,6 @@ async def import_uploaded_qr_file(message: Message, document: Document):
                 content = f.read()
 
             codes = parse_qr_txt_content(content)
-
         else:
             codes = parse_qr_xlsx_file(saved_path)
 
@@ -932,11 +900,7 @@ async def listqr_handler(message: Message):
             )
 
         await message.answer(
-            t(
-                lang,
-                "listqr_header",
-                items="\n\n".join(items),
-            )
+            t(lang, "listqr_header", items="\n\n".join(items))
         )
 
     except Exception as e:
@@ -1128,19 +1092,20 @@ async def set_menu_button():
             menu_button=MenuButtonWebApp(
                 text=TEXTS["ru"]["menu_button"],
                 web_app=WebAppInfo(url=WEBAPP_URL),
-            )
+            ),
+            request_timeout=20,
         )
         logging.info("Menu button WebApp set successfully")
     except Exception as e:
-        logging.exception("Failed to set menu button: %s", e)
+        logging.warning("Menu button setup failed: %s", e)
 
 
 async def on_startup():
     try:
-        await bot.delete_webhook(drop_pending_updates=False)
+        await bot.delete_webhook(drop_pending_updates=False, request_timeout=20)
         logging.info("Webhook deleted successfully")
     except Exception as e:
-        logging.exception("Failed to delete webhook: %s", e)
+        logging.warning("Webhook delete skipped: %s", e)
 
     init_qr_bonus_tables()
     seed_default_qr_codes()
@@ -1165,7 +1130,7 @@ async def main():
     try:
         await dp.start_polling(
             bot,
-            polling_timeout=30,
+            polling_timeout=60,
             allowed_updates=dp.resolve_used_update_types(),
             handle_signals=True,
             close_bot_session=False,
