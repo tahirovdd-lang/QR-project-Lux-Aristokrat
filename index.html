@@ -1,0 +1,2431 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Lux Aristokrat QR Scanner</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    :root{
+      --bg:#080809;
+      --card:rgba(18,18,20,.62);
+      --text:#f6ecd1;
+      --muted:#c6b083;
+      --line:rgba(212,175,55,.18);
+      --gold:#d4af37;
+      --gold-soft:#f4df9a;
+      --gold-deep:#9f7b19;
+      --shadow:0 18px 50px rgba(0,0,0,.38);
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:
+        radial-gradient(circle at top, rgba(212,175,55,.08), transparent 35%),
+        linear-gradient(180deg, var(--bg), #050506 100%);
+      color:var(--text);
+      font-family:Inter, Arial, sans-serif;
+      min-height:100%;
+      overflow-x:hidden;
+    }
+
+    body{
+      padding:18px 14px 20px;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:720px;
+      margin:0 auto;
+    }
+
+    .hero{
+      position:relative;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(22,22,24,.92), rgba(11,11,12,.96));
+      border-radius:30px;
+      padding:20px 18px 18px;
+      box-shadow:var(--shadow);
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+      flex:1;
+    }
+
+    .brand-mark{
+      width:62px;
+      height:62px;
+      border-radius:18px;
+      border:1px solid rgba(244,223,154,.25);
+      background:linear-gradient(180deg, #171719, #0f0f11);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--gold-soft);
+      font-size:24px;
+      flex-shrink:0;
+      box-shadow:inset 0 0 24px rgba(212,175,55,.06);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .brand-mark img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      border-radius:18px;
+    }
+
+    .brand-title{
+      font-size:24px;
+      font-weight:900;
+      line-height:1.05;
+      color:var(--gold-soft);
+      text-shadow:0 0 12px rgba(212,175,55,.12);
+      letter-spacing:.2px;
+    }
+
+    .brand-sub{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:5px;
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      position:relative;
+      flex-shrink:0;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      cursor:pointer;
+      border-radius:18px;
+      min-height:52px;
+      padding:0 14px;
+      font-size:15px;
+      font-weight:800;
+      transition:.2s ease;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .lang-menu-wrap{
+      position:relative;
+    }
+
+    .lang-toggle{
+      min-width:86px;
+      height:46px;
+      border-radius:16px;
+      border:1px solid rgba(244,223,154,.20);
+      background:linear-gradient(180deg, rgba(27,27,29,.95), rgba(17,17,18,.95));
+      color:var(--gold-soft);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      padding:0 12px;
+      font-size:13px;
+      font-weight:800;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+      min-height:46px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .lang-toggle-content{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      position:relative;
+      z-index:1;
+    }
+
+    .lang-flag{
+      font-size:15px;
+      line-height:1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:16px;
+    }
+
+    .lang-dropdown{
+      position:absolute;
+      top:54px;
+      right:0;
+      min-width:150px;
+      padding:8px;
+      border-radius:18px;
+      border:1px solid rgba(244,223,154,.14);
+      background:linear-gradient(180deg, rgba(16,16,18,.98), rgba(9,9,10,.99));
+      box-shadow:0 18px 40px rgba(0,0,0,.40);
+      z-index:1200;
+      opacity:0;
+      visibility:hidden;
+      transform:translateY(-8px) scale(.98);
+      transition:.22s ease;
+      pointer-events:none;
+    }
+
+    .lang-dropdown.open{
+      opacity:1;
+      visibility:visible;
+      transform:translateY(0) scale(1);
+      pointer-events:auto;
+    }
+
+    .lang-option{
+      width:100%;
+      min-height:42px;
+      border-radius:14px;
+      border:1px solid transparent;
+      background:transparent;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:800;
+      text-align:left;
+      padding:0 12px;
+      box-shadow:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+
+    .lang-option.active{
+      color:#201707;
+      background:linear-gradient(180deg, #f4df9a, #d4af37);
+      box-shadow:0 10px 22px rgba(212,175,55,.24);
+    }
+
+    .lang-option-left{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .lang-code{
+      font-weight:900;
+      letter-spacing:.3px;
+    }
+
+    .burger-btn{
+      width:46px;
+      height:46px;
+      border-radius:16px;
+      border:1px solid rgba(244,223,154,.20);
+      background:linear-gradient(180deg, rgba(27,27,29,.95), rgba(17,17,18,.95));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+      min-height:46px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .burger-lines{
+      width:18px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      position:relative;
+      z-index:1;
+    }
+
+    .burger-lines span{
+      display:block;
+      height:2px;
+      width:100%;
+      border-radius:999px;
+      background:var(--gold-soft);
+      box-shadow:0 0 8px rgba(244,223,154,.16);
+    }
+
+    .catalog-btn{
+      width:100%;
+      margin-top:12px;
+      min-height:50px;
+      border-radius:18px;
+      border:1px solid rgba(244,223,154,.20);
+      background:linear-gradient(180deg, rgba(27,27,29,.95), rgba(17,17,18,.95));
+      color:var(--gold-soft);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:0 14px;
+      font-size:15px;
+      font-weight:900;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+      white-space:nowrap;
+    }
+
+    .title{
+      margin:14px 0 8px;
+      font-size:18px;
+      font-weight:800;
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .card{
+      margin-top:16px;
+      border-radius:28px;
+      background:linear-gradient(180deg, rgba(17,17,19,.96), rgba(12,12,13,.98));
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+
+    .scanner-shell{
+      position:relative;
+      border-radius:24px;
+      overflow:hidden;
+      border:1px solid rgba(244,223,154,.16);
+      background:#000;
+      min-height:320px;
+    }
+
+    #reader{
+      width:100%;
+      background:#000;
+      border-radius:24px;
+      overflow:hidden;
+    }
+
+    #reader video{
+      border-radius:24px !important;
+      object-fit:cover !important;
+    }
+
+    .scanner-overlay{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .scan-frame{
+      width:min(74vw, 280px);
+      height:min(74vw, 280px);
+      border-radius:28px;
+      border:2px solid rgba(244,223,154,.86);
+      box-shadow:
+        0 0 0 9999px rgba(0,0,0,.22) inset,
+        0 0 26px rgba(212,175,55,.22);
+      position:relative;
+    }
+
+    .scan-frame::before{
+      content:"";
+      position:absolute;
+      left:12px;
+      right:12px;
+      top:18px;
+      height:2px;
+      background:linear-gradient(90deg, transparent, var(--gold-soft), transparent);
+      box-shadow:0 0 14px rgba(244,223,154,.45);
+      animation:scanMove 2.3s linear infinite;
+    }
+
+    @keyframes scanMove{
+      0%{ transform:translateY(0); opacity:.25; }
+      50%{ transform:translateY(210px); opacity:1; }
+      100%{ transform:translateY(0); opacity:.25; }
+    }
+
+    .status{
+      margin-top:14px;
+      border-radius:20px;
+      padding:14px;
+      background:rgba(212,175,55,.08);
+      border:1px solid rgba(212,175,55,.14);
+      color:var(--text);
+      font-size:14px;
+      line-height:1.45;
+      word-break:break-word;
+    }
+
+    .status.muted{ color:var(--muted); }
+
+    .status.success{
+      background:rgba(64,180,100,.12);
+      border-color:rgba(64,180,100,.22);
+      color:#dcffe6;
+    }
+
+    .status.error{
+      background:rgba(210,70,70,.12);
+      border-color:rgba(210,70,70,.22);
+      color:#ffdcdc;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .btn-primary{
+      color:#201707;
+      background:linear-gradient(180deg, #f4df9a, #d4af37);
+      box-shadow:0 10px 22px rgba(212,175,55,.24);
+    }
+
+    .btn-secondary{
+      color:var(--text);
+      background:linear-gradient(180deg, rgba(27,27,29,.95), rgba(17,17,18,.95));
+      border:1px solid rgba(244,223,154,.14);
+    }
+
+    .tips{
+      margin-top:16px;
+      border-radius:22px;
+      padding:14px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.05);
+    }
+
+    .tips-title{
+      font-size:14px;
+      font-weight:800;
+      margin-bottom:8px;
+      color:var(--gold-soft);
+    }
+
+    .tips ul{
+      margin:0;
+      padding-left:18px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    .drawer-backdrop,
+    .catalog-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.56);
+      backdrop-filter:blur(5px);
+      z-index:999;
+      opacity:0;
+      visibility:hidden;
+      transition:.22s ease;
+    }
+
+    .catalog-backdrop{z-index:1100}
+
+    .drawer-backdrop.open,
+    .catalog-backdrop.open{
+      opacity:1;
+      visibility:visible;
+    }
+
+    .drawer{
+      position:fixed;
+      top:0;
+      right:0;
+      width:min(88vw, 360px);
+      height:100%;
+      background:
+        radial-gradient(circle at top, rgba(212,175,55,.08), transparent 26%),
+        linear-gradient(180deg, rgba(16,16,18,.98), rgba(9,9,10,.99));
+      border-left:1px solid rgba(244,223,154,.12);
+      box-shadow:-18px 0 40px rgba(0,0,0,.42);
+      transform:translateX(100%);
+      transition:.24s ease;
+      z-index:1000;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .drawer.open{
+      transform:translateX(0);
+    }
+
+    .drawer-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:18px 16px 14px;
+      border-bottom:1px solid rgba(244,223,154,.10);
+    }
+
+    .drawer-title{
+      font-size:18px;
+      font-weight:800;
+      color:var(--gold-soft);
+    }
+
+    .drawer-close,
+    .catalog-close,
+    .image-viewer-close{
+      width:42px;
+      min-width:42px;
+      height:42px;
+      min-height:42px;
+      border-radius:14px;
+      padding:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--text);
+      background:linear-gradient(180deg, rgba(27,27,29,.95), rgba(17,17,18,.95));
+      border:1px solid rgba(244,223,154,.14);
+      font-size:20px;
+      font-weight:700;
+    }
+
+    .drawer-body{
+      padding:14px;
+      overflow:auto;
+    }
+
+    .drawer-brand{
+      position:relative;
+      border-radius:24px;
+      padding:16px;
+      margin-bottom:12px;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at top right, rgba(244,223,154,.12), transparent 32%),
+        linear-gradient(180deg, rgba(24,24,26,.96), rgba(12,12,13,.98));
+      border:1px solid rgba(244,223,154,.12);
+      box-shadow:var(--shadow);
+    }
+
+    .drawer-brand-top{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      position:relative;
+      z-index:1;
+    }
+
+    .drawer-brand-mark{
+      width:52px;
+      height:52px;
+      border-radius:18px;
+      border:1px solid rgba(244,223,154,.18);
+      background:linear-gradient(180deg, #171719, #0f0f11);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--gold-soft);
+      font-size:22px;
+      flex-shrink:0;
+      box-shadow:inset 0 0 24px rgba(212,175,55,.06);
+      overflow:hidden;
+    }
+
+    .drawer-brand-mark img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      border-radius:18px;
+    }
+
+    .drawer-brand-title{
+      font-size:20px;
+      font-weight:900;
+      color:var(--gold-soft);
+      line-height:1.1;
+    }
+
+    .drawer-brand-sub{
+      margin-top:5px;
+      color:var(--gold-soft);
+      font-size:12px;
+      line-height:1.45;
+      font-weight:700;
+    }
+
+    .drawer-brand-note{
+      margin-top:12px;
+      padding-top:12px;
+      border-top:1px solid rgba(244,223,154,.08);
+      color:var(--gold-soft);
+      font-size:12px;
+      line-height:1.55;
+      font-weight:600;
+    }
+
+    .menu-card{
+      border-radius:20px;
+      padding:14px;
+      margin-bottom:12px;
+      background:linear-gradient(180deg, rgba(22,22,24,.92), rgba(11,11,12,.96));
+      border:1px solid rgba(244,223,154,.10);
+      box-shadow:var(--shadow);
+    }
+
+    .menu-card-title{
+      font-size:14px;
+      font-weight:800;
+      color:var(--gold-soft);
+      margin-bottom:8px;
+    }
+
+    .hours-list{
+      display:grid;
+      gap:7px;
+      margin-top:8px;
+    }
+
+    .hours-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.4;
+    }
+
+    .hours-day{
+      color:var(--text);
+      font-weight:700;
+      flex:1;
+    }
+
+    .hours-time{
+      color:var(--gold-soft);
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .mini-actions{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .menu-btn{
+      width:100%;
+      min-height:46px;
+      border-radius:16px;
+      color:var(--text);
+      background:linear-gradient(180deg, rgba(27,27,29,.95), rgba(17,17,18,.95));
+      border:1px solid rgba(244,223,154,.14);
+      font-size:14px;
+      font-weight:800;
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 14px;
+    }
+
+    .menu-btn.gold{
+      color:#201707;
+      background:linear-gradient(180deg, #f4df9a, #d4af37);
+      box-shadow:0 10px 22px rgba(212,175,55,.24);
+      border:none;
+    }
+
+    .contact-stack{
+      display:grid;
+      gap:12px;
+      margin-top:10px;
+    }
+
+    .contact-btn{
+      width:100%;
+      min-height:60px;
+      border-radius:20px;
+      color:var(--text);
+      background:
+        radial-gradient(circle at right top, rgba(244,223,154,.08), transparent 26%),
+        linear-gradient(180deg, rgba(27,27,29,.98), rgba(16,16,17,.98));
+      border:1px solid rgba(244,223,154,.14);
+      font-size:14px;
+      font-weight:800;
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      text-align:left;
+      padding:12px 14px;
+      line-height:1.35;
+      gap:12px;
+      cursor:pointer;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 10px 24px rgba(0,0,0,.16);
+    }
+
+    .contact-icon{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(180deg, rgba(244,223,154,.14), rgba(212,175,55,.08));
+      border:1px solid rgba(244,223,154,.14);
+      color:var(--gold-soft);
+      margin-left:4px;
+    }
+
+    .contact-icon svg{
+      width:18px;
+      height:18px;
+      display:block;
+    }
+
+    .contact-content{
+      flex:1;
+      min-width:0;
+    }
+
+    .contact-title{
+      font-size:14px;
+      font-weight:800;
+      color:var(--text);
+      line-height:1.25;
+      word-break:break-word;
+    }
+
+    .contact-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:4px;
+      line-height:1.3;
+      word-break:break-word;
+    }
+
+    .contact-arrow{
+      width:28px;
+      height:28px;
+      min-width:28px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--gold-soft);
+      background:rgba(244,223,154,.06);
+      border:1px solid rgba(244,223,154,.10);
+      font-size:14px;
+      flex-shrink:0;
+    }
+
+    .catalog-modal{
+      position:fixed;
+      left:50%;
+      top:50%;
+      width:min(92vw, 540px);
+      max-height:88vh;
+      transform:translate(-50%, -46%) scale(.96);
+      opacity:0;
+      visibility:hidden;
+      z-index:1101;
+      border-radius:30px;
+      border:1px solid rgba(244,223,154,.16);
+      background:
+        radial-gradient(circle at top, rgba(212,175,55,.10), transparent 30%),
+        linear-gradient(180deg, rgba(16,16,18,.99), rgba(8,8,9,.99));
+      box-shadow:0 28px 70px rgba(0,0,0,.55);
+      overflow:hidden;
+      transition:.24s ease;
+    }
+
+    .catalog-modal.open{
+      transform:translate(-50%, -50%) scale(1);
+      opacity:1;
+      visibility:visible;
+    }
+
+    .catalog-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:18px 16px 14px;
+      border-bottom:1px solid rgba(244,223,154,.10);
+    }
+
+    .catalog-title{
+      font-size:20px;
+      font-weight:900;
+      color:var(--gold-soft);
+      line-height:1.15;
+    }
+
+    .catalog-subtitle{
+      margin-top:5px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+
+    .catalog-body{
+      padding:14px;
+      overflow:auto;
+      max-height:calc(88vh - 78px);
+    }
+
+    .catalog-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .catalog-grid.hidden{
+      display:none;
+    }
+
+    .catalog-category{
+      min-height:122px;
+      border-radius:24px;
+      color:var(--text);
+      background:
+        radial-gradient(circle at right top, rgba(244,223,154,.10), transparent 28%),
+        linear-gradient(180deg, rgba(27,27,29,.98), rgba(14,14,15,.98));
+      border:1px solid rgba(244,223,154,.14);
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      justify-content:space-between;
+      padding:15px;
+      text-align:left;
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
+    }
+
+    .catalog-category:active,
+    .catalog-product-card:active{
+      transform:scale(.985);
+    }
+
+    .catalog-category-icon{
+      width:42px;
+      height:42px;
+      border-radius:15px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(180deg, rgba(244,223,154,.15), rgba(212,175,55,.08));
+      border:1px solid rgba(244,223,154,.14);
+      color:var(--gold-soft);
+      font-size:20px;
+      margin-bottom:12px;
+    }
+
+    .catalog-category-title{
+      font-size:15px;
+      font-weight:900;
+      line-height:1.2;
+      color:var(--gold-soft);
+    }
+
+    .catalog-category-note{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+      margin-top:6px;
+      font-weight:600;
+    }
+
+    .catalog-panel{
+      display:none;
+      margin-top:0;
+    }
+
+    .catalog-panel.open{
+      display:block;
+    }
+
+    .catalog-sub-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin:0 0 12px;
+    }
+
+    .catalog-sub-head-title{
+      color:var(--gold-soft);
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .catalog-sub-head-note{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+      margin-top:4px;
+    }
+
+    .catalog-back-btn{
+      min-height:38px;
+      border-radius:14px;
+      padding:0 12px;
+      color:var(--text);
+      background:linear-gradient(180deg, rgba(27,27,29,.95), rgba(17,17,18,.95));
+      border:1px solid rgba(244,223,154,.14);
+      font-size:13px;
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    .catalog-items-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:14px;
+      margin-top:12px;
+    }
+
+    .catalog-product-card{
+      width:100%;
+      border-radius:28px;
+      color:var(--text);
+      background:
+        radial-gradient(circle at center top, rgba(244,223,154,.10), transparent 34%),
+        linear-gradient(180deg, rgba(27,27,29,.98), rgba(14,14,15,.98));
+      border:1px solid rgba(244,223,154,.14);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+      padding:16px;
+      text-align:center;
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
+    }
+
+    .catalog-photo-slot{
+      width:min(68vw, 240px);
+      height:min(68vw, 240px);
+      border-radius:28px;
+      border:1px dashed rgba(244,223,154,.32);
+      background:
+        radial-gradient(circle at center, rgba(244,223,154,.12), transparent 58%),
+        linear-gradient(180deg, rgba(244,223,154,.08), rgba(212,175,55,.04));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      color:var(--gold-soft);
+      font-size:34px;
+      flex-shrink:0;
+      margin:0 auto;
+      cursor:pointer;
+      position:relative;
+    }
+
+    .catalog-photo-slot img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .catalog-photo-slot img:not([style*="display: none"]) + span{
+      display:none;
+    }
+
+    .catalog-sub-content{
+      min-width:0;
+      width:100%;
+      text-align:center;
+    }
+
+    .catalog-sub-title{
+      font-size:18px;
+      font-weight:900;
+      color:var(--gold-soft);
+      line-height:1.2;
+    }
+
+    .catalog-points{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin-top:7px;
+      min-height:30px;
+      border-radius:999px;
+      padding:0 12px;
+      color:#201707;
+      background:linear-gradient(180deg, #f4df9a, #d4af37);
+      font-size:13px;
+      font-weight:900;
+      box-shadow:0 8px 18px rgba(212,175,55,.18);
+    }
+
+    .catalog-buy-btn{
+      width:100%;
+      margin-top:4px;
+      min-height:48px;
+      border-radius:18px;
+      color:#201707;
+      background:linear-gradient(180deg, #f4df9a, #d4af37);
+      box-shadow:0 10px 22px rgba(212,175,55,.24);
+      font-size:14px;
+      font-weight:900;
+    }
+
+    .order-confirm{
+      display:none;
+      margin-top:14px;
+      border-radius:22px;
+      padding:14px;
+      background:rgba(64,180,100,.12);
+      border:1px solid rgba(64,180,100,.22);
+      color:#dcffe6;
+      font-size:13px;
+      line-height:1.45;
+      font-weight:700;
+    }
+
+    .order-confirm.open{
+      display:block;
+    }
+
+    .catalog-empty{
+      margin-top:14px;
+      border-radius:20px;
+      padding:13px;
+      color:var(--muted);
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.05);
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .image-viewer-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.78);
+      backdrop-filter:blur(6px);
+      z-index:1300;
+      opacity:0;
+      visibility:hidden;
+      transition:.22s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+
+    .image-viewer-backdrop.open{
+      opacity:1;
+      visibility:visible;
+    }
+
+    .image-viewer-box{
+      width:min(92vw, 520px);
+      max-height:86vh;
+      border-radius:28px;
+      border:1px solid rgba(244,223,154,.20);
+      background:linear-gradient(180deg, rgba(16,16,18,.99), rgba(8,8,9,.99));
+      box-shadow:0 28px 70px rgba(0,0,0,.58);
+      overflow:hidden;
+      transform:scale(.96);
+      transition:.22s ease;
+    }
+
+    .image-viewer-backdrop.open .image-viewer-box{
+      transform:scale(1);
+    }
+
+    .image-viewer-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      border-bottom:1px solid rgba(244,223,154,.12);
+    }
+
+    .image-viewer-title{
+      color:var(--gold-soft);
+      font-size:15px;
+      font-weight:900;
+      line-height:1.2;
+    }
+
+    .image-viewer-img{
+      width:100%;
+      max-height:calc(86vh - 65px);
+      object-fit:contain;
+      display:block;
+      background:#050506;
+    }
+
+    @media (max-width:480px){
+      body{
+        padding:12px 10px 16px;
+      }
+      .hero{
+        padding:16px 12px 14px;
+        border-radius:26px;
+      }
+      .topbar{
+        gap:8px;
+      }
+      .brand{
+        gap:10px;
+      }
+      .brand-title{
+        font-size:18px;
+      }
+      .brand-sub{
+        font-size:11px;
+      }
+      .brand-mark{
+        width:50px;
+        height:50px;
+        border-radius:16px;
+      }
+      .lang-toggle{
+        min-width:70px;
+        padding:0 8px;
+      }
+      .burger-btn{
+        width:44px;
+        height:44px;
+      }
+      .title{
+        font-size:16px;
+      }
+      .catalog-grid{
+        grid-template-columns:1fr;
+      }
+      .catalog-modal{
+        width:94vw;
+        max-height:88vh;
+        border-radius:26px;
+      }
+      .catalog-body{
+        max-height:calc(88vh - 78px);
+      }
+      .catalog-photo-slot{
+        width:min(72vw, 250px);
+        height:min(72vw, 250px);
+      }
+      .actions{
+        grid-template-columns:1fr;
+      }
+      .hours-row{
+        font-size:12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-mark">
+            <img id="brandLogo" src="logo.png" alt="Lux Aristokrat logo" style="display:none;">
+            <span id="brandFallback">◆</span>
+          </div>
+          <div>
+            <div class="brand-title">Lux Aristokrat</div>
+            <div id="brandSub" class="brand-sub">Новые возможности с Lux Aristokrat</div>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <div class="lang-menu-wrap">
+            <button id="langToggle" class="lang-toggle" type="button" aria-label="language">
+              <div class="lang-toggle-content">
+                <span id="langToggleFlag" class="lang-flag">🇷🇺</span>
+                <span id="langToggleLabel" class="lang-label">RU</span>
+              </div>
+              <span class="arrow">▾</span>
+            </button>
+
+            <div id="langDropdown" class="lang-dropdown">
+              <button class="lang-option active" type="button" data-lang="ru" data-flag="🇷🇺">
+                <div class="lang-option-left"><span class="lang-flag">🇷🇺</span><span class="lang-code">RU</span></div>
+                <span class="lang-name">Русский</span>
+              </button>
+              <button class="lang-option" type="button" data-lang="uz" data-flag="🇺🇿">
+                <div class="lang-option-left"><span class="lang-flag">🇺🇿</span><span class="lang-code">UZ</span></div>
+                <span class="lang-name">O‘zbekcha</span>
+              </button>
+              <button class="lang-option" type="button" data-lang="en" data-flag="🇬🇧">
+                <div class="lang-option-left"><span class="lang-flag">🇬🇧</span><span class="lang-code">EN</span></div>
+                <span class="lang-name">English</span>
+              </button>
+              <button class="lang-option" type="button" data-lang="tj" data-flag="🇹🇯">
+                <div class="lang-option-left"><span class="lang-flag">🇹🇯</span><span class="lang-code">TJ</span></div>
+                <span class="lang-name">Тоҷикӣ</span>
+              </button>
+            </div>
+          </div>
+
+          <button id="burgerBtn" class="burger-btn" type="button" aria-label="menu">
+            <div class="burger-lines"><span></span><span></span><span></span></div>
+          </button>
+        </div>
+      </div>
+
+      <button id="catalogBtn" class="catalog-btn" type="button" aria-label="catalog">
+        <span>▦</span>
+        <span id="catalogBtnText">Каталог</span>
+      </button>
+
+      <div id="title" class="title">Сканируйте код для начисления баллов</div>
+      <p id="subtitle" class="subtitle">
+        После распознавания код сразу отправится в бота, и бонусы начислятся автоматически.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="scanner-shell">
+        <div id="reader"></div>
+        <div class="scanner-overlay"><div class="scan-frame"></div></div>
+      </div>
+
+      <div id="status" class="status muted">Инициализация камеры...</div>
+
+      <div class="actions">
+        <button id="restartBtn" class="btn-primary" type="button">Перезапустить</button>
+        <button id="closeBtn" class="btn-secondary" type="button">Закрыть</button>
+      </div>
+
+      <div class="tips">
+        <div id="tipsTitle" class="tips-title">Важно</div>
+        <ul id="tipsList">
+          <li>Сканер поддерживает QR и Data Matrix.</li>
+          <li>Один и тот же код повторно одному пользователю не начисляется.</li>
+          <li>После сканирования mini app сам закроется.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="drawerBackdrop" class="drawer-backdrop"></div>
+  <div id="catalogBackdrop" class="catalog-backdrop"></div>
+
+  <section id="catalogModal" class="catalog-modal" aria-hidden="true">
+    <div class="catalog-head">
+      <div>
+        <div id="catalogTitle" class="catalog-title">Каталог</div>
+        <div id="catalogSubtitle" class="catalog-subtitle">Выберите категорию для списания баллов</div>
+      </div>
+      <button id="catalogClose" class="catalog-close" type="button" aria-label="close">×</button>
+    </div>
+
+    <div class="catalog-body">
+      <div id="catalogGrid" class="catalog-grid">
+        <button class="catalog-category" type="button" data-category="syrups">
+          <div>
+            <div class="catalog-category-icon">🍯</div>
+            <div id="catSyrupsTitle" class="catalog-category-title">Сиропы</div>
+            <div id="catSyrupsNote" class="catalog-category-note">Подкатегории и позиции</div>
+          </div>
+        </button>
+
+        <button class="catalog-category" type="button" data-category="bar_inventory">
+          <div>
+            <div class="catalog-category-icon">🍸</div>
+            <div id="catBarInventoryTitle" class="catalog-category-title">Барный инвентарь</div>
+            <div id="catBarInventoryNote" class="catalog-category-note">Подкатегории и позиции</div>
+          </div>
+        </button>
+
+        <button class="catalog-category" type="button" data-category="hookah_tobacco">
+          <div>
+            <div class="catalog-category-icon">🍃</div>
+            <div id="catHookahTobaccoTitle" class="catalog-category-title">Табак для кальяна</div>
+            <div id="catHookahTobaccoNote" class="catalog-category-note">Подкатегории и позиции добавим дальше</div>
+          </div>
+        </button>
+
+        <button class="catalog-category" type="button" data-category="hookah">
+          <div>
+            <div class="catalog-category-icon">💨</div>
+            <div id="catHookahTitle" class="catalog-category-title">Кальян</div>
+            <div id="catHookahNote" class="catalog-category-note">Подкатегории и позиции добавим дальше</div>
+          </div>
+        </button>
+      </div>
+
+      <div id="syrupsPanel" class="catalog-panel">
+        <div class="catalog-sub-head">
+          <div>
+            <div id="syrupsSubTitle" class="catalog-sub-head-title">Сиропы</div>
+            <div id="syrupsSubNote" class="catalog-sub-head-note">Позиции для списания баллов</div>
+          </div>
+          <button class="catalog-back-btn" type="button" data-back>← Назад</button>
+        </div>
+
+        <div class="catalog-items-grid">
+          <div class="catalog-product-card" data-category-name="Сиропы" data-item-name="Barinoff" data-points="95" data-photo="photos/barinoff_syrup.png">
+            <div class="catalog-photo-slot"><img src="photos/barinoff_syrup.png" alt="Barinoff" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Barinoff</div><div class="catalog-points">95 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 95 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Сиропы" data-item-name="Fructis" data-points="135" data-photo="photos/fructis_syrup.png">
+            <div class="catalog-photo-slot"><img src="photos/fructis_syrup.png" alt="Fructis" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Fructis</div><div class="catalog-points">135 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 135 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Сиропы" data-item-name="Organica" data-points="130" data-photo="photos/organica_syrup.png">
+            <div class="catalog-photo-slot"><img src="photos/organica_syrup.png" alt="Organica" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Organica</div><div class="catalog-points">130 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 130 баллов</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="barInventoryPanel" class="catalog-panel">
+        <div class="catalog-sub-head">
+          <div>
+            <div id="barInventorySubTitle" class="catalog-sub-head-title">Барный инвентарь</div>
+            <div id="barInventorySubNote" class="catalog-sub-head-note">Позиции для списания баллов</div>
+          </div>
+          <button class="catalog-back-btn" type="button" data-back>← Назад</button>
+        </div>
+
+        <div class="catalog-items-grid">
+          <div class="catalog-product-card" data-category-name="Барный инвентарь" data-item-name="Мадлер" data-points="45" data-photo="photos/madler_bar_inventory.png">
+            <div class="catalog-photo-slot"><img src="photos/madler_bar_inventory.png" alt="Мадлер" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Мадлер</div><div class="catalog-points">45 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 45 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Барный инвентарь" data-item-name="Джиггер" data-points="30" data-photo="photos/jigger_bar_inventory.png">
+            <div class="catalog-photo-slot"><img src="photos/jigger_bar_inventory.png" alt="Джиггер" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Джиггер</div><div class="catalog-points">30 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 30 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Барный инвентарь" data-item-name="Шейкер" data-points="165" data-photo="photos/shaker_bar_inventory.png">
+            <div class="catalog-photo-slot"><img src="photos/shaker_bar_inventory.png" alt="Шейкер" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Шейкер</div><div class="catalog-points">165 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 165 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Барный инвентарь" data-item-name="Барная ложка" data-points="20" data-photo="photos/bar_spoon_bar_inventory.png">
+            <div class="catalog-photo-slot"><img src="photos/bar_spoon_bar_inventory.png" alt="Барная ложка" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Барная ложка</div><div class="catalog-points">20 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 20 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Барный инвентарь" data-item-name="Сквизер" data-points="86" data-photo="photos/squeezer_bar_inventory.png">
+            <div class="catalog-photo-slot"><img src="photos/squeezer_bar_inventory.png" alt="Сквизер" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Сквизер</div><div class="catalog-points">86 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 86 баллов</button>
+          </div>
+        </div>
+      </div>
+
+
+      <div id="hookahTobaccoPanel" class="catalog-panel">
+        <div class="catalog-sub-head">
+          <div>
+            <div id="hookahTobaccoSubTitle" class="catalog-sub-head-title">Табак для кальяна</div>
+            <div id="hookahTobaccoSubNote" class="catalog-sub-head-note">Позиции для списания баллов</div>
+          </div>
+          <button class="catalog-back-btn" type="button" data-back>← Назад</button>
+        </div>
+
+        <div class="catalog-items-grid">
+          <div class="catalog-product-card" data-category-name="Табак для кальяна" data-item-name="Serbetli 50gr" data-points="25" data-photo="photos/serbetli_50gr_tobacco.png">
+            <div class="catalog-photo-slot"><img src="photos/serbetli_50gr_tobacco.png" alt="Serbetli 50gr" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Serbetli 50gr</div><div class="catalog-points">25 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 25 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Табак для кальяна" data-item-name="Blackburn 100gr" data-points="118" data-photo="photos/blackburn_100gr_tobacco.png">
+            <div class="catalog-photo-slot"><img src="photos/blackburn_100gr_tobacco.png" alt="Blackburn 100gr" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Blackburn 100gr</div><div class="catalog-points">118 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 118 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Табак для кальяна" data-item-name="Blackburn 250gr" data-points="217" data-photo="photos/blackburn_250gr_tobacco.png">
+            <div class="catalog-photo-slot"><img src="photos/blackburn_250gr_tobacco.png" alt="Blackburn 250gr" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Blackburn 250gr</div><div class="catalog-points">217 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 217 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Табак для кальяна" data-item-name="Must Have 100gr" data-points="135" data-photo="photos/must_have_100gr_tobacco.png">
+            <div class="catalog-photo-slot"><img src="photos/must_have_100gr_tobacco.png" alt="Must Have 100gr" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Must Have 100gr</div><div class="catalog-points">135 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 135 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Табак для кальяна" data-item-name="Must Have 250gr" data-points="255" data-photo="photos/must_have_250gr_tobacco.png">
+            <div class="catalog-photo-slot"><img src="photos/must_have_250gr_tobacco.png" alt="Must Have 250gr" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Must Have 250gr</div><div class="catalog-points">255 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 255 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Табак для кальяна" data-item-name="Darkside 250gr" data-points="315" data-photo="photos/darkside_250gr_tobacco.png">
+            <div class="catalog-photo-slot"><img src="photos/darkside_250gr_tobacco.png" alt="Darkside 250gr" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Darkside 250gr</div><div class="catalog-points">315 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 315 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Табак для кальяна" data-item-name="Sarma 250gr" data-points="225" data-photo="photos/sarma_250gr_tobacco.png">
+            <div class="catalog-photo-slot"><img src="photos/sarma_250gr_tobacco.png" alt="Sarma 250gr" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Sarma 250gr</div><div class="catalog-points">225 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 225 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Табак для кальяна" data-item-name="Overdose 100gr" data-points="125" data-photo="photos/overdose_100gr_tobacco.png">
+            <div class="catalog-photo-slot"><img src="photos/overdose_100gr_tobacco.png" alt="Overdose 100gr" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Overdose 100gr</div><div class="catalog-points">125 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 125 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Табак для кальяна" data-item-name="Overdose 250gr" data-points="238" data-photo="photos/overdose_250gr_tobacco.png">
+            <div class="catalog-photo-slot"><img src="photos/overdose_250gr_tobacco.png" alt="Overdose 250gr" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Overdose 250gr</div><div class="catalog-points">238 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 238 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Табак для кальяна" data-item-name="Jent 250gr" data-points="230" data-photo="photos/jent_250gr_tobacco.png">
+            <div class="catalog-photo-slot"><img src="photos/jent_250gr_tobacco.png" alt="Jent 250gr" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Jent 250gr</div><div class="catalog-points">230 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 230 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Табак для кальяна" data-item-name="Sebero 250gr" data-points="225" data-photo="photos/sebero_250gr_tobacco.png">
+            <div class="catalog-photo-slot"><img src="photos/sebero_250gr_tobacco.png" alt="Sebero 250gr" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Sebero 250gr</div><div class="catalog-points">225 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 225 баллов</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="hookahPanel" class="catalog-panel">
+        <div class="catalog-sub-head">
+          <div>
+            <div id="hookahSubTitle" class="catalog-sub-head-title">Кальян</div>
+            <div id="hookahSubNote" class="catalog-sub-head-note">Позиции для списания баллов</div>
+          </div>
+          <button class="catalog-back-btn" type="button" data-back>← Назад</button>
+        </div>
+
+        <div class="catalog-items-grid">
+          <div class="catalog-product-card" data-category-name="Кальян" data-item-name="Кальян 1" data-points="2400" data-photo="photos/hookah_1.png">
+            <div class="catalog-photo-slot"><img src="photos/hookah_1.png" alt="Кальян 1" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Кальян 1</div><div class="catalog-points">2400 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 2400 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Кальян" data-item-name="Кальян 2" data-points="2600" data-photo="photos/hookah_2.png">
+            <div class="catalog-photo-slot"><img src="photos/hookah_2.png" alt="Кальян 2" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Кальян 2</div><div class="catalog-points">2600 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 2600 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Кальян" data-item-name="Кальян 3" data-points="2100" data-photo="photos/hookah_3.png">
+            <div class="catalog-photo-slot"><img src="photos/hookah_3.png" alt="Кальян 3" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Кальян 3</div><div class="catalog-points">2100 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 2100 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Кальян" data-item-name="Кальян 4" data-points="2100" data-photo="photos/hookah_4.png">
+            <div class="catalog-photo-slot"><img src="photos/hookah_4.png" alt="Кальян 4" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Кальян 4</div><div class="catalog-points">2100 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 2100 баллов</button>
+          </div>
+
+          <div class="catalog-product-card" data-category-name="Кальян" data-item-name="Кальян 5" data-points="2200" data-photo="photos/hookah_5.png">
+            <div class="catalog-photo-slot"><img src="photos/hookah_5.png" alt="Кальян 5" onerror="this.style.display='none';"><span>📷</span></div>
+            <div class="catalog-sub-content"><div class="catalog-sub-title">Кальян 5</div><div class="catalog-points">2200 баллов</div></div>
+            <button class="catalog-buy-btn" type="button">Купить за 2200 баллов</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="orderConfirm" class="order-confirm"></div>
+
+      <div id="catalogEmptyText" class="catalog-empty">
+        Выберите категорию. Следующим шагом можно добавить новые подкатегории и позиции.
+      </div>
+    </div>
+  </section>
+
+  <div id="imageViewerBackdrop" class="image-viewer-backdrop">
+    <div class="image-viewer-box">
+      <div class="image-viewer-head">
+        <div id="imageViewerTitle" class="image-viewer-title">Фото</div>
+        <button id="imageViewerClose" class="image-viewer-close" type="button" aria-label="close">×</button>
+      </div>
+      <img id="imageViewerImg" class="image-viewer-img" src="" alt="">
+    </div>
+  </div>
+
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div id="drawerTitle" class="drawer-title">Меню</div>
+      <button id="drawerClose" class="drawer-close" type="button" aria-label="close">×</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="drawer-brand">
+        <div class="drawer-brand-top">
+          <div class="drawer-brand-mark">
+            <img id="drawerBrandLogo" src="logo.png" alt="Lux Aristokrat logo" style="display:none;">
+            <span id="drawerBrandFallback">◆</span>
+          </div>
+          <div>
+            <div class="drawer-brand-title">Lux Aristokrat</div>
+            <div id="drawerBrandSub" class="drawer-brand-sub">Новые возможности с Lux Aristokrat</div>
+          </div>
+        </div>
+        <div id="drawerBrandNote" class="drawer-brand-note">
+          Быстрый доступ к сканированию, контактам и навигации внутри mini app.
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div id="menuContactsTitle" class="menu-card-title">Контакты</div>
+
+        <div class="contact-stack">
+          <button id="routeLinkBtn" class="contact-btn" type="button">
+            <div class="contact-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+            </div>
+            <div class="contact-content">
+              <div id="routeText" class="contact-title">Схема проезда</div>
+              <div id="routeSubText" class="contact-sub">Yandex Maps</div>
+            </div>
+            <div class="contact-arrow">↗</div>
+          </button>
+
+          <button id="instagramLinkBtn" class="contact-btn" type="button">
+            <div class="contact-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="4" y="4" width="16" height="16" rx="4.5" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="17.2" cy="6.8" r="1" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="contact-content">
+              <div id="instagramText" class="contact-title">@aristokrat.hookah_shop_</div>
+              <div id="instagramSubText" class="contact-sub">Instagram</div>
+            </div>
+            <div class="contact-arrow">↗</div>
+          </button>
+
+          <button id="legalPhoneBtn" class="contact-btn" type="button">
+            <div class="contact-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M7.5 5.5h2.2c.4 0 .8.28.9.67l.8 3.2a1 1 0 0 1-.28.98l-1.32 1.31a14.8 14.8 0 0 0 4.45 4.45l1.3-1.32a1 1 0 0 1 .99-.27l3.19.8c.4.1.68.45.68.86v2.24c0 .6-.48 1.08-1.08 1.08H18.5C11.6 20.5 6 14.9 6 8V6.58c0-.6.48-1.08 1.08-1.08Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="contact-content">
+              <div id="legalPhoneText" class="contact-title">Для юридических лиц +998 91 558 05 99</div>
+              <div id="legalPhoneSubText" class="contact-sub">Звонок</div>
+            </div>
+            <div class="contact-arrow">↗</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div id="menuHoursTitle" class="menu-card-title">График работы</div>
+        <div class="hours-list">
+          <div class="hours-row"><span id="hoursMon" class="hours-day">Понедельник</span><span class="hours-time">07:00-21:00</span></div>
+          <div class="hours-row"><span id="hoursTue" class="hours-day">Вторник</span><span class="hours-time">07:00-21:00</span></div>
+          <div class="hours-row"><span id="hoursWed" class="hours-day">Среда</span><span class="hours-time">07:00-21:00</span></div>
+          <div class="hours-row"><span id="hoursThu" class="hours-day">Четверг</span><span class="hours-time">07:00-21:00</span></div>
+          <div class="hours-row"><span id="hoursFri" class="hours-day">Пятница</span><span class="hours-time">07:00-21:00</span></div>
+          <div class="hours-row"><span id="hoursSat" class="hours-day">Суббота</span><span class="hours-time">07:00-21:00</span></div>
+          <div class="hours-row"><span id="hoursSun" class="hours-day">Воскресенье</span><span class="hours-time">07:00-15:00</span></div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div id="menuCard3Title" class="menu-card-title">Действия</div>
+        <div class="mini-actions">
+          <button id="drawerRestartBtn" class="menu-btn gold" type="button">Перезапустить сканер</button>
+          <button id="drawerCloseAppBtn" class="menu-btn" type="button">Закрыть mini app</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      try { tg.disableVerticalSwipes(); } catch (e) {}
+      try {
+        tg.setHeaderColor("#080809");
+        tg.setBackgroundColor("#080809");
+      } catch (e) {}
+    }
+
+    const ROUTE_URL = "https://yandex.uz/maps/org/5186268545/?ll=66.919287%2C39.643335&z=16";
+    const INSTAGRAM_URL = "https://instagram.com/aristokrat.hookah_shop_";
+    const LEGAL_PHONE = "+998915580599";
+
+    const i18n = {
+      ru: {
+        htmlLang: "ru",
+        langLabel: "RU",
+        langFlag: "🇷🇺",
+        brandSub: "Новые возможности с Lux Aristokrat",
+        title: "Сканируйте код для начисления баллов",
+        subtitle: "После распознавания код сразу отправится в бота, и бонусы начислятся автоматически.",
+        restart: "Перезапустить",
+        close: "Закрыть",
+        tipsTitle: "Важно",
+        tips: [
+          "Сканер поддерживает QR и Data Matrix.",
+          "Один и тот же код повторно одному пользователю не начисляется.",
+          "После сканирования mini app сам закроется."
+        ],
+        catalogBtn: "Каталог",
+        catalogTitle: "Каталог",
+        catalogSubtitle: "Выберите категорию для списания баллов",
+        catalogEmptyText: "Выберите категорию. Следующим шагом можно добавить новые подкатегории и позиции.",
+        categoryNote: "Подкатегории и позиции",
+        categorySoon: "Подкатегории и позиции добавим дальше",
+        catSyrupsTitle: "Сиропы",
+        catBarInventoryTitle: "Барный инвентарь",
+        catHookahTobaccoTitle: "Табак для кальяна",
+        catHookahTitle: "Кальян",
+        subNote: "Позиции для списания баллов",
+        back: "← Назад",
+        buyFor: "Купить за",
+        pointsWord: "баллов",
+        orderSent: "Заказ отправлен админу. Бот проверит баланс и спишет баллы.",
+        orderSendError: "Не удалось отправить заказ в бот.",
+        drawerTitle: "Меню",
+        drawerBrandSub: "Новые возможности с Lux Aristokrat",
+        drawerBrandNote: "Быстрый доступ к сканированию, контактам и навигации внутри mini app.",
+        menuContactsTitle: "Контакты",
+        menuHoursTitle: "График работы",
+        hoursMon: "Понедельник",
+        hoursTue: "Вторник",
+        hoursWed: "Среда",
+        hoursThu: "Четверг",
+        hoursFri: "Пятница",
+        hoursSat: "Суббота",
+        hoursSun: "Воскресенье",
+        routeText: "Схема проезда",
+        routeSubText: "Yandex Maps",
+        instagramText: "@aristokrat.hookah_shop_",
+        instagramSubText: "Instagram",
+        legalPhoneText: "Для юридических лиц +998 91 558 05 99",
+        legalPhoneSubText: "Звонок",
+        menuCard3Title: "Действия",
+        drawerRestartBtn: "Перезапустить сканер",
+        drawerCloseAppBtn: "Закрыть mini app",
+        statusInitializing: "Инициализация камеры...",
+        statusStarting: "Запуск камеры...",
+        statusActive: "Камера активна. Наведите её на QR-код или Data Matrix.",
+        statusReadError: "Не удалось прочитать код.",
+        statusRecognized: "Код распознан:<br><code>{code}</code><br><br>Отправка в бот...",
+        statusSent: "Данные отправлены. Возвращаемся в бот...",
+        statusNoApi: "Ошибка: Telegram WebApp API недоступен.",
+        statusSendError: "Ошибка при отправке данных в бот.",
+        statusRestarting: "Перезапуск сканера...",
+        statusCameraError: "Не удалось открыть камеру. Проверьте разрешение на доступ к камере в Telegram."
+      },
+      uz: {
+        htmlLang: "uz",
+        langLabel: "UZ",
+        langFlag: "🇺🇿",
+        brandSub: "Lux Aristokrat bilan yangi imkoniyatlar",
+        title: "Ballarni hisoblash uchun kodni skaner qiling",
+        subtitle: "Kod aniqlangandan so‘ng u darhol botga yuboriladi va bonuslar avtomatik tarzda hisoblanadi.",
+        restart: "Qayta ishga tushirish",
+        close: "Yopish",
+        tipsTitle: "Muhim",
+        tips: [
+          "Skaner QR va Data Matrix kodlarini qo‘llab-quvvatlaydi.",
+          "Bir xil kod bir foydalanuvchiga qayta hisoblanmaydi.",
+          "Skanerlashdan keyin mini app o‘zi yopiladi."
+        ],
+        catalogBtn: "Katalog",
+        catalogTitle: "Katalog",
+        catalogSubtitle: "Ballarni yechish uchun kategoriyani tanlang",
+        catalogEmptyText: "Kategoriyani tanlang. Keyin yangi subkategoriyalar va mahsulotlar qo‘shish mumkin.",
+        categoryNote: "Subkategoriyalar va mahsulotlar",
+        categorySoon: "Subkategoriyalar va mahsulotlar keyin qo‘shiladi",
+        catSyrupsTitle: "Sirop",
+        catBarInventoryTitle: "Bar inventari",
+        catHookahTobaccoTitle: "Kalyan uchun tamaki",
+        catHookahTitle: "Kalyan",
+        subNote: "Ballarni yechish uchun mahsulotlar",
+        back: "← Orqaga",
+        buyFor: "Sotib olish",
+        pointsWord: "ball",
+        orderSent: "Buyurtma adminga yuborildi. Bot balansni tekshiradi va ballarni yechadi.",
+        orderSendError: "Buyurtmani botga yuborib bo‘lmadi.",
+        drawerTitle: "Menyu",
+        drawerBrandSub: "Lux Aristokrat bilan yangi imkoniyatlar",
+        drawerBrandNote: "Mini app ichida skanerlash, kontaktlar va navigatsiyaga tezkor kirish.",
+        menuContactsTitle: "Kontaktlar",
+        menuHoursTitle: "Ish vaqti",
+        hoursMon: "Dushanba",
+        hoursTue: "Seshanba",
+        hoursWed: "Chorshanba",
+        hoursThu: "Payshanba",
+        hoursFri: "Juma",
+        hoursSat: "Shanba",
+        hoursSun: "Yakshanba",
+        routeText: "Yo‘l xaritasi",
+        routeSubText: "Yandex Maps",
+        instagramText: "@aristokrat.hookah_shop_",
+        instagramSubText: "Instagram",
+        legalPhoneText: "Yuridik shaxslar uchun +998 91 558 05 99",
+        legalPhoneSubText: "Qo‘ng‘iroq",
+        menuCard3Title: "Amallar",
+        drawerRestartBtn: "Skanerni qayta ishga tushirish",
+        drawerCloseAppBtn: "Mini appni yopish",
+        statusInitializing: "Kamera ishga tayyorlanmoqda...",
+        statusStarting: "Kamera ishga tushirilmoqda...",
+        statusActive: "Kamera faol. Uni QR-kod yoki Data Matrix ga yo‘naltiring.",
+        statusReadError: "Kodni o‘qib bo‘lmadi.",
+        statusRecognized: "Kod aniqlandi:<br><code>{code}</code><br><br>Botga yuborilmoqda...",
+        statusSent: "Ma’lumotlar yuborildi. Botga qaytilmoqda...",
+        statusNoApi: "Xato: Telegram WebApp API mavjud emas.",
+        statusSendError: "Ma’lumotni botga yuborishda xatolik yuz berdi.",
+        statusRestarting: "Skaner qayta ishga tushirilmoqda...",
+        statusCameraError: "Kamerani ochib bo‘lmadi. Telegram ichida kameraga ruxsat berilganini tekshiring."
+      },
+      en: {
+        htmlLang: "en",
+        langLabel: "EN",
+        langFlag: "🇬🇧",
+        brandSub: "New opportunities with Lux Aristokrat",
+        title: "Scan the code to add points",
+        subtitle: "After recognition, the code will be sent to the bot immediately and bonuses will be credited automatically.",
+        restart: "Restart",
+        close: "Close",
+        tipsTitle: "Important",
+        tips: [
+          "The scanner supports QR and Data Matrix.",
+          "The same code is not credited twice to the same user.",
+          "After scanning, the mini app will close automatically."
+        ],
+        catalogBtn: "Catalog",
+        catalogTitle: "Catalog",
+        catalogSubtitle: "Choose a category to redeem points",
+        catalogEmptyText: "Choose a category. Next, new subcategories and items can be added.",
+        categoryNote: "Subcategories and items",
+        categorySoon: "Subcategories and items will be added next",
+        catSyrupsTitle: "Syrups",
+        catBarInventoryTitle: "Bar inventory",
+        catHookahTobaccoTitle: "Hookah tobacco",
+        catHookahTitle: "Hookah",
+        subNote: "Items for point redemption",
+        back: "← Back",
+        buyFor: "Buy for",
+        pointsWord: "points",
+        orderSent: "Order sent to admin. The bot will check the balance and deduct points.",
+        orderSendError: "Could not send the order to the bot.",
+        drawerTitle: "Menu",
+        drawerBrandSub: "New opportunities with Lux Aristokrat",
+        drawerBrandNote: "Quick access to scanning, contacts, and navigation inside the mini app.",
+        menuContactsTitle: "Contacts",
+        menuHoursTitle: "Working hours",
+        hoursMon: "Monday",
+        hoursTue: "Tuesday",
+        hoursWed: "Wednesday",
+        hoursThu: "Thursday",
+        hoursFri: "Friday",
+        hoursSat: "Saturday",
+        hoursSun: "Sunday",
+        routeText: "Directions",
+        routeSubText: "Yandex Maps",
+        instagramText: "@aristokrat.hookah_shop_",
+        instagramSubText: "Instagram",
+        legalPhoneText: "For legal entities +998 91 558 05 99",
+        legalPhoneSubText: "Call",
+        menuCard3Title: "Actions",
+        drawerRestartBtn: "Restart scanner",
+        drawerCloseAppBtn: "Close mini app",
+        statusInitializing: "Initializing camera...",
+        statusStarting: "Starting camera...",
+        statusActive: "Camera is active. Point it at a QR code or Data Matrix.",
+        statusReadError: "Could not read the code.",
+        statusRecognized: "Code recognized:<br><code>{code}</code><br><br>Sending to bot...",
+        statusSent: "Data sent. Returning to the bot...",
+        statusNoApi: "Error: Telegram WebApp API is unavailable.",
+        statusSendError: "Error while sending data to the bot.",
+        statusRestarting: "Restarting scanner...",
+        statusCameraError: "Could not open the camera. Check camera permission inside Telegram."
+      },
+      tj: {
+        htmlLang: "tg",
+        langLabel: "TJ",
+        langFlag: "🇹🇯",
+        brandSub: "Имкониятҳои нав бо Lux Aristokrat",
+        title: "Барои ҳисоб кардани холҳо кодро скан кунед",
+        subtitle: "Пас аз шинохтан, код фавран ба бот фиристода мешавад ва бонусҳо ба таври худкор ҳисоб карда мешаванд.",
+        restart: "Аз нав оғоз кардан",
+        close: "Пӯшидан",
+        tipsTitle: "Муҳим",
+        tips: [
+          "Сканер QR ва Data Matrix-ро дастгирӣ мекунад.",
+          "Ҳамон як код ба як корбар дубора ҳисоб карда намешавад.",
+          "Пас аз сканкунӣ mini app худкор пӯшида мешавад."
+        ],
+        catalogBtn: "Каталог",
+        catalogTitle: "Каталог",
+        catalogSubtitle: "Барои сарф кардани холҳо категорияро интихоб кунед",
+        catalogEmptyText: "Категорияро интихоб кунед. Баъд зеркатегорияҳо ва маҳсулоти нав илова кардан мумкин аст.",
+        categoryNote: "Зеркатегорияҳо ва маҳсулот",
+        categorySoon: "Зеркатегорияҳо ва маҳсулот баъд илова мешаванд",
+        catSyrupsTitle: "Сиропҳо",
+        catBarInventoryTitle: "Инвентари бар",
+        catHookahTobaccoTitle: "Тамоку барои калян",
+        catHookahTitle: "Калян",
+        subNote: "Маҳсулот барои сарфи холҳо",
+        back: "← Бозгашт",
+        buyFor: "Харидан бо",
+        pointsWord: "хол",
+        orderSent: "Фармоиш ба админ фиристода шуд. Бот балансро месанҷад ва холҳоро мегирад.",
+        orderSendError: "Фармоиш ба бот фиристода нашуд.",
+        drawerTitle: "Меню",
+        drawerBrandSub: "Имкониятҳои нав бо Lux Aristokrat",
+        drawerBrandNote: "Дастрасии зуд ба сканкунӣ, тамосҳо ва навигатсия дар дохили mini app.",
+        menuContactsTitle: "Тамос",
+        menuHoursTitle: "Соатҳои корӣ",
+        hoursMon: "Душанбе",
+        hoursTue: "Сешанбе",
+        hoursWed: "Чоршанбе",
+        hoursThu: "Панҷшанбе",
+        hoursFri: "Ҷумъа",
+        hoursSat: "Шанбе",
+        hoursSun: "Якшанбе",
+        routeText: "Нақшаи роҳ",
+        routeSubText: "Yandex Maps",
+        instagramText: "@aristokrat.hookah_shop_",
+        instagramSubText: "Instagram",
+        legalPhoneText: "Барои шахсони ҳуқуқӣ +998 91 558 05 99",
+        legalPhoneSubText: "Занг",
+        menuCard3Title: "Амалҳо",
+        drawerRestartBtn: "Сканерро аз нав оғоз кардан",
+        drawerCloseAppBtn: "Пӯшидани mini app",
+        statusInitializing: "Омодасозии камера...",
+        statusStarting: "Камера оғоз шуда истодааст...",
+        statusActive: "Камера фаъол аст. Онро ба QR-код ё Data Matrix равона кунед.",
+        statusReadError: "Код хонда нашуд.",
+        statusRecognized: "Код шинохта шуд:<br><code>{code}</code><br><br>Ба бот фиристода мешавад...",
+        statusSent: "Маълумот фиристода шуд. Ба бот бармегардем...",
+        statusNoApi: "Хато: Telegram WebApp API дастрас нест.",
+        statusSendError: "Ҳангоми фиристодани маълумот ба бот хато рӯй дод.",
+        statusRestarting: "Сканер аз нав оғоз шуда истодааст...",
+        statusCameraError: "Камераро кушода нашуд. Иҷозати камераро дар Telegram санҷед."
+      }
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    const statusEl = $("status");
+    const restartBtn = $("restartBtn");
+    const closeBtn = $("closeBtn");
+    const burgerBtn = $("burgerBtn");
+    const drawer = $("drawer");
+    const drawerBackdrop = $("drawerBackdrop");
+    const drawerClose = $("drawerClose");
+    const drawerRestartBtn = $("drawerRestartBtn");
+    const drawerCloseAppBtn = $("drawerCloseAppBtn");
+    const routeLinkBtn = $("routeLinkBtn");
+    const instagramLinkBtn = $("instagramLinkBtn");
+    const legalPhoneBtn = $("legalPhoneBtn");
+    const langToggle = $("langToggle");
+    const langToggleLabel = $("langToggleLabel");
+    const langToggleFlag = $("langToggleFlag");
+    const langDropdown = $("langDropdown");
+    const langOptions = Array.from(document.querySelectorAll(".lang-option"));
+    const brandLogo = $("brandLogo");
+    const brandFallback = $("brandFallback");
+    const drawerBrandLogo = $("drawerBrandLogo");
+    const drawerBrandFallback = $("drawerBrandFallback");
+    const catalogBtn = $("catalogBtn");
+    const catalogBtnText = $("catalogBtnText");
+    const catalogBackdrop = $("catalogBackdrop");
+    const catalogModal = $("catalogModal");
+    const catalogClose = $("catalogClose");
+    const catalogGrid = $("catalogGrid");
+    const syrupsPanel = $("syrupsPanel");
+    const barInventoryPanel = $("barInventoryPanel");
+    const hookahTobaccoPanel = $("hookahTobaccoPanel");
+    const hookahPanel = $("hookahPanel");
+    const orderConfirm = $("orderConfirm");
+    const imageViewerBackdrop = $("imageViewerBackdrop");
+    const imageViewerImg = $("imageViewerImg");
+    const imageViewerTitle = $("imageViewerTitle");
+    const imageViewerClose = $("imageViewerClose");
+
+    let scanner = null;
+    let isSending = false;
+    let isStarted = false;
+    let isStopping = false;
+    let sendLocked = false;
+    let closeTriggered = false;
+    let lastSentCode = "";
+    let currentLang = "ru";
+    let currentStatusKey = "statusInitializing";
+    let currentStatusType = "muted";
+    let currentStatusCode = "";
+
+    function initLogo(imgEl, fallbackEl) {
+      if (!imgEl || !fallbackEl) return;
+      imgEl.onload = () => {
+        imgEl.style.display = "block";
+        fallbackEl.style.display = "none";
+      };
+      imgEl.onerror = () => {
+        imgEl.style.display = "none";
+        fallbackEl.style.display = "inline";
+      };
+    }
+
+    initLogo(brandLogo, brandFallback);
+    initLogo(drawerBrandLogo, drawerBrandFallback);
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function normalizeScannedText(value) {
+      return String(value || "").trim();
+    }
+
+    function getTelegramLang() {
+      try {
+        const code = tg?.initDataUnsafe?.user?.language_code || "";
+        const normalized = String(code).toLowerCase();
+        if (normalized.startsWith("ru")) return "ru";
+        if (normalized.startsWith("uz")) return "uz";
+        if (normalized.startsWith("en")) return "en";
+        if (normalized.startsWith("tg") || normalized.startsWith("tj")) return "tj";
+      } catch (e) {}
+      return "ru";
+    }
+
+    function getText(key) {
+      return (i18n[currentLang] && i18n[currentLang][key]) || (i18n.ru[key] || "");
+    }
+
+    function renderTips() {
+      const tipsList = $("tipsList");
+      const tips = getText("tips");
+      tipsList.innerHTML = tips.map(item => `<li>${escapeHtml(item)}</li>`).join("");
+    }
+
+    function renderStatusByKey(key, type = "muted", data = {}) {
+      currentStatusKey = key;
+      currentStatusType = type;
+      currentStatusCode = data.code || "";
+      let text = getText(key);
+      if (data.code) text = String(text).replace("{code}", escapeHtml(data.code));
+      statusEl.className = `status ${type}`;
+      statusEl.innerHTML = text;
+    }
+
+    function updateBuyButtonsText() {
+      document.querySelectorAll(".catalog-product-card").forEach(card => {
+        const points = Number(card.dataset.points || "0");
+        const pointsEl = card.querySelector(".catalog-points");
+        const buyBtn = card.querySelector(".catalog-buy-btn");
+        if (pointsEl) pointsEl.textContent = `${points} ${getText("pointsWord")}`;
+        if (buyBtn) buyBtn.textContent = `${getText("buyFor")} ${points} ${getText("pointsWord")}`;
+      });
+    }
+
+    function applyLanguage(lang) {
+      if (!i18n[lang]) lang = "ru";
+      currentLang = lang;
+
+      try { localStorage.setItem("lux_scanner_lang", lang); } catch (e) {}
+      document.documentElement.lang = i18n[lang].htmlLang || "ru";
+
+      langToggleLabel.textContent = i18n[lang].langLabel || lang.toUpperCase();
+      langToggleFlag.textContent = i18n[lang].langFlag || "🏳️";
+
+      $("brandSub").textContent = getText("brandSub");
+      $("title").textContent = getText("title");
+      $("subtitle").textContent = getText("subtitle");
+      restartBtn.textContent = getText("restart");
+      closeBtn.textContent = getText("close");
+      $("tipsTitle").textContent = getText("tipsTitle");
+      catalogBtnText.textContent = getText("catalogBtn");
+      $("catalogTitle").textContent = getText("catalogTitle");
+      $("catalogSubtitle").textContent = getText("catalogSubtitle");
+      $("catalogEmptyText").textContent = getText("catalogEmptyText");
+
+      $("catSyrupsTitle").textContent = getText("catSyrupsTitle");
+      $("catBarInventoryTitle").textContent = getText("catBarInventoryTitle");
+      $("catHookahTobaccoTitle").textContent = getText("catHookahTobaccoTitle");
+      $("catHookahTitle").textContent = getText("catHookahTitle");
+      $("catSyrupsNote").textContent = getText("categoryNote");
+      $("catBarInventoryNote").textContent = getText("categoryNote");
+      $("catHookahTobaccoNote").textContent = getText("categoryNote");
+      $("catHookahNote").textContent = getText("categoryNote");
+      $("syrupsSubTitle").textContent = getText("catSyrupsTitle");
+      $("syrupsSubNote").textContent = getText("subNote");
+      $("barInventorySubTitle").textContent = getText("catBarInventoryTitle");
+      $("barInventorySubNote").textContent = getText("subNote");
+      $("hookahTobaccoSubTitle").textContent = getText("catHookahTobaccoTitle");
+      $("hookahTobaccoSubNote").textContent = getText("subNote");
+      $("hookahSubTitle").textContent = getText("catHookahTitle");
+      $("hookahSubNote").textContent = getText("subNote");
+
+      document.querySelectorAll("[data-back]").forEach(btn => {
+        btn.textContent = getText("back");
+      });
+
+      $("drawerTitle").textContent = getText("drawerTitle");
+      $("drawerBrandSub").textContent = getText("drawerBrandSub");
+      $("drawerBrandNote").textContent = getText("drawerBrandNote");
+      $("menuContactsTitle").textContent = getText("menuContactsTitle");
+      $("menuHoursTitle").textContent = getText("menuHoursTitle");
+      $("hoursMon").textContent = getText("hoursMon");
+      $("hoursTue").textContent = getText("hoursTue");
+      $("hoursWed").textContent = getText("hoursWed");
+      $("hoursThu").textContent = getText("hoursThu");
+      $("hoursFri").textContent = getText("hoursFri");
+      $("hoursSat").textContent = getText("hoursSat");
+      $("hoursSun").textContent = getText("hoursSun");
+      $("routeText").textContent = getText("routeText");
+      $("routeSubText").textContent = getText("routeSubText");
+      $("instagramText").textContent = getText("instagramText");
+      $("instagramSubText").textContent = getText("instagramSubText");
+      $("legalPhoneText").textContent = getText("legalPhoneText");
+      $("legalPhoneSubText").textContent = getText("legalPhoneSubText");
+      $("menuCard3Title").textContent = getText("menuCard3Title");
+      drawerRestartBtn.textContent = getText("drawerRestartBtn");
+      drawerCloseAppBtn.textContent = getText("drawerCloseAppBtn");
+
+      renderTips();
+      updateBuyButtonsText();
+
+      langOptions.forEach(btn => btn.classList.toggle("active", btn.dataset.lang === lang));
+
+      if (currentStatusKey === "statusRecognized") renderStatusByKey(currentStatusKey, currentStatusType, { code: currentStatusCode });
+      else renderStatusByKey(currentStatusKey, currentStatusType);
+    }
+
+    function openDrawer() {
+      closeLangDropdown();
+      closeCatalog();
+      drawer.classList.add("open");
+      drawerBackdrop.classList.add("open");
+      drawer.setAttribute("aria-hidden", "false");
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove("open");
+      drawerBackdrop.classList.remove("open");
+      drawer.setAttribute("aria-hidden", "true");
+    }
+
+    function openLangDropdown() {
+      langDropdown.classList.add("open");
+      langToggle.classList.add("open");
+    }
+
+    function closeLangDropdown() {
+      langDropdown.classList.remove("open");
+      langToggle.classList.remove("open");
+    }
+
+    function toggleLangDropdown() {
+      if (langDropdown.classList.contains("open")) closeLangDropdown();
+      else openLangDropdown();
+    }
+
+    function showCatalogCategories() {
+      catalogGrid.classList.remove("hidden");
+      syrupsPanel.classList.remove("open");
+      barInventoryPanel.classList.remove("open");
+      hookahTobaccoPanel.classList.remove("open");
+      hookahPanel.classList.remove("open");
+      orderConfirm.classList.remove("open");
+      orderConfirm.textContent = "";
+      $("catalogEmptyText").style.display = "block";
+      $("catalogEmptyText").textContent = getText("catalogEmptyText");
+    }
+
+    function showPanel(panel) {
+      catalogGrid.classList.add("hidden");
+      syrupsPanel.classList.remove("open");
+      barInventoryPanel.classList.remove("open");
+      hookahTobaccoPanel.classList.remove("open");
+      hookahPanel.classList.remove("open");
+      panel.classList.add("open");
+      orderConfirm.classList.remove("open");
+      orderConfirm.textContent = "";
+      $("catalogEmptyText").style.display = "none";
+      setTimeout(() => panel.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+    }
+
+    function openCatalog() {
+      closeLangDropdown();
+      closeDrawer();
+      showCatalogCategories();
+      catalogModal.classList.add("open");
+      catalogBackdrop.classList.add("open");
+      catalogModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeCatalog() {
+      catalogModal.classList.remove("open");
+      catalogBackdrop.classList.remove("open");
+      catalogModal.setAttribute("aria-hidden", "true");
+    }
+
+    function openImageViewer(src, title) {
+      if (!src) return;
+      imageViewerImg.src = src;
+      imageViewerImg.alt = title || "Фото";
+      imageViewerTitle.textContent = title || "Фото";
+      imageViewerBackdrop.classList.add("open");
+    }
+
+    function closeImageViewer() {
+      imageViewerBackdrop.classList.remove("open");
+      setTimeout(() => {
+        if (!imageViewerBackdrop.classList.contains("open")) imageViewerImg.src = "";
+      }, 220);
+    }
+
+    function openExternalLink(url) {
+      try {
+        if (tg && typeof tg.openLink === "function") tg.openLink(url, { try_instant_view: false });
+        else window.open(url, "_blank", "noopener,noreferrer");
+      } catch (e) {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+    }
+
+    function openPhone(phone) {
+      try {
+        if (tg && typeof tg.openLink === "function") tg.openLink(`tel:${phone}`, { try_instant_view: false });
+        else window.location.href = `tel:${phone}`;
+      } catch (e) {
+        window.location.href = `tel:${phone}`;
+      }
+    }
+
+    async function stopScanner() {
+      if (!scanner || !isStarted || isStopping) return;
+      isStopping = true;
+      try { await scanner.stop(); } catch (e) {}
+      try { await scanner.clear(); } catch (e) {}
+      isStarted = false;
+      isStopping = false;
+    }
+
+    function safeCloseMiniApp() {
+      if (closeTriggered) return;
+      closeTriggered = true;
+      setTimeout(() => {
+        try {
+          if (tg && typeof tg.close === "function") tg.close();
+          else window.close();
+        } catch (e) {
+          try { window.close(); } catch (_) {}
+        }
+      }, 500);
+    }
+
+    async function sendScanToBot(decodedText) {
+      const code = normalizeScannedText(decodedText);
+
+      if (!code) {
+        renderStatusByKey("statusReadError", "error");
+        return;
+      }
+
+      if (sendLocked || isSending || isStopping || closeTriggered) return;
+      if (lastSentCode === code) return;
+
+      sendLocked = true;
+      isSending = true;
+      lastSentCode = code;
+
+      renderStatusByKey("statusRecognized", "success", { code });
+
+      try {
+        await stopScanner();
+
+        const payload = {
+          action: "scan_qr",
+          code: code,
+          language: currentLang
+        };
+
+        if (tg && typeof tg.sendData === "function") {
+          tg.sendData(JSON.stringify(payload));
+          renderStatusByKey("statusSent", "success");
+          safeCloseMiniApp();
+          return;
+        }
+
+        renderStatusByKey("statusNoApi", "error");
+      } catch (e) {
+        console.error(e);
+        renderStatusByKey("statusSendError", "error");
+      }
+
+      isSending = false;
+      sendLocked = false;
+      lastSentCode = "";
+    }
+
+    function sendCatalogOrder(card) {
+      const points = Number(card.dataset.points || "0");
+      const payload = {
+        action: "catalog_order",
+        category: card.dataset.categoryName || "",
+        item: card.dataset.itemName || "",
+        points: points,
+        photo: card.dataset.photo || "",
+        language: currentLang,
+        user: tg?.initDataUnsafe?.user || null,
+        created_at: new Date().toISOString()
+      };
+
+      try {
+        if (tg && typeof tg.sendData === "function") {
+          tg.sendData(JSON.stringify(payload));
+          orderConfirm.textContent = getText("orderSent");
+          orderConfirm.classList.add("open");
+          setTimeout(() => safeCloseMiniApp(), 700);
+          return;
+        }
+
+        orderConfirm.textContent = getText("statusNoApi");
+        orderConfirm.classList.add("open");
+      } catch (e) {
+        console.error(e);
+        orderConfirm.textContent = getText("orderSendError");
+        orderConfirm.classList.add("open");
+      }
+    }
+
+    async function startScanner() {
+      await stopScanner();
+
+      isSending = false;
+      isStopping = false;
+      sendLocked = false;
+      closeTriggered = false;
+      lastSentCode = "";
+
+      if (!window.Html5Qrcode) {
+        renderStatusByKey("statusCameraError", "error");
+        return;
+      }
+
+      scanner = new Html5Qrcode("reader");
+      renderStatusByKey("statusStarting", "muted");
+
+      const formats = [];
+      try {
+        formats.push(Html5QrcodeSupportedFormats.QR_CODE);
+        formats.push(Html5QrcodeSupportedFormats.DATA_MATRIX);
+      } catch (e) {}
+
+      const config = {
+        fps: 10,
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+          const size = Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * 0.72);
+          return { width: size, height: size };
+        },
+        aspectRatio: 1.0,
+        disableFlip: false,
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+      };
+
+      if (formats.length) config.formatsToSupport = formats;
+
+      const onSuccess = (decodedText) => sendScanToBot(decodedText);
+      const onError = () => {};
+
+      try {
+        await scanner.start({ facingMode: "environment" }, config, onSuccess, onError);
+        isStarted = true;
+        renderStatusByKey("statusActive", "muted");
+      } catch (err1) {
+        console.warn("Back camera failed:", err1);
+        try {
+          await scanner.start({ facingMode: "user" }, config, onSuccess, onError);
+          isStarted = true;
+          renderStatusByKey("statusActive", "muted");
+        } catch (err2) {
+          console.error("Camera start error:", err2);
+          renderStatusByKey("statusCameraError", "error");
+        }
+      }
+    }
+
+    catalogBtn.addEventListener("click", openCatalog);
+    catalogClose.addEventListener("click", closeCatalog);
+    catalogBackdrop.addEventListener("click", closeCatalog);
+
+    document.querySelectorAll(".catalog-category").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const category = btn.dataset.category || "";
+        if (category === "syrups") showPanel(syrupsPanel);
+        else if (category === "bar_inventory") showPanel(barInventoryPanel);
+        else if (category === "hookah_tobacco") showPanel(hookahTobaccoPanel);
+        else if (category === "hookah") showPanel(hookahPanel);
+      });
+    });
+
+    document.querySelectorAll("[data-back]").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        showCatalogCategories();
+      });
+    });
+
+    document.querySelectorAll(".catalog-buy-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const card = btn.closest(".catalog-product-card");
+        if (card) sendCatalogOrder(card);
+      });
+    });
+
+    document.querySelectorAll(".catalog-photo-slot img").forEach(img => {
+      img.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (img.style.display === "none") return;
+        openImageViewer(img.getAttribute("src"), img.getAttribute("alt"));
+      });
+    });
+
+    imageViewerClose.addEventListener("click", closeImageViewer);
+    imageViewerBackdrop.addEventListener("click", (e) => {
+      if (e.target === imageViewerBackdrop) closeImageViewer();
+    });
+
+    burgerBtn.addEventListener("click", openDrawer);
+    drawerClose.addEventListener("click", closeDrawer);
+    drawerBackdrop.addEventListener("click", closeDrawer);
+
+    langToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleLangDropdown();
+    });
+
+    langOptions.forEach(btn => {
+      btn.addEventListener("click", () => {
+        applyLanguage(btn.dataset.lang);
+        closeLangDropdown();
+      });
+    });
+
+    routeLinkBtn.addEventListener("click", () => openExternalLink(ROUTE_URL));
+    instagramLinkBtn.addEventListener("click", () => openExternalLink(INSTAGRAM_URL));
+    legalPhoneBtn.addEventListener("click", () => openPhone(LEGAL_PHONE));
+
+    restartBtn.addEventListener("click", async () => {
+      renderStatusByKey("statusRestarting", "muted");
+      await startScanner();
+    });
+
+    drawerRestartBtn.addEventListener("click", async () => {
+      closeDrawer();
+      renderStatusByKey("statusRestarting", "muted");
+      await startScanner();
+    });
+
+    closeBtn.addEventListener("click", async () => {
+      await stopScanner();
+      if (tg) tg.close();
+      else window.close();
+    });
+
+    drawerCloseAppBtn.addEventListener("click", async () => {
+      closeDrawer();
+      await stopScanner();
+      if (tg) tg.close();
+      else window.close();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".lang-menu-wrap")) closeLangDropdown();
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeLangDropdown();
+        if (imageViewerBackdrop.classList.contains("open")) closeImageViewer();
+        if (catalogModal.classList.contains("open")) closeCatalog();
+        if (drawer.classList.contains("open")) closeDrawer();
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      try { stopScanner(); } catch (e) {}
+    });
+
+    (function initApp() {
+      let savedLang = "ru";
+      try { savedLang = localStorage.getItem("lux_scanner_lang") || ""; } catch (e) {}
+      const initialLang = i18n[savedLang] ? savedLang : getTelegramLang();
+      applyLanguage(initialLang);
+      renderStatusByKey("statusInitializing", "muted");
+      startScanner();
+    })();
+  </script>
+</body>
+</html>
