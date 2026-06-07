@@ -197,6 +197,37 @@ def init_db():
         ensure_column("users", "full_name", "TEXT")
         ensure_column("users", "points", "INTEGER NOT NULL DEFAULT 0")
 
+        # ── Чиним таблицу scans, если в ней есть лишние NOT NULL колонки (напр. result) ──
+        cur.execute("PRAGMA table_info(scans)")
+        scans_cols = cur.fetchall()
+        bad_notnull = [
+            r["name"] for r in scans_cols
+            if int(r["notnull"]) == 1 and r["dflt_value"] is None
+            and r["name"] not in ("id", "code", "points", "user_id", "scanned_at")
+        ]
+        if bad_notnull:
+            log.info("Migration: rebuilding scans table, dropping bad NOT NULL columns: %s", bad_notnull)
+            cur.execute("ALTER TABLE scans RENAME TO scans_old")
+            cur.execute("""
+            CREATE TABLE scans (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT NOT NULL,
+                points INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                username TEXT,
+                full_name TEXT,
+                scanned_at INTEGER NOT NULL
+            )
+            """)
+            try:
+                cur.execute("""
+                    INSERT INTO scans(id, code, points, user_id, username, full_name, scanned_at)
+                    SELECT id, code, points, user_id, username, full_name, scanned_at FROM scans_old
+                """)
+            except Exception as e:
+                log.warning("Could not copy old scans rows: %s", e)
+            cur.execute("DROP TABLE scans_old")
+
         conn.commit()
 
 
@@ -925,6 +956,8 @@ async def webapp_data(message: Message):
     except Exception:
         data = ""
 
+    log.info("WEBAPP_DATA received: %r", data)
+
     code = data.strip()
 
     if code.startswith("{"):
@@ -968,6 +1001,24 @@ async def universal_text(message: Message):
     user_id = int(message.from_user.id) if message.from_user else 0
     text = (message.text or "").strip()
     action = pending.get(user_id)
+
+    # Подстраховка: если в сообщении есть web_app_data, но оно дошло сюда
+    try:
+        if getattr(message, "web_app_data", None) and message.web_app_data.data:
+            wad = message.web_app_data.data.strip()
+            log.info("WEBAPP_DATA via universal_text: %r", wad)
+            c = wad
+            if c.startswith("{"):
+                try:
+                    o = json.loads(c)
+                    c = str(o.get("code") or o.get("qr") or o.get("data") or "").strip()
+                except Exception:
+                    pass
+            if c:
+                await message.answer(scan_code(message, c))
+                return
+    except Exception as e:
+        log.warning("web_app_data check failed: %s", e)
 
     if action == "add_qr":
         if text.lower() in {"готово", "done", "ok", "ок"}:
