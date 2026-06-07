@@ -177,6 +177,26 @@ def init_db():
                     (name, price, now)
                 )
 
+        # ── Миграция: добавляем недостающие колонки в старые базы ──
+        def ensure_column(table: str, column: str, decl: str):
+            cur.execute(f"PRAGMA table_info({table})")
+            existing = {row["name"] for row in cur.fetchall()}
+            if column not in existing:
+                cur.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
+                log.info("Migration: added column %s.%s", table, column)
+
+        ensure_column("qr_codes", "points", "INTEGER NOT NULL DEFAULT 0")
+        ensure_column("qr_codes", "used", "INTEGER NOT NULL DEFAULT 0")
+        ensure_column("qr_codes", "used_by", "INTEGER")
+        ensure_column("qr_codes", "used_by_username", "TEXT")
+        ensure_column("qr_codes", "used_by_full_name", "TEXT")
+        ensure_column("qr_codes", "used_at", "INTEGER")
+        ensure_column("qr_codes", "created_by", "INTEGER")
+
+        ensure_column("users", "username", "TEXT")
+        ensure_column("users", "full_name", "TEXT")
+        ensure_column("users", "points", "INTEGER NOT NULL DEFAULT 0")
+
         conn.commit()
 
 
